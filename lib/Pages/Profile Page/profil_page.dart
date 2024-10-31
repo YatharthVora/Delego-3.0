@@ -1,4 +1,4 @@
-import 'package:delego/Pages/Profile%20Page/Pre_Mun.dart';
+
 import 'package:flutter/material.dart';
 import 'package:delego/Pages/Profile Page/text_box.dart';
 
@@ -60,7 +60,10 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         backgroundColor: Colors.blue.shade900,
         centerTitle: true,
-        title: const Text('Profile Page'),
+        title: const Text('Profile Page',
+        style: TextStyle(
+          color: Colors.white,
+        ),),
       ),
       body: ListView(
         children: [
@@ -104,6 +107,10 @@ class _ProfilePageState extends State<ProfilePage> {
           MyTextBox(text: '29-01-2005',
               sectionName: 'DoB',
               onPressed:()=> editField("DoB")
+          ),
+          MyTextBox(text: 'Male',
+              sectionName: 'Gender',
+              onPressed:()=> editField("Gender")
           ),
 
         ],
