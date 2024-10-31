@@ -4,7 +4,6 @@ import 'package:delego/Pages/Home Page/my_drawer.dart';
 import 'package:delego/Pages/Profile Page/profil_page.dart';
 import 'package:delego/Pages/room_page.dart';
 import 'package:delego/Pages/Schedule Page/schedule_page.dart';
-
 import 'package:delego/Pages/Login Page/login_page.dart';
 
 
@@ -22,6 +21,12 @@ class _HomePageState extends State<HomePage> {
     Navigator.pop(context);
     //naviget to Profile Page
     Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage()));
+  }
+  void goToRoomPage(){
+    Navigator.push(context, MaterialPageRoute(builder: (context) => RoomPage()));
+  }
+  void goToSchedulePage(){
+    Navigator.push(context, MaterialPageRoute(builder: (context) => SchedulePage()));
   }
 
   void Signout(){
@@ -86,6 +91,17 @@ class _HomePageState extends State<HomePage> {
                       )
                     ],
                   )
+              ),
+              Container(
+                margin: EdgeInsets.fromLTRB(6, 2, 6, 2),
+                width: 357.39,
+                height: 4.37,
+                decoration: ShapeDecoration(
+                  color: Color(0xFF114C90),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(33.84),
+                  ),
+                ),
               ),
               Container(
                 margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
@@ -205,122 +221,128 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              Container(
-                margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                padding: EdgeInsets.all(25),
-                width: 357.39,
-                height: 135.82,
-                decoration: ShapeDecoration(
-                  color: Color(0xFF114C90),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.92),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: 61.02,
-                          height: 16.10,
-                          child: Text(
-                            '03.',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 15.23,
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w600,
-                              height: 0.09,
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 6,
-                        ),
-                        SizedBox(
-                          width: 176.35,
-                          height: 17.80,
-                          child: Text(
-                            'Rooms',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 19.65,
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w600,
-                              height: 0.06,
-                            ),
-                          ),
-                        )
-                      ],
+              GestureDetector(
+                onTap: goToRoomPage,
+                child: Container(
+                  margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                  padding: EdgeInsets.all(25),
+                  width: 357.39,
+                  height: 135.82,
+                  decoration: ShapeDecoration(
+                    color: Color(0xFF114C90),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.92),
                     ),
-                    Container(
-                      height: 70,
-                      width: 70,
-                      child: Image.asset('assets/icons/location.png'),
-                    )
-                  ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 61.02,
+                            height: 16.10,
+                            child: Text(
+                              '03.',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15.23,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w600,
+                                height: 0.09,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 6,
+                          ),
+                          SizedBox(
+                            width: 176.35,
+                            height: 17.80,
+                            child: Text(
+                              'Rooms',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 19.65,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w600,
+                                height: 0.06,
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                      Container(
+                        height: 70,
+                        width: 70,
+                        child: Image.asset('assets/icons/location.png'),
+                      )
+                    ],
+                  ),
                 ),
               ),
-              Container(
-                margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                padding: EdgeInsets.all(25),
-                width: 357.39,
-                height: 135.82,
-                decoration: ShapeDecoration(
-                  color: Color(0xFF114C90),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.92),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: 61.02,
-                          height: 16.10,
-                          child: Text(
-                            '04.',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 15.23,
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w600,
-                              height: 0.09,
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 6,
-                        ),
-                        SizedBox(
-                          width: 176.35,
-                          height: 17.80,
-                          child: Text(
-                            'Schedule',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 19.65,
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w600,
-                              height: 0.06,
-                            ),
-                          ),
-                        )
-                      ],
+              GestureDetector(
+                onTap: goToSchedulePage,
+                child: Container(
+                  margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                  padding: EdgeInsets.all(25),
+                  width: 357.39,
+                  height: 135.82,
+                  decoration: ShapeDecoration(
+                    color: Color(0xFF114C90),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.92),
                     ),
-                    Container(
-                      height: 70,
-                      width: 70,
-                      child: Image.asset('assets/icons/schedule.png'),
-                    )
-                  ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 61.02,
+                            height: 16.10,
+                            child: Text(
+                              '04.',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15.23,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w600,
+                                height: 0.09,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 6,
+                          ),
+                          SizedBox(
+                            width: 176.35,
+                            height: 17.80,
+                            child: Text(
+                              'Schedule',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 19.65,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w600,
+                                height: 0.06,
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                      Container(
+                        height: 70,
+                        width: 70,
+                        child: Image.asset('assets/icons/schedule.png'),
+                      )
+                    ],
+                  ),
                 ),
               ),
             ]

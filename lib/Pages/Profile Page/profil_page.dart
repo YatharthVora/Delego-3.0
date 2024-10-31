@@ -87,11 +87,36 @@ class _ProfilePageState extends State<ProfilePage> {
            ),
           ),
           // Email
-          MyTextBox(
-            text: 'Email Address',
-            sectionName: 'Email',
-            onPressed: ()=> editField('Email'),
-           ),
+      Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        padding: EdgeInsets.only(left: 15, bottom: 15),
+        margin: EdgeInsets.only(left: 20,right: 20,top: 20) ,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 7, 0, 3),
+                  child: Text('Email',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Poppins'
+                    ),
+                  ),
+                ),
+
+            //text
+            Text('Email',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Poppins'
+              ),
+            ),
+          ],
+        ),
+      ),
           //Name
           MyTextBox(
             text: 'Mithil Save',
