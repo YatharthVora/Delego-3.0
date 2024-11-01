@@ -133,9 +133,24 @@ class _ProfilePageState extends State<ProfilePage> {
               sectionName: 'DoB',
               onPressed:()=> editField("DoB")
           ),
-          MyTextBox(text: 'Male',
-              sectionName: 'Gender',
-              onPressed:()=> editField("Gender")
+          Padding(
+            padding:  EdgeInsets.all(20.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: EdgeInsets.all(5),
+              child: DropdownMenu(
+                width: 420,
+                hintText:'Gender', textStyle: TextStyle(fontWeight: FontWeight.w500, fontFamily: 'Poppins'),
+                dropdownMenuEntries: <DropdownMenuEntry<String>>[
+                  DropdownMenuEntry(value: 'Male', label: 'Male'),
+                  DropdownMenuEntry(value: 'Female', label: 'Female'),
+                  DropdownMenuEntry(value: 'Other', label: 'Other')
+                ],
+              ),
+            ),
           ),
 
         ],

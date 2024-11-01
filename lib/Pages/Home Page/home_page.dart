@@ -55,7 +55,7 @@ class _HomePageState extends State<HomePage> {
                     children: [Column(
                       children: [
                         SizedBox(
-                          width: 200,
+                          width: 240,
                           height: 30,
                           child: Text(
                             'MUMBAI MUN',

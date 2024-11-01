@@ -13,7 +13,13 @@ class SchedulePage extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.blue.shade900,
           centerTitle: true,
-          title: Text("Schedule"),
+          title: Text("Schedule",
+          style: TextStyle(
+            color: Colors.white,
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w600,
+          ),
+          ),
           bottom: TabBar(
             indicatorColor: Colors.white,
             tabs: <Widget>[
@@ -35,7 +41,7 @@ class SchedulePage extends StatelessWidget {
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                   GradientAppBar(" November 3 , 2023"),
+                   GradientAppBar(" November 8 , 2024"),
                    ShedulePageBody(),
                 ],
               ),
@@ -44,7 +50,7 @@ class SchedulePage extends StatelessWidget {
               body: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                   GradientAppBar("Novemeber 4, 2023"),
+                   GradientAppBar("Novemeber 9, 2024"),
                    HomePageBodyDay2(),
                 ],
               ),
@@ -53,7 +59,7 @@ class SchedulePage extends StatelessWidget {
               body: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                   GradientAppBar("November 5, 2023"),
+                   GradientAppBar("November 10, 2024"),
                    HomePageBodyDay3(),
                 ],
               ),
