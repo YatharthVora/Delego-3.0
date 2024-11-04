@@ -57,7 +57,7 @@ class RegisterPage extends StatelessWidget {
                 const SizedBox(height: 10),
 
                 // LastName textfild
-                MyTextField(controller: firstNameController,
+                MyTextField(controller: lastNameController ,
                     hintText: 'Last Name',
                     obscureText: false),
 
