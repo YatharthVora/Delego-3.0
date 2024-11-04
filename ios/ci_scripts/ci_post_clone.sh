@@ -14,6 +14,6 @@ flutter pub get
 HOMEBREW_NO_AUTO_UPDATE=1 
 brew install cocoapods
 
-cd ios && pod install.
+cd ios && pod install
 
 exit 0
