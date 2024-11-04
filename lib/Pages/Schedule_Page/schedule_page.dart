@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:delego/Pages/Schedule Page/schedule_pagebody.dart';
+import 'package:delego/Pages/Schedule_Page/schedule_pagebody.dart';
 
 class SchedulePage extends StatelessWidget {
   const SchedulePage({super.key});
@@ -13,23 +13,24 @@ class SchedulePage extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.blue.shade900,
           centerTitle: true,
-          title: Text("Schedule",
-          style: TextStyle(
-            color: Colors.white,
-            fontFamily: 'Poppins',
-            fontWeight: FontWeight.w600,
-          ),
+          title: Text(
+            "Schedule",
+            style: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w600,
+            ),
           ),
           bottom: TabBar(
             indicatorColor: Colors.white,
             tabs: <Widget>[
-               Tab(
+              Tab(
                 text: "Day 1",
               ),
-               Tab(
+              Tab(
                 text: "Day 2",
               ),
-               Tab(
+              Tab(
                 text: "Day 3",
               ),
             ],
@@ -37,30 +38,30 @@ class SchedulePage extends StatelessWidget {
         ),
         body: TabBarView(
           children: <Widget>[
-             Scaffold(
+            Scaffold(
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                   GradientAppBar(" November 8 , 2024"),
-                   ShedulePageBody(),
+                  GradientAppBar(" November 8 , 2024"),
+                  ShedulePageBody(),
                 ],
               ),
             ),
-             Scaffold(
+            Scaffold(
               body: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                   GradientAppBar("Novemeber 9, 2024"),
-                   HomePageBodyDay2(),
+                  GradientAppBar("Novemeber 9, 2024"),
+                  HomePageBodyDay2(),
                 ],
               ),
             ),
-             Scaffold(
+            Scaffold(
               body: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                   GradientAppBar("November 10, 2024"),
-                   HomePageBodyDay3(),
+                  GradientAppBar("November 10, 2024"),
+                  HomePageBodyDay3(),
                 ],
               ),
             ),
@@ -97,4 +98,3 @@ class GradientAppBar extends StatelessWidget {
     );
   }
 }
-

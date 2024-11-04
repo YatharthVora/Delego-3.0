@@ -1,6 +1,6 @@
+import 'package:delego/Pages/Schedule_Page/schedule_cards.dart';
 import 'package:flutter/material.dart';
 import 'package:delego/models/shedule.dart';
-import 'package:delego/Pages/SChedule Page/schedule_cards.dart';
 import 'package:delego/constants/separator.dart';
 import 'package:delego/constants/text_style.dart';
 
@@ -11,12 +11,12 @@ class DetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
+    return Scaffold(
       resizeToAvoidBottomInset: false,
-      body:  Container(
-        constraints:  BoxConstraints.expand(),
-        color:Colors.blue.shade900,
-        child:  Stack(
+      body: Container(
+        constraints: BoxConstraints.expand(),
+        color: Colors.blue.shade900,
+        child: Stack(
           children: <Widget>[
             _getBackground(),
             _getGradient(),
@@ -29,19 +29,19 @@ class DetailPage extends StatelessWidget {
   }
 
   Container _getBackground() {
-    return  Container(
-      child:  Image.asset(
+    return Container(
+      child: Image.asset(
         schedule.image!,
         fit: BoxFit.cover,
         height: 300.0,
       ),
-      constraints:  BoxConstraints.expand(height: 295.0),
+      constraints: BoxConstraints.expand(height: 295.0),
     );
   }
 
   Container _getGradient() {
-    return  Container(
-      margin:  EdgeInsets.only(top: 190.0),
+    return Container(
+      margin: EdgeInsets.only(top: 190.0),
       height: 110.0,
       // decoration:  BoxDecoration(
       //   gradient:  LinearGradient(
@@ -59,25 +59,25 @@ class DetailPage extends StatelessWidget {
 
   Container _getContent() {
     final _overviewTitle = "Overview".toUpperCase();
-    return  Container(
-      child:  ListView(
-        padding:  EdgeInsets.fromLTRB(0.0, 72.0, 0.0, 20.0),
+    return Container(
+      child: ListView(
+        padding: EdgeInsets.fromLTRB(0.0, 72.0, 0.0, 20.0),
         children: <Widget>[
-           ScheduleSummary(
+          ScheduleSummary(
             schedule,
             horizontal: false,
           ),
-           Container(
-            padding:  EdgeInsets.symmetric(horizontal: 32.0),
-            child:  Column(
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 32.0),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                 Text(
+                Text(
                   _overviewTitle,
                   style: Style.headerTextStyle,
                 ),
-                 Separator(),
-                 Text(schedule.description!, style: Style.commonTextStyle),
+                Separator(),
+                Text(schedule.description!, style: Style.commonTextStyle),
               ],
             ),
           ),
@@ -87,9 +87,9 @@ class DetailPage extends StatelessWidget {
   }
 
   Container _getToolbar(BuildContext context) {
-    return  Container(
-      margin:  EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-      child:  BackButton(color: Colors.white),
+    return Container(
+      margin: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+      child: BackButton(color: Colors.white),
     );
   }
 }
