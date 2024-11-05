@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:delego/Pages/Study Guides/PDF_viewers/Aippm_pdfviewer.dart';
+class StudyGuidespage extends StatefulWidget {
+  @override
+  State<StudyGuidespage> createState() => _StudyGuidespageState();
+}
 
-class StudyGuidespage extends StatelessWidget {
+class _StudyGuidespageState extends State<StudyGuidespage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -10,7 +15,8 @@ class StudyGuidespage extends StatelessWidget {
           children: [
             GestureDetector(
               onTap: () {
-                print('hii aippm');//AIPPM
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Aippm_PdfViwer()));//AIPPM
               },
               child: Container(
                 margin: const EdgeInsets.all(8.0),
