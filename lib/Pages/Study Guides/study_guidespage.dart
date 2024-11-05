@@ -1,5 +1,17 @@
+import 'package:delego/Pages/Study%20Guides/PDF_viewers/WORLD_BANK_pdfviewer.dart';
 import 'package:flutter/material.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/Aippm_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_Viewers/HUNGA_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_Viewers/Copuos_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_Viewers/UNDP_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_Viewers/WHO_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_Viewers/UNSC_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_Viewers/UNODC_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_Viewers/UNHRC_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_Viewers/UNFCCC-COP_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_Viewers/ILC_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_Viewers/WORLD_BANK_pdfviewer.dart';
+
 class StudyGuidespage extends StatefulWidget {
   @override
   State<StudyGuidespage> createState() => _StudyGuidespageState();
@@ -47,6 +59,8 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
             ),
             GestureDetector(
               onTap: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Ilc_PdfViewer()));
                 //ILC
               },
               child: Container(
@@ -78,6 +92,8 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
             ),
             GestureDetector(
               onTap: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Undp_PdfViewer()));
                 //UNDP
               },
               child: Container(
@@ -109,6 +125,8 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
             ),
             GestureDetector(
               onTap: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Unodc_PdfViewer()));
                 //UNODC
               },
               child: Container(
@@ -140,6 +158,8 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
             ),
             GestureDetector(
               onTap: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Who_PdfViewer()));
                 //WHO
               },
               child: Container(
@@ -171,6 +191,8 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
             ),
             GestureDetector(
               onTap: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => WorldBank_PdfViewer()));
                 //WORLD BANK
               },
               child: Container(
@@ -202,7 +224,9 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
             ),
             GestureDetector(
               onTap: () {
-               print('hii unhrc'); //UNHRC
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Unhrc_PdfViewer()));
+               //UNHRC
               },
               child: Container(
                 margin: const EdgeInsets.all(8.0),
@@ -233,7 +257,9 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
             ),
             GestureDetector(
               onTap: () {
-                //H
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Hunga_PdfViewer()));
+                //H.UNGA
               },
               child: Container(
                 margin: const EdgeInsets.all(8.0),
@@ -246,7 +272,7 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'H',
+                      'H.UNGA',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 25.0,
@@ -295,6 +321,8 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
             ),
             GestureDetector(
               onTap: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Unsc_PdfViewer()));
                 //UNSC
               },
               child: Container(
@@ -326,6 +354,8 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
             ),
             GestureDetector(
               onTap: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Unfccc_PdfViewer()));
                 //UNFCCC-COP
               },
               child: Container(
