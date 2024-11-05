@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:delego/pages/Login%20Page/my_bottons.dart';
-import 'package:delego/pages/Login%20Page/my_textfild.dart';
-
-
+import 'package:delego/pages/Login_Page/my_bottons.dart';
+import 'package:delego/pages/Login_Page/my_textfild.dart';
 
 class RegisterPage extends StatelessWidget {
   RegisterPage({super.key});
@@ -12,7 +10,7 @@ class RegisterPage extends StatelessWidget {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   final firstNameController = TextEditingController();
-  final lastNameController =TextEditingController();
+  final lastNameController = TextEditingController();
   // sign user in method
   void signUserUp() {}
 
@@ -50,14 +48,16 @@ class RegisterPage extends StatelessWidget {
                 const SizedBox(height: 50),
 
                 // FirstName textfild
-                MyTextField(controller: firstNameController,
+                MyTextField(
+                    controller: firstNameController,
                     hintText: 'First Name',
                     obscureText: false),
 
                 const SizedBox(height: 10),
 
                 // LastName textfild
-                MyTextField(controller: lastNameController ,
+                MyTextField(
+                    controller: lastNameController,
                     hintText: 'Last Name',
                     obscureText: false),
 
@@ -97,23 +97,20 @@ class RegisterPage extends StatelessWidget {
 
                 const SizedBox(height: 30),
 
-
                 // not a member? register now
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       'Already a member?',
-                      style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[700]),
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                     ),
                     TextButton(
                       // style if needed
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      child:Text(
+                      child: Text(
                         'Login',
                         style: TextStyle(
                           fontSize: 18,

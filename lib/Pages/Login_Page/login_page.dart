@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:delego/pages/Login Page/my_bottons.dart';
-import 'package:delego/pages/Login Page/my_textfild.dart';
-import 'package:delego/pages/Login Page/register_pege.dart';
-import 'package:delego/Pages/Home Page/home_page.dart';
-
+import 'package:delego/pages/Login_Page/my_bottons.dart';
+import 'package:delego/pages/Login_Page/my_textfild.dart';
+import 'package:delego/pages/Login_Page/register_pege.dart';
+import 'package:delego/Pages/Home_Page/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});
@@ -20,7 +19,8 @@ class _LoginPageState extends State<LoginPage> {
 
   // sign user in method
   void signUserIn() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => HomePage()));
   }
 
   @override
@@ -87,7 +87,7 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       TextButton(
                         // style if needed
-                        onPressed: () { },
+                        onPressed: () {},
                         child: Text(
                           'Forgot Password?',
                           style: TextStyle(
@@ -110,24 +110,24 @@ class _LoginPageState extends State<LoginPage> {
 
                 const SizedBox(height: 50),
 
-
                 // not a member? register now
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       'Not a member?',
-                      style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[700]),
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                     ),
                     TextButton(
                       // style if needed
                       onPressed: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => RegisterPage(),));
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RegisterPage(),
+                            ));
                       },
-                      child:Text(
+                      child: Text(
                         'Sign Up',
                         style: TextStyle(
                           fontSize: 16,
