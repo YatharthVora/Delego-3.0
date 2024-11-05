@@ -40,11 +40,13 @@ dev_dependencies:
   device_preview: ^1.2.0
   flutter_launcher_icons: "^0.14.1"
 
-flutter_icons:
+flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icons/MMlogowhiteBG.png"
-  min_sdk_android: 21
+  min_sdk_android: 26
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/icons/MMlogowhiteBG.png"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
