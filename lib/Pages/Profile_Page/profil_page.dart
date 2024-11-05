@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:delego/Pages/Profile Page/text_box.dart';
-
+import 'package:delego/Pages/Profile_Page/text_box.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -11,9 +10,9 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   // edit fild
-  Future<void> editField(String field)async {
-  String newValue= "";
-  await showDialog(
+  Future<void> editField(String field) async {
+    String newValue = "";
+    await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.blue.shade900,
@@ -29,28 +28,30 @@ class _ProfilePageState extends State<ProfilePage> {
             hintStyle: TextStyle(color: Colors.grey),
           ),
           onChanged: (value) {
-            newValue=value;
+            newValue = value;
           },
         ),
         actions: [
           //cancel botton
           TextButton(
-              onPressed: ()=> Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white),
-              ),),
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
 
           //save botton
           TextButton(
-            onPressed: ()=> Navigator.of(context).pop(newValue),
+            onPressed: () => Navigator.of(context).pop(newValue),
             child: Text(
               'Save',
               style: TextStyle(color: Colors.white),
-            ),)
+            ),
+          )
         ],
-        ),
-      );
+      ),
+    );
   }
 
   @override
@@ -59,14 +60,18 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         backgroundColor: Colors.blue.shade900,
         centerTitle: true,
-        title: const Text('Profile Page',
-        style: TextStyle(
-          color: Colors.white,
-        ),),
+        title: const Text(
+          'Profile Page',
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),
       ),
       body: ListView(
         children: [
-           SizedBox(height: 50.0,),
+          SizedBox(
+            height: 50.0,
+          ),
           // Profile Pictures
           Icon(
             Icons.person,
@@ -76,64 +81,63 @@ class _ProfilePageState extends State<ProfilePage> {
           // user details
           Padding(
             padding: EdgeInsets.only(left: 25),
-           child: Text(
-             'My Details',
-             style: TextStyle(color: Colors.black87,
-             fontFamily: 'Poppins',
-               fontSize: 16,
-               fontWeight: FontWeight.bold,
-             ),
-           ),
+            child: Text(
+              'My Details',
+              style: TextStyle(
+                color: Colors.black87,
+                fontFamily: 'Poppins',
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           // Email
-      Container(
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(8),
-        ),
-        padding: EdgeInsets.only(left: 15, bottom: 15),
-        margin: EdgeInsets.only(left: 20,right: 20,top: 20) ,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: EdgeInsets.only(left: 15, bottom: 15),
+            margin: EdgeInsets.only(left: 20, right: 20, top: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 7, 0, 3),
-                  child: Text('Email',
+                  child: Text(
+                    'Email',
                     style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontFamily: 'Poppins'
-                    ),
+                        fontWeight: FontWeight.w500, fontFamily: 'Poppins'),
                   ),
                 ),
 
-            //text
-            Text('Email',
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Poppins'
-              ),
+                //text
+                Text(
+                  'Email',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
           //Name
           MyTextBox(
             text: 'Mithil Save',
             sectionName: 'Name',
-            onPressed: ()=> editField('Name'),
+            onPressed: () => editField('Name'),
           ),
           //Contact
           MyTextBox(
             text: '755******5',
             sectionName: 'Contact No',
-            onPressed: ()=> editField('contact'),
+            onPressed: () => editField('contact'),
           ),
-          MyTextBox(text: '29-01-2005',
+          MyTextBox(
+              text: '29-01-2005',
               sectionName: 'DoB',
-              onPressed:()=> editField("DoB")
-          ),
+              onPressed: () => editField("DoB")),
           Padding(
-            padding:  EdgeInsets.all(20.0),
+            padding: EdgeInsets.all(20.0),
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.grey.shade200,
@@ -142,7 +146,9 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: EdgeInsets.all(5),
               child: DropdownMenu(
                 width: 420,
-                hintText:'Gender', textStyle: TextStyle(fontWeight: FontWeight.w500, fontFamily: 'Poppins'),
+                hintText: 'Gender',
+                textStyle: TextStyle(
+                    fontWeight: FontWeight.w500, fontFamily: 'Poppins'),
                 dropdownMenuEntries: <DropdownMenuEntry<String>>[
                   DropdownMenuEntry(value: 'Male', label: 'Male'),
                   DropdownMenuEntry(value: 'Female', label: 'Female'),
@@ -151,7 +157,6 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
           ),
-
         ],
       ),
     );

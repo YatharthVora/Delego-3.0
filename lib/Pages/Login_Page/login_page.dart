@@ -1,24 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:delego/pages/Login%20Page/my_bottons.dart';
-import 'package:delego/pages/Login%20Page/my_textfild.dart';
+import 'package:delego/pages/Login_Page/my_bottons.dart';
+import 'package:delego/pages/Login_Page/my_textfild.dart';
+import 'package:delego/pages/Login_Page/register_pege.dart';
+import 'package:delego/Pages/Home_Page/home_page.dart';
 
+class LoginPage extends StatefulWidget {
+  LoginPage({super.key});
 
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
 
-class RegisterPage extends StatelessWidget {
-  RegisterPage({super.key});
-
+class _LoginPageState extends State<LoginPage> {
   // text editing controllers
   final usernameController = TextEditingController();
+
   final passwordController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
-  final firstNameController = TextEditingController();
-  final lastNameController =TextEditingController();
+
   // sign user in method
-  void signUserUp() {}
+  void signUserIn() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => HomePage()));
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0.0,
+      ),
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -26,7 +38,7 @@ class RegisterPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: 30),
+                const SizedBox(height: 50),
 
                 // logo
                 Icon(
@@ -49,20 +61,6 @@ class RegisterPage extends StatelessWidget {
 
                 const SizedBox(height: 50),
 
-                // FirstName textfild
-                MyTextField(controller: firstNameController,
-                    hintText: 'First Name',
-                    obscureText: false),
-
-                const SizedBox(height: 10),
-
-                // LastName textfild
-                MyTextField(controller: firstNameController,
-                    hintText: 'Last Name',
-                    obscureText: false),
-
-                const SizedBox(height: 10),
-
                 // username textfield
                 MyTextField(
                   controller: usernameController,
@@ -78,51 +76,67 @@ class RegisterPage extends StatelessWidget {
                   hintText: 'Password',
                   obscureText: true,
                 ),
+
                 const SizedBox(height: 10),
 
-                // confirm password textfield
-                MyTextField(
-                  controller: confirmPasswordController,
-                  hintText: 'Confirm Password',
-                  obscureText: true,
+                // forgot password?
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        // style if needed
+                        onPressed: () {},
+                        child: Text(
+                          'Forgot Password?',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.blue.shade900),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
-                const SizedBox(height: 15),
+                const SizedBox(height: 25),
 
-                // sign up button
+                // sign in button
                 MyButton(
-                  text: 'Sign Up',
-                  onTap: signUserUp,
+                  text: 'Login',
+                  onTap: signUserIn,
                 ),
 
-                const SizedBox(height: 30),
-
+                const SizedBox(height: 50),
 
                 // not a member? register now
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Already a member?',
-                      style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[700]),
+                      'Not a member?',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                     ),
                     TextButton(
                       // style if needed
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RegisterPage(),
+                            ));
                       },
-                      child:Text(
-                        'Login',
+                      child: Text(
+                        'Sign Up',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           color: Colors.blue.shade900,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 6),
                   ],
                 )
               ],
