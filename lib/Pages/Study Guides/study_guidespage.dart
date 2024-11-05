@@ -10,7 +10,7 @@ import 'package:delego/Pages/Study Guides/PDF_Viewers/UNODC_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_Viewers/UNHRC_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_Viewers/UNFCCC-COP_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_Viewers/ILC_pdfviewer.dart';
-import 'package:delego/Pages/Study Guides/PDF_Viewers/WORLD_BANK_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_viewers/WORLD_BANK_pdfviewer.dart';
 
 class StudyGuidespage extends StatefulWidget {
   @override
