@@ -5,6 +5,7 @@ import 'package:delego/Pages/Room_Page/room_page.dart';
 import 'package:delego/Pages/Schedule_Page/schedule_page.dart';
 import 'package:delego/Pages/Login_Page/login_page.dart';
 import 'package:delego/Pages/Study Guides/study_guidespage.dart';
+import 'package:delego/Pages/Qr_Page/Qr_code.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -32,6 +33,10 @@ class _HomePageState extends State<HomePage> {
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => SchedulePage()));
   }
+  void goToQRPage() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => QrCode()));
+  }
 
   void goToStugyguids() {
     Navigator.push(
@@ -58,36 +63,38 @@ class _HomePageState extends State<HomePage> {
         body: Center(
           child: ListView(children: [
             Container(
-                margin: EdgeInsets.fromLTRB(20, 30, 20, 10),
+                margin: EdgeInsets.fromLTRB(20, 15, 20, 0),
+                padding: EdgeInsets.zero,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
-                          width: 240,
+                          width: 210,
                           height: 30,
                           child: Text(
                             'MUMBAI MUN',
                             style: TextStyle(
                               color: Color(0xFF114C90),
                               fontSize: 33.59,
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w400,
+                              fontFamily: 'Poppins-Bold',
+                              fontWeight: FontWeight.bold,
                               height: 0.03,
                             ),
                           ),
                         ),
                         SizedBox(
-                          width: 200,
+                          width: 100,
                           height: 20,
                           child: Text(
                             '2024',
                             style: TextStyle(
                               color: Color(0xFF114C90),
                               fontSize: 33.59,
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w400,
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.bold,
                               height: 0.03,
                             ),
                           ),
@@ -95,8 +102,9 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                     Container(
-                      height: 80,
-                      width: 80,
+                      margin: EdgeInsets.zero,
+                      height: 110,
+                      width: 110,
                       child: Image.asset('assets/icons/Blue_outline_logo.png'),
                     )
                   ],
@@ -139,15 +147,15 @@ class _HomePageState extends State<HomePage> {
                             '01.',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 15.23,
-                              fontFamily: 'Montserrat',
+                              fontSize: 22,
+                              fontFamily: 'Poppins',
                               fontWeight: FontWeight.w600,
                               height: 0.09,
                             ),
                           ),
                         ),
                         SizedBox(
-                          height: 6,
+                          height: 8,
                         ),
                         SizedBox(
                           width: 176.35,
@@ -156,8 +164,8 @@ class _HomePageState extends State<HomePage> {
                             'Study Guides',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 19.65,
-                              fontFamily: 'Montserrat',
+                              fontSize: 24,
+                              fontFamily: 'Poppins',
                               fontWeight: FontWeight.w600,
                               height: 0.06,
                             ),
@@ -174,63 +182,66 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            Container(
-              margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
-              padding: EdgeInsets.all(25),
-              width: 357.39,
-              height: 135.82,
-              decoration: ShapeDecoration(
-                color: Color(0xFF114C90),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.92),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 61.02,
-                        height: 16.10,
-                        child: Text(
-                          '02.',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15.23,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w600,
-                            height: 0.09,
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 6,
-                      ),
-                      SizedBox(
-                        width: 176.35,
-                        height: 17.80,
-                        child: Text(
-                          'My QR',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 19.65,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w600,
-                            height: 0.06,
-                          ),
-                        ),
-                      )
-                    ],
+            GestureDetector(
+              onTap: goToQRPage,
+              child: Container(
+                margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                padding: EdgeInsets.all(25),
+                width: 357.39,
+                height: 135.82,
+                decoration: ShapeDecoration(
+                  color: Color(0xFF114C90),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.92),
                   ),
-                  Container(
-                    height: 70,
-                    width: 70,
-                    child: Image.asset('assets/icons/qr.png'),
-                  )
-                ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 61.02,
+                          height: 16.10,
+                          child: Text(
+                            '02.',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w600,
+                              height: 0.09,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 8,
+                        ),
+                        SizedBox(
+                          width: 176.35,
+                          height: 17.80,
+                          child: Text(
+                            'My QR',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w600,
+                              height: 0.06,
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                    Container(
+                      height: 70,
+                      width: 70,
+                      child: Image.asset('assets/icons/qr_logo.png'),
+                    )
+                  ],
+                ),
               ),
             ),
             GestureDetector(
@@ -260,8 +271,8 @@ class _HomePageState extends State<HomePage> {
                             '03.',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 15.23,
-                              fontFamily: 'Montserrat',
+                              fontSize: 22,
+                              fontFamily: 'Poppins',
                               fontWeight: FontWeight.w600,
                               height: 0.09,
                             ),
@@ -277,8 +288,8 @@ class _HomePageState extends State<HomePage> {
                             'Rooms',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 19.65,
-                              fontFamily: 'Montserrat',
+                              fontSize: 24,
+                              fontFamily: 'Poppins',
                               fontWeight: FontWeight.w600,
                               height: 0.06,
                             ),
@@ -322,8 +333,8 @@ class _HomePageState extends State<HomePage> {
                             '04.',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 15.23,
-                              fontFamily: 'Montserrat',
+                              fontSize: 22,
+                              fontFamily: 'Poppins',
                               fontWeight: FontWeight.w600,
                               height: 0.09,
                             ),
@@ -339,8 +350,8 @@ class _HomePageState extends State<HomePage> {
                             'Schedule',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 19.65,
-                              fontFamily: 'Montserrat',
+                              fontSize: 24,
+                              fontFamily: 'Poppins',
                               fontWeight: FontWeight.w600,
                               height: 0.06,
                             ),

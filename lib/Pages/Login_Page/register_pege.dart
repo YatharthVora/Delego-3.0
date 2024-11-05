@@ -24,16 +24,17 @@ class RegisterPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: 30),
+
 
                 // logo
-                Icon(
-                  Icons.lock,
-                  color: Colors.blue.shade900,
-                  size: 100,
+                Container(
+                  margin: EdgeInsets.all(0),
+                  height:200,
+                  width: 200,
+                  child: Image.asset("assets/icons/Blue_outline_logo.png"),
                 ),
 
-                const SizedBox(height: 20),
+
 
                 // text
                 Text(
@@ -45,7 +46,7 @@ class RegisterPage extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 50),
+                const SizedBox(height: 20),
 
                 // FirstName textfild
                 MyTextField(
