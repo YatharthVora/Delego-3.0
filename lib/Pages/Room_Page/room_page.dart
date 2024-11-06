@@ -162,81 +162,6 @@ class RoomPage extends StatelessWidget {
                 ],
               ),
             ),
-            Container(
-              margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
-              padding: EdgeInsets.all(25),
-              width: 357.39,
-              height: 135.82,
-              decoration: ShapeDecoration(
-                color: Color(0xFF114C90),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.92),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      //name
-                      SizedBox(
-                        width: 80.02,
-                        height: 30.10,
-                        child: Text(
-                          'UNGA',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20.23,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.w600,
-                            height: 0.09,
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 6,
-                      ),
-                      SizedBox(
-                        width: 75.02,
-                        height: 30.10,
-                        child: Text(
-                          'CR 204',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20.23,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.w600,
-                            height: 0.09,
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(
-                        width: 70.35,
-                        height: 17.80,
-                        child: Text(
-                          'Floor 2',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 19.65,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.w600,
-                            height: 0.06,
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                  Container(
-                    height: 70,
-                    width: 70,
-                    child: Image.asset('assets/icons/location.png'),
-                  )
-                ],
-              ),
-            ),
             // 3rd room
             Container(
               margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
@@ -486,7 +411,7 @@ class RoomPage extends StatelessWidget {
                     children: [
                       //name
                       SizedBox(
-                        width: 70.02,
+                        width: 76.02,
                         height: 30.10,
                         child: Text(
                           'UNHRC',
@@ -562,7 +487,7 @@ class RoomPage extends StatelessWidget {
                     children: [
                       //name
                       SizedBox(
-                        width: 70.02,
+                        width: 80.02,
                         height: 30.10,
                         child: Text(
                           'UNODC',

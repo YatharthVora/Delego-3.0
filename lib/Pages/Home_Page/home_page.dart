@@ -44,8 +44,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   void Signout() {
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => LoginPage()));
+    Navigator.pop(context);
+    Navigator.pop(context,HomePage());
   }
 
   @override
@@ -66,13 +66,13 @@ class _HomePageState extends State<HomePage> {
                 margin: EdgeInsets.fromLTRB(20, 15, 20, 0),
                 padding: EdgeInsets.zero,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
-                          width: 210,
+                          width: 230,
                           height: 30,
                           child: Text(
                             'MUMBAI MUN',

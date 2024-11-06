@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:delego/Pages/Login_Page/my_bottons.dart';
 import 'package:delego/Pages/Login_Page/my_textfild.dart';
 
-class RegisterPage extends StatelessWidget {
-  RegisterPage({super.key});
+class ForgotPassword extends StatelessWidget {
+  ForgotPassword({super.key});
 
   // text editing controllers
   final usernameController = TextEditingController();
@@ -48,22 +48,6 @@ class RegisterPage extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                // FirstName textfild
-                MyTextField(
-                    controller: firstNameController,
-                    hintText: 'First Name',
-                    obscureText: false),
-
-                const SizedBox(height: 10),
-
-                // LastName textfild
-                MyTextField(
-                    controller: lastNameController,
-                    hintText: 'Last Name',
-                    obscureText: false),
-
-                const SizedBox(height: 10),
-
                 // username textfield
                 MyTextField(
                   controller: usernameController,
@@ -73,26 +57,11 @@ class RegisterPage extends StatelessWidget {
 
                 const SizedBox(height: 10),
 
-                // password textfield
-                MyTextField(
-                  controller: passwordController,
-                  hintText: 'Password',
-                  obscureText: true,
-                ),
-                const SizedBox(height: 10),
-
-                // confirm password textfield
-                MyTextField(
-                  controller: confirmPasswordController,
-                  hintText: 'Confirm Password',
-                  obscureText: true,
-                ),
-
                 const SizedBox(height: 15),
 
                 // sign up button
                 MyButton(
-                  text: 'Sign Up',
+                  text: 'Send Mail',
                   onTap: signUserUp,
                 ),
 
