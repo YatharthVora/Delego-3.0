@@ -3,6 +3,7 @@ import 'package:delego/Pages/Study Guides/PDF_viewers/Aippm_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/Copuos_pdfviewer.dart'; // Added COPUOS import
 import 'package:delego/Pages/Study Guides/PDF_viewers/HUNGA_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/ILC_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_viewers/IPC_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/UNDP_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/WHO_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/UNSC_pdfviewer.dart';
@@ -50,6 +51,14 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
                 // ILC
               },
               child: _buildStudyGuideButton('ILC', Ilc_PdfViewer()),
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => IPC_PdfViwer()));
+                // IPC
+              },
+              child: _buildStudyGuideButton('IPC', IPC_PdfViwer()),
             ),
             GestureDetector(
               onTap: () {
