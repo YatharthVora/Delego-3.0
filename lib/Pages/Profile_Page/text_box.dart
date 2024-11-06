@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class MyTextBox extends StatefulWidget {
   final String text;
   final String sectionName;
-  final void Function ()?onPressed;
+  final void Function()? onPressed;
   const MyTextBox({
     super.key,
     required this.text,
@@ -21,10 +21,10 @@ class _MyTextBoxState extends State<MyTextBox> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8),
       ),
       padding: EdgeInsets.only(left: 15, bottom: 15),
-      margin: EdgeInsets.only(left: 20,right: 20,top: 20) ,
+      margin: EdgeInsets.only(left: 20, right: 20, top: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -32,29 +32,28 @@ class _MyTextBoxState extends State<MyTextBox> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(widget.sectionName,
+              Text(
+                widget.sectionName,
                 style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontFamily: 'Poppins'
-                ),
+                    fontWeight: FontWeight.w500, fontFamily: 'Poppins'),
               ),
 
               //edit botton
               IconButton(
-                  onPressed:widget.onPressed,
-                  icon: Icon(
-                    Icons.edit_outlined,
-                    color: Colors.blue.shade900,
-                  ),)
+                onPressed: widget.onPressed,
+                icon: Icon(
+                  Icons.edit_outlined,
+                  color: Colors.blue.shade900,
+                ),
+              )
             ],
           ),
 
           //text
-          Text(widget.text,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Poppins'
-          ),
+          Text(
+            widget.text,
+            style:
+                TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
           ),
         ],
       ),

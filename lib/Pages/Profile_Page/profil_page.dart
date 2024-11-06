@@ -13,15 +13,15 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String? id, firstName, lastName, email, contact, dateofbirth, gender;
+  String? id, firstname, lastname, email, contact, dateofbirth, gender;
 
   // Load user data from SharedPreferences
   Future<void> loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       id = prefs.getString('id');
-      firstName = prefs.getString('firstName');
-      lastName = prefs.getString('lastName');
+      firstname = prefs.getString('firstname');
+      lastname = prefs.getString('lastname');
       email = prefs.getString('email');
       contact = prefs.getString('contact');
       dateofbirth = prefs.getString('dateofbirth');
@@ -45,10 +45,10 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> updateUserData(String field, String newValue) async {
     switch (field) {
       case 'First Name':
-        field = 'firstName';
+        field = 'firstname';
         break;
       case 'Last Name':
-        field = 'lastName';
+        field = 'lastname';
         break;
       case 'Contact Number':
         field = 'contact';
@@ -86,10 +86,10 @@ class _ProfilePageState extends State<ProfilePage> {
       if (response.statusCode == 200) {
         // field to Sentence case
         switch (field) {
-          case 'firstName':
+          case 'firstname':
             field = 'First Name';
             break;
-          case 'lastName':
+          case 'lastname':
             field = 'Last Name';
             break;
           case 'contact':
@@ -238,28 +238,54 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            padding: EdgeInsets.all(15),
-            margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Email', style: TextStyle(fontWeight: FontWeight.w500)),
-                Text(
-                  email ?? '',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+          // First Name and Last Name Fields
+          Row(
+            children: [
+              Expanded(
+                child: MyTextBox(
+                  text: firstname ?? 'First Name',
+                  sectionName: 'First Name',
+                  onPressed: () => editField('First Name', firstname ?? ''),
                 ),
-              ],
-            ),
+              ),
+              Expanded(
+                child: MyTextBox(
+                  text: lastname ?? 'Last Name',
+                  sectionName: 'Last Name',
+                  onPressed: () => editField('Last Name', lastname ?? ''),
+                ),
+              ),
+            ],
           ),
-          MyTextBox(
-            text: firstName ?? 'First Name',
-            sectionName: 'Name',
-            onPressed: () => editField('First Name', firstName ?? ''),
+          // Email Field
+          GestureDetector(
+            onTap: () => {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text("Email cannot be edited."),
+                    backgroundColor: Colors.red),
+              )
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: EdgeInsets.all(15),
+              margin: EdgeInsets.only(left: 20, right: 20, top: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  //text
+                  Text(
+                    email ?? 'Email',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                  ),
+                ],
+              ),
+            ),
           ),
           MyTextBox(
             text: contact ?? 'Contact',
@@ -271,34 +297,54 @@ class _ProfilePageState extends State<ProfilePage> {
             sectionName: 'Date of Birth',
             onPressed: () => editField('Date of Birth', dateofbirth ?? ''),
           ),
+          // Gender Dropdown
           Padding(
             padding: EdgeInsets.all(20),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: EdgeInsets.all(5),
-              child: DropdownButton<String>(
-                isExpanded: true,
-                value: gender,
-                hint: Text('Gender', style: TextStyle(fontFamily: 'Poppins')),
-                items: <String>['Male', 'Female', 'Other', 'Prefer not to say']
-                    .map((String value) => DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value,
-                              style: TextStyle(fontFamily: 'Poppins')),
-                        ))
-                    .toList(),
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    updateUserData('gender', newValue);
-                    setState(() {
-                      gender = newValue;
-                    });
-                  }
-                },
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: EdgeInsets.all(15),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Gender',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: 'Poppins')),
+                          DropdownButton<String>(
+                            isExpanded: true,
+                            value: gender,
+                            hint: Text('Select Gender',
+                                style: TextStyle(fontFamily: 'Poppins')),
+                            items: <String>[
+                              'Male',
+                              'Female',
+                              'Other',
+                              'Prefer not to say'
+                            ]
+                                .map((String value) => DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value,
+                                          style:
+                                              TextStyle(fontFamily: 'Poppins')),
+                                    ))
+                                .toList(),
+                            onChanged: (String? newValue) {
+                              if (newValue != null) {
+                                updateUserData('gender', newValue);
+                                setState(() {
+                                  gender = newValue;
+                                });
+                              }
+                            },
+                          ),
+                        ])),
+              ],
             ),
           ),
         ],
