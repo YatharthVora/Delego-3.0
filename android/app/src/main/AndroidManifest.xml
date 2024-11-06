@@ -1,6 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:label="delego"
+        android:label="Delego | Mumbai MUN 2024"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
