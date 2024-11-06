@@ -7,6 +7,14 @@ import 'package:delego/Pages/Login_Page/my_textfild.dart';
 import 'package:delego/Pages/Login_Page/register_pege.dart';
 import 'package:delego/Pages/Home_Page/home_page.dart';
 import 'package:delego/constants/backend.dart';
+import 'package:delego/Pages/Login_Page/my_bottons.dart';
+import 'package:delego/Pages/Login_Page/my_textfild.dart';
+import 'package:delego/pages/Login_Page/register_pege.dart';
+import 'package:delego/Pages/Home_Page/home_page.dart';
+import 'package:delego/Pages/Profile_Page/profil_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:delego/Pages/Login_Page/forgot_password.dart';
+import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});
@@ -19,6 +27,17 @@ class _LoginPageState extends State<LoginPage> {
   // text editing controllers
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+  setfirsttime_login() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+// Save an boolean value to 'repeat' key.
+    await prefs.setBool('ftl', true);
+  }
+
+  getfirsttime_login() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool? ftl = prefs.getBool('ftl');
+    return ftl;
+  }
 
   // sign user in method
   void signUserIn() async {
@@ -152,7 +171,12 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       TextButton(
                         // style if needed
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ForgotPassword()));
+                        },
                         child: Text(
                           'Forgot Password?',
                           style: TextStyle(

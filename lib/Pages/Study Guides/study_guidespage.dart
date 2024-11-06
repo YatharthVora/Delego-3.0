@@ -35,8 +35,10 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
             ),
             GestureDetector(
               onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Copuos_PdfViewer()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Copuos_PdfViewer()));
                 // COPUOS
               },
               child: _buildStudyGuideButton('COPUOS', Copuos_PdfViewer()),
@@ -67,10 +69,8 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
             ),
             GestureDetector(
               onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => Who_PdfViewer()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => Who_PdfViewer()));
                 // WHO
               },
               child: _buildStudyGuideButton('WHO', Who_PdfViewer()),
@@ -83,7 +83,8 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
                         builder: (context) => WorldBank_PdfViewer()));
                 // WORLD BANK
               },
-              child: _buildStudyGuideButton('WORLD BANK', WorldBank_PdfViewer()),
+              child:
+                  _buildStudyGuideButton('WORLD BANK', WorldBank_PdfViewer()),
             ),
             GestureDetector(
               onTap: () {
@@ -105,14 +106,13 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
               onTap: () {
                 // UNGA
               },
-              child: _buildStudyGuideButton('UNGA', null), // UNGA (no PDF viewer yet)
+              child: _buildStudyGuideButton(
+                  'UNGA', null), // UNGA (no PDF viewer yet)
             ),
             GestureDetector(
               onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => Unsc_PdfViewer()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => Unsc_PdfViewer()));
                 // UNSC
               },
               child: _buildStudyGuideButton('UNSC', Unsc_PdfViewer()),
@@ -163,3 +163,4 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
     );
   }
 }
+
