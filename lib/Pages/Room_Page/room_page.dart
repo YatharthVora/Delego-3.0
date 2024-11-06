@@ -8,7 +8,7 @@ class RoomPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
       ),
-      body:  Center(
+      body: Center(
         child: ListView(
           children: [
             Container(
@@ -774,6 +774,6 @@ class RoomPage extends StatelessWidget {
         ),
       ),
     );
-
   }
 }
+

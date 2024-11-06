@@ -78,7 +78,7 @@ class _LoginPageState extends State<LoginPage> {
 
     // Check if the fields are not empty
     if (email.isEmpty || password.isEmpty) {
-      // Show a snackbar or alert if fields are empty
+      Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Please fill in both fields."),
       ));
@@ -148,11 +148,11 @@ class _LoginPageState extends State<LoginPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Please update your profile',
+                'Update Info',
               ),
               backgroundColor: Colors.grey.shade700,
               action: SnackBarAction(
-                  label: "Go to Profile",
+                  label: "Profile",
                   textColor: Colors.lightBlue,
                   onPressed: () {
                     Navigator.push(context,

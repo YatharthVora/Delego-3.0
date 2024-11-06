@@ -104,13 +104,6 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
             ),
             GestureDetector(
               onTap: () {
-                // UNGA
-              },
-              child: _buildStudyGuideButton(
-                  'UNGA', null), // UNGA (no PDF viewer yet)
-            ),
-            GestureDetector(
-              onTap: () {
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => Unsc_PdfViewer()));
                 // UNSC
@@ -163,4 +156,3 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
     );
   }
 }
-

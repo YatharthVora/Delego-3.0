@@ -64,327 +64,330 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0.0,
-        ),
-        drawer: MyDrawer(
-          onProfileTap: goToProfilePage,
-          onSignoutTap: () async {
-            await Signout();
-          },
-        ),
-        body: Center(
-          child: ListView(children: [
-            Container(
-                margin: EdgeInsets.fromLTRB(20, 15, 20, 0),
-                padding: EdgeInsets.zero,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: 230,
-                          height: 30,
-                          child: Text(
-                            'MUMBAI MUN',
-                            style: TextStyle(
-                              color: Color(0xFF114C90),
-                              fontSize: 33.59,
-                              fontFamily: 'Poppins-Bold',
-                              fontWeight: FontWeight.bold,
-                              height: 0.03,
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 100,
-                          height: 20,
-                          child: Text(
-                            '2024',
-                            style: TextStyle(
-                              color: Color(0xFF114C90),
-                              fontSize: 33.59,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.bold,
-                              height: 0.03,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      margin: EdgeInsets.zero,
-                      height: 110,
-                      width: 110,
-                      child: Image.asset('assets/icons/Blue_outline_logo.png'),
-                    )
-                  ],
-                )),
-            Container(
-              margin: EdgeInsets.fromLTRB(6, 2, 6, 2),
-              width: 357.39,
-              height: 4.37,
-              decoration: ShapeDecoration(
-                color: Color(0xFF114C90),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(33.84),
-                ),
-              ),
+    return PopScope(
+        canPop: false,
+        child: Scaffold(
+            backgroundColor: Colors.white,
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0.0,
             ),
-            GestureDetector(
-              onTap: goToStugyguids,
-              child: Container(
-                margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                padding: EdgeInsets.all(25),
-                width: 357.39,
-                height: 135.82,
-                decoration: ShapeDecoration(
-                  color: Color(0xFF114C90),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.92),
+            drawer: MyDrawer(
+              onProfileTap: goToProfilePage,
+              onSignoutTap: () async {
+                await Signout();
+              },
+            ),
+            body: Center(
+              child: ListView(children: [
+                Container(
+                    margin: EdgeInsets.fromLTRB(20, 15, 20, 0),
+                    padding: EdgeInsets.zero,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 230,
+                              height: 30,
+                              child: Text(
+                                'MUMBAI MUN',
+                                style: TextStyle(
+                                  color: Color(0xFF114C90),
+                                  fontSize: 33.59,
+                                  fontFamily: 'Poppins-Bold',
+                                  fontWeight: FontWeight.bold,
+                                  height: 0.03,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 100,
+                              height: 20,
+                              child: Text(
+                                '2024',
+                                style: TextStyle(
+                                  color: Color(0xFF114C90),
+                                  fontSize: 33.59,
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.bold,
+                                  height: 0.03,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          margin: EdgeInsets.zero,
+                          height: 90,
+                          width: 90,
+                          child:
+                              Image.asset('assets/icons/Blue_outline_logo.png'),
+                        )
+                      ],
+                    )),
+                Container(
+                  margin: EdgeInsets.fromLTRB(6, 2, 6, 2),
+                  width: 357.39,
+                  height: 4.37,
+                  decoration: ShapeDecoration(
+                    color: Color(0xFF114C90),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(33.84),
+                    ),
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                GestureDetector(
+                  onTap: goToStugyguids,
+                  child: Container(
+                    margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                    padding: EdgeInsets.all(25),
+                    width: 357.39,
+                    height: 135.82,
+                    decoration: ShapeDecoration(
+                      color: Color(0xFF114C90),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.92),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        SizedBox(
-                          width: 61.02,
-                          height: 16.10,
-                          child: Text(
-                            '01.',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w600,
-                              height: 0.09,
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 61.02,
+                              height: 16.10,
+                              child: Text(
+                                '01.',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.w600,
+                                  height: 0.09,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        SizedBox(
-                          width: 176.35,
-                          height: 17.80,
-                          child: Text(
-                            'Study Guides',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w600,
-                              height: 0.06,
+                            SizedBox(
+                              height: 8,
                             ),
-                          ),
+                            SizedBox(
+                              width: 176.35,
+                              height: 17.80,
+                              child: Text(
+                                'Study Guides',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.w600,
+                                  height: 0.06,
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                        Container(
+                          height: 80,
+                          width: 80,
+                          child: Image.asset('assets/icons/book_icon.png'),
                         )
                       ],
                     ),
-                    Container(
-                      height: 80,
-                      width: 80,
-                      child: Image.asset('assets/icons/book_icon.png'),
-                    )
-                  ],
-                ),
-              ),
-            ),
-            GestureDetector(
-              onTap: goToQRPage,
-              child: Container(
-                margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                padding: EdgeInsets.all(25),
-                width: 357.39,
-                height: 135.82,
-                decoration: ShapeDecoration(
-                  color: Color(0xFF114C90),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.92),
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                GestureDetector(
+                  onTap: goToQRPage,
+                  child: Container(
+                    margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                    padding: EdgeInsets.all(25),
+                    width: 357.39,
+                    height: 135.82,
+                    decoration: ShapeDecoration(
+                      color: Color(0xFF114C90),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.92),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        SizedBox(
-                          width: 61.02,
-                          height: 16.10,
-                          child: Text(
-                            '02.',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w600,
-                              height: 0.09,
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 61.02,
+                              height: 16.10,
+                              child: Text(
+                                '02.',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.w600,
+                                  height: 0.09,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        SizedBox(
-                          width: 176.35,
-                          height: 17.80,
-                          child: Text(
-                            'My QR',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w600,
-                              height: 0.06,
+                            SizedBox(
+                              height: 8,
                             ),
-                          ),
+                            SizedBox(
+                              width: 176.35,
+                              height: 17.80,
+                              child: Text(
+                                'My QR',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.w600,
+                                  height: 0.06,
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                        Container(
+                          height: 70,
+                          width: 70,
+                          child: Image.asset('assets/icons/qr_logo.png'),
                         )
                       ],
                     ),
-                    Container(
-                      height: 70,
-                      width: 70,
-                      child: Image.asset('assets/icons/qr_logo.png'),
-                    )
-                  ],
-                ),
-              ),
-            ),
-            GestureDetector(
-              onTap: goToRoomPage,
-              child: Container(
-                margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                padding: EdgeInsets.all(25),
-                width: 357.39,
-                height: 135.82,
-                decoration: ShapeDecoration(
-                  color: Color(0xFF114C90),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.92),
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                GestureDetector(
+                  onTap: goToRoomPage,
+                  child: Container(
+                    margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                    padding: EdgeInsets.all(25),
+                    width: 357.39,
+                    height: 135.82,
+                    decoration: ShapeDecoration(
+                      color: Color(0xFF114C90),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.92),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        SizedBox(
-                          width: 61.02,
-                          height: 16.10,
-                          child: Text(
-                            '03.',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w600,
-                              height: 0.09,
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 61.02,
+                              height: 16.10,
+                              child: Text(
+                                '03.',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.w600,
+                                  height: 0.09,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 6,
-                        ),
-                        SizedBox(
-                          width: 176.35,
-                          height: 17.80,
-                          child: Text(
-                            'Rooms',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w600,
-                              height: 0.06,
+                            SizedBox(
+                              height: 6,
                             ),
-                          ),
+                            SizedBox(
+                              width: 176.35,
+                              height: 17.80,
+                              child: Text(
+                                'Rooms',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.w600,
+                                  height: 0.06,
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                        Container(
+                          height: 70,
+                          width: 70,
+                          child: Image.asset('assets/icons/location.png'),
                         )
                       ],
                     ),
-                    Container(
-                      height: 70,
-                      width: 70,
-                      child: Image.asset('assets/icons/location.png'),
-                    )
-                  ],
-                ),
-              ),
-            ),
-            GestureDetector(
-              onTap: goToSchedulePage,
-              child: Container(
-                margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                padding: EdgeInsets.all(25),
-                width: 357.39,
-                height: 135.82,
-                decoration: ShapeDecoration(
-                  color: Color(0xFF114C90),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.92),
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                GestureDetector(
+                  onTap: goToSchedulePage,
+                  child: Container(
+                    margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                    padding: EdgeInsets.all(25),
+                    width: 357.39,
+                    height: 135.82,
+                    decoration: ShapeDecoration(
+                      color: Color(0xFF114C90),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.92),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        SizedBox(
-                          width: 61.02,
-                          height: 16.10,
-                          child: Text(
-                            '04.',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w600,
-                              height: 0.09,
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 61.02,
+                              height: 16.10,
+                              child: Text(
+                                '04.',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.w600,
+                                  height: 0.09,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 6,
-                        ),
-                        SizedBox(
-                          width: 176.35,
-                          height: 17.80,
-                          child: Text(
-                            'Schedule',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w600,
-                              height: 0.06,
+                            SizedBox(
+                              height: 6,
                             ),
-                          ),
+                            SizedBox(
+                              width: 176.35,
+                              height: 17.80,
+                              child: Text(
+                                'Schedule',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.w600,
+                                  height: 0.06,
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                        Container(
+                          height: 70,
+                          width: 70,
+                          child: Image.asset('assets/icons/schedule.png'),
                         )
                       ],
                     ),
-                    Container(
-                      height: 70,
-                      width: 70,
-                      child: Image.asset('assets/icons/schedule.png'),
-                    )
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ]),
-        ));
+              ]),
+            )));
   }
 }

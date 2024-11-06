@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:delego/constants/backend.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -46,6 +45,7 @@ class _RegisterPageState extends State<RegisterPage> {
         firstName.isEmpty ||
         lastName.isEmpty) {
       // Show a snackbar or alert if fields are empty
+      Navigator.of(context).pop(); // Close loading indicator
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Please fill in all fields."),
       ));
@@ -54,6 +54,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     if (password != confirmPassword) {
       // Show a snackbar or alert if passwords don't match
+      Navigator.of(context).pop(); // Close loading indicator
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Passwords do not match."),
       ));
@@ -62,6 +63,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     if (password.length < 8) {
       // Show a snackbar or alert if password is too short
+      Navigator.of(context).pop(); // Close loading indicator
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Password must be at least 8 characters long."),
       ));
@@ -87,6 +89,7 @@ class _RegisterPageState extends State<RegisterPage> {
       );
 
       final responseData = json.decode(response.body);
+      Navigator.of(context).pop();
 
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -94,7 +97,6 @@ class _RegisterPageState extends State<RegisterPage> {
           backgroundColor: Colors.green,
         ));
       } else {
-        Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(responseData['detail'].toString()),
           backgroundColor: Colors.red,

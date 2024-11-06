@@ -191,6 +191,20 @@ class _ProfilePageState extends State<ProfilePage> {
                 }
               }
 
+              // Check for Contact Number format
+              if (field == 'Contact Number') {
+                final contactPattern = RegExp(r"^(98\d{8})$");
+                if (!contactPattern.hasMatch(newValue)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content:
+                            Text("Invalid contact number. Format: 98*******2."),
+                        backgroundColor: Colors.red),
+                  );
+                  return;
+                }
+              }
+
               // Update data if the new value is valid and different from the current value
               if (newValue.isNotEmpty && newValue != currentValue) {
                 await updateUserData(field, newValue);
