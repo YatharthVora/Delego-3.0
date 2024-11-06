@@ -82,18 +82,16 @@ class _RegisterPageState extends State<RegisterPage> {
           backgroundColor: Colors.green,
         ));
       } else {
-        final String errorCode = responseData['detail'].split(':')[0];
-        final String errorMessage = responseData['detail'].split(':')[1];
-
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("$errorMessage : Error $errorCode"),
+          content: Text(responseData['detail'].toString()),
           backgroundColor: Colors.red,
         ));
       }
     } catch (e) {
-      // Handle network or other errors
+      print(e.toString());
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(e.toString()),
+        content:
+            Text("An error occurred. Please check your internet connection."),
         backgroundColor: Colors.red,
       ));
     }

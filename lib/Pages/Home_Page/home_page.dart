@@ -33,9 +33,9 @@ class _HomePageState extends State<HomePage> {
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => SchedulePage()));
   }
+
   void goToQRPage() {
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => QrCode()));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => QrCode()));
   }
 
   void goToStugyguids() {
@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> {
 
   void Signout() {
     Navigator.pop(context);
-    Navigator.pop(context,HomePage());
+    Navigator.pop(context, HomePage());
   }
 
   @override

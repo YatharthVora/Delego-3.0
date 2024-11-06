@@ -19,12 +19,10 @@ class MyListTile extends StatelessWidget {
         color: Colors.white,
         size: 30,
       ),
-      onTap: onTap ,
+      onTap: onTap,
       title: Text(
         text,
-        style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white),
+        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
   }

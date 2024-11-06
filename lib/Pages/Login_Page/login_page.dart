@@ -1,3 +1,4 @@
+import 'package:delego/Pages/Profile_Page/profil_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -7,14 +8,7 @@ import 'package:delego/Pages/Login_Page/my_textfild.dart';
 import 'package:delego/Pages/Login_Page/register_pege.dart';
 import 'package:delego/Pages/Home_Page/home_page.dart';
 import 'package:delego/constants/backend.dart';
-import 'package:delego/Pages/Login_Page/my_bottons.dart';
-import 'package:delego/Pages/Login_Page/my_textfild.dart';
-import 'package:delego/pages/Login_Page/register_pege.dart';
-import 'package:delego/Pages/Home_Page/home_page.dart';
-import 'package:delego/Pages/Profile_Page/profil_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:delego/Pages/Login_Page/forgot_password.dart';
-import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});
@@ -27,16 +21,42 @@ class _LoginPageState extends State<LoginPage> {
   // text editing controllers
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
-  setfirsttime_login() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-// Save an boolean value to 'repeat' key.
-    await prefs.setBool('ftl', true);
+
+  Future<void> fetchAndStoreImage(String id) async {
+    try {
+      final response =
+          await http.get(Uri.parse(Backend.baseUrl + '/qr?id=$id'));
+
+      if (response.statusCode == 200) {
+        // Convert image bytes to base64
+        String base64Image = base64Encode(response.bodyBytes);
+
+        // Store base64 string in SharedPreferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('qr', base64Image);
+        print("Image stored in SharedPreferences.");
+      } else {
+        print("Failed to fetch image: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching or storing image: $e");
+    }
   }
 
-  getfirsttime_login() async {
+  setLoggedInBefore() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final bool? ftl = prefs.getBool('ftl');
+    await prefs.setBool('lib', true);
+  }
+
+  getLoggedInBefore() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool? ftl = prefs.getBool('lib');
     return ftl;
+  }
+
+  clearPref() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
   }
 
   // sign user in method
@@ -57,13 +77,8 @@ class _LoginPageState extends State<LoginPage> {
     // Prepare the body of the POST request
 
     final body = {
-      'grant_type':
-          'password', // Example: password grant type, adjust if necessary
       'username': email,
       'password': password,
-      'scope': '', // Adjust if necessary (e.g., 'read', 'write', etc.)
-      'client_id': 'your_client_id', // Provide actual client ID
-      'client_secret': 'your_client_secret', // Provide actual client secret
     };
 
     try {
@@ -86,17 +101,45 @@ class _LoginPageState extends State<LoginPage> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('access_token', token);
 
+        final response = await http.get(
+          Uri.parse(Backend.baseUrl + '/delegates/me'),
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        final id = json.decode(response.body)['id'];
+        await prefs.setString('id', id);
+
+        await fetchAndStoreImage(id);
+
         // Navigate to the HomePage
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => HomePage()),
         );
-      } else {
-        final String errorCode = responseData['detail'].split(':')[0];
-        final String errorMessage = responseData['detail'].split(':')[1];
 
+        if (await getLoggedInBefore() != true) {
+          setLoggedInBefore();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Please update your profile',
+              ),
+              backgroundColor: Colors.grey.shade700,
+              action: SnackBarAction(
+                  label: "Go to Profile",
+                  textColor: Colors.lightBlue,
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => ProfilePage()));
+                  }),
+            ),
+          );
+        }
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("$errorMessage : Error $errorCode"),
+          content: Text(responseData['detail'].toString()),
           backgroundColor: Colors.red,
         ));
       }
