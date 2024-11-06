@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:delego/pages/Login_Page/my_bottons.dart';
-import 'package:delego/pages/Login_Page/my_textfild.dart';
-import 'package:delego/pages/Login_Page/register_pege.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:delego/Pages/Login_Page/my_bottons.dart';
+import 'package:delego/Pages/Login_Page/my_textfild.dart';
+import 'package:delego/Pages/Login_Page/register_pege.dart';
 import 'package:delego/Pages/Home_Page/home_page.dart';
+import 'package:delego/constants/backend.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});
@@ -14,13 +18,77 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   // text editing controllers
   final usernameController = TextEditingController();
-
   final passwordController = TextEditingController();
 
   // sign user in method
-  void signUserIn() {
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => HomePage()));
+  void signUserIn() async {
+    // Get the values from the text fields
+    final email = usernameController.text.trim();
+    final password = passwordController.text.trim();
+
+    // Check if the fields are not empty
+    if (email.isEmpty || password.isEmpty) {
+      // Show a snackbar or alert if fields are empty
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Please fill in both fields."),
+      ));
+      return;
+    }
+
+    // Prepare the body of the POST request
+
+    final body = {
+      'grant_type':
+          'password', // Example: password grant type, adjust if necessary
+      'username': email,
+      'password': password,
+      'scope': '', // Adjust if necessary (e.g., 'read', 'write', etc.)
+      'client_id': 'your_client_id', // Provide actual client ID
+      'client_secret': 'your_client_secret', // Provide actual client secret
+    };
+
+    try {
+      // Send the POST request to the server
+      final response = await http.post(
+        Uri.parse(Backend.baseUrl + '/login'),
+        body: body,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        encoding: Encoding.getByName('utf-8'),
+      );
+
+      final responseData = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        final String token = responseData['access_token'];
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('access_token', token);
+
+        // Navigate to the HomePage
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      } else {
+        final String errorCode = responseData['detail'].split(':')[0];
+        final String errorMessage = responseData['detail'].split(':')[1];
+
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("$errorMessage : Error $errorCode"),
+          backgroundColor: Colors.red,
+        ));
+      }
+    } catch (e) {
+      // Handle network or other errors
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content:
+            Text("An error occurred. Please check your internet connection."),
+        backgroundColor: Colors.red,
+      ));
+    }
   }
 
   @override
@@ -38,17 +106,13 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-
-
                 // logo
                 Container(
                   margin: EdgeInsets.all(0),
-                  height:200,
+                  height: 200,
                   width: 200,
                   child: Image.asset("assets/icons/Blue_outline_logo.png"),
                 ),
-
-
 
                 // text
                 Text(

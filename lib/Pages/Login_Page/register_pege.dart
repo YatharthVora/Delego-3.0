@@ -1,10 +1,19 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:delego/constants/backend.dart';
 import 'package:flutter/material.dart';
-import 'package:delego/pages/Login_Page/my_bottons.dart';
-import 'package:delego/pages/Login_Page/my_textfild.dart';
+import 'package:http/http.dart' as http;
+import 'package:delego/Pages/Login_Page/my_bottons.dart';
+import 'package:delego/Pages/Login_Page/my_textfild.dart';
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
   RegisterPage({super.key});
 
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
   // text editing controllers
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
@@ -12,7 +21,83 @@ class RegisterPage extends StatelessWidget {
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
   // sign user in method
-  void signUserUp() {}
+  void signUserUp() async {
+    final email = usernameController.text.trim();
+    final password = passwordController.text.trim();
+    final confirmPassword = confirmPasswordController.text.trim();
+    final firstName = firstNameController.text.trim();
+    final lastName = lastNameController.text.trim();
+
+    if (email.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty ||
+        firstName.isEmpty ||
+        lastName.isEmpty) {
+      // Show a snackbar or alert if fields are empty
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Please fill in all fields."),
+      ));
+      return;
+    }
+
+    if (password != confirmPassword) {
+      // Show a snackbar or alert if passwords don't match
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Passwords do not match."),
+      ));
+      return;
+    }
+
+    if (password.length < 8) {
+      // Show a snackbar or alert if password is too short
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Password must be at least 8 characters long."),
+      ));
+      return;
+    }
+
+    final body = {
+      'firstname': firstName,
+      'lastname': lastName,
+      'email': email,
+      'password': password,
+    };
+
+    try {
+      // Send the POST request to the server
+      final response = await http.post(
+        Uri.parse(Backend.baseUrl + '/mumbaimun/register'),
+        body: jsonEncode(body),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+      );
+
+      final responseData = json.decode(response.body);
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Registration successful. Please verify your email."),
+          backgroundColor: Colors.green,
+        ));
+      } else {
+        final String errorCode = responseData['detail'].split(':')[0];
+        final String errorMessage = responseData['detail'].split(':')[1];
+
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("$errorMessage : Error $errorCode"),
+          backgroundColor: Colors.red,
+        ));
+      }
+    } catch (e) {
+      // Handle network or other errors
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(e.toString()),
+        backgroundColor: Colors.red,
+      ));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,17 +109,13 @@ class RegisterPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-
-
                 // logo
                 Container(
                   margin: EdgeInsets.all(0),
-                  height:200,
+                  height: 200,
                   width: 200,
                   child: Image.asset("assets/icons/Blue_outline_logo.png"),
                 ),
-
-
 
                 // text
                 Text(
