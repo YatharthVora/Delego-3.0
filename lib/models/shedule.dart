@@ -21,7 +21,7 @@ List<Schedule> schedules = [
     id: "1",
     name: "Registrations",
     location: "Mukesh Patel Auditorium",
-    time: "10:00 - 11:00AM",
+    time: "9:30 - 11:00AM",
     description:
         "The delegates and the executive board members first proceed for registrations as we commence for the first day of Mumbai MUN 2023.",
     image: "assets/img/reg.jpg",
@@ -30,7 +30,7 @@ List<Schedule> schedules = [
     id: "2",
     name: "Opening Ceremony",
     location: "Mukesh Patel Auditorium",
-    time: "11:00 - 12:00PM",
+    time: "11:00 - 12:30PM",
     description:
         "The opening ceremony marks the start of the ninth installment of this resplendent Conference.The distinguished Secretariat delivers keynote addresses to set the underlying tone and summarize the core message for the event coupled with a panel discussion from our illustrious guest speakers who will engage the audience in a comprehensive dialogue.",
     image: "assets/img/ceremony.jpg",
@@ -39,7 +39,7 @@ List<Schedule> schedules = [
     id: "3",
     name: "Lunch",
     location: "MPSTME",
-    time: "12:00 - 01:00PM",
+    time: "12:30 - 02:00PM",
     description:
         "Delight your palate by feasting on the splendid meals provided by our organizing committee which is customary in maintaining our long standing tradition of delivering unmatched hospitality and comfort to all our delegates.",
     image: "assets/img/lunch.jpeg",
@@ -48,7 +48,7 @@ List<Schedule> schedules = [
     id: "4",
     name: "Committee Session 1",
     location: "Allocated Rooms in MPSTME",
-    time: "01:00 - 04:00PM",
+    time: "02:00 - 05:00PM",
     description:
         "D-Day is here! Prepare to engage in tantalizing deliberations to establish your stance on the agenda at hand and flaunt your grasp of international diplomacy and verbal flair.",
     image: "assets/img/sessions.jpg",
@@ -57,18 +57,18 @@ List<Schedule> schedules = [
     id: "5",
     name: "High Tea",
     location: "MPSTME",
-    time: "04:00 - 04:30PM",
+    time: "05:00 - 05:30PM",
     description:
         "Reinvigorate your mind with a kick of caffeine and luscious snacks to prepare for lobbying with potential allies and foes who will play a decisive role in dissensions to follow.",
     image: "assets/img/hightea.jpg",
   ),
   const Schedule(
     id: "6",
-    name: "Formals Social",
+    name: "Formal Socials",
     location: "Allocated Rooms in MPSTME",
-    time: "4:30 - 06:30PM ",
+    time: "05:30 - 07:30PM ",
     description:
-        "Reinvigorate your mind with a kick of caffeine and luscious snacks to prepare for lobbying with potential allies and foes who will play a decisive role in dissensions to follow.",
+        "Join us for an evening of entertainment, mingling, and networking at the Formal Socials event. It's a great opportunity to meet fellow students, enjoy some light refreshments, and unwind after a busy week. Whether you're looking to make new friends, catch up with old ones, or just relax, this event has something for everyone.",
     image: "assets/img/socials.jpg",
   ),
   // const Schedule(
@@ -104,7 +104,7 @@ List<Schedule> schedules1 = [
     id: "3",
     name: "Lunch",
     location: "MPSTME",
-    time: "12:00 - 02:00PM",
+    time: "12:00 - 01:00PM",
     description:
         "Delight your palate by feasting on the splendid meals provided by our organizing committee which is customary in maintaining our long standing tradition of delivering unmatched hospitality and comfort to all our delegates.",
     image: "assets/img/lunch.jpeg",
@@ -113,7 +113,7 @@ List<Schedule> schedules1 = [
     id: "4",
     name: "Committee Session 3",
     location: "Allocated Rooms in MPSTME",
-    time: "02:00 - 05:00PM",
+    time: "01:00 - 04:00PM",
     description:
         "The time utilized by the delegates during lunch determines the propensity of this session. With flare and zeal, this session will emphasize on the solutions to address the agenda of the committee.",
     image: "assets/img/sessions.jpg",
@@ -122,7 +122,7 @@ List<Schedule> schedules1 = [
     id: "5",
     name: "High Tea",
     location: "MPSTME",
-    time: "05:00 - 05:30PM",
+    time: "04:00 - 05:30PM",
     description:
         "Reinvigorate your mind with a kick of caffeine and luscious snacks to prepare for lobbying with potential allies and foes who will play a decisive role in dissensions to follow.",
     image: "assets/img/hightea.jpg",
@@ -179,7 +179,7 @@ List<Schedule> schedules2 = [
     id: "5",
     name: "High Tea",
     location: "MPSTME",
-    time: "04:00 - 04:30PM",
+    time: "04:00 - 05:00PM",
     description:
         "Reinvigorate your mind with a kick of caffeine and luscious snacks to prepare for lobbying with potential allies and foes who will play a decisive role in dissensions to follow.",
     image: "assets/img/hightea.jpg",
@@ -188,7 +188,7 @@ List<Schedule> schedules2 = [
     id: "6",
     name: "Closing Ceremony",
     location: "Mukesh Patel Auditorium",
-    time: "04:30 - 05:30PM",
+    time: "05:00 - 07:30PM",
     description:
         "The time has come to bid adieu to what has hopefully been an enchanting experience, here at Mumbai MUN 2023. Participate in an elegant ceremony that not only celebrates the best diplomatic skills across all committees but also the alluring spirit of diplomacy!",
     image: "assets/img/ceremony.jpg",

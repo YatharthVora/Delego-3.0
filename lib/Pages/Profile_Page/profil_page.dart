@@ -214,10 +214,13 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: IconThemeData(
+          color: Colors.white,
+        ),
         backgroundColor: Colors.blue.shade900,
         centerTitle: true,
         title: const Text(
-          'Profile Page',
+          'Profile',
           style: TextStyle(color: Colors.white),
         ),
       ),

@@ -11,6 +11,9 @@ class SchedulePage extends StatelessWidget {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
+          iconTheme: IconThemeData(
+            color: Colors.white,
+          ),
           backgroundColor: Colors.blue.shade900,
           centerTitle: true,
           title: Text(
@@ -83,13 +86,14 @@ class GradientAppBar extends StatelessWidget {
     final double statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Container(
+      color: Colors.white,
       padding: EdgeInsets.only(top: statusBarHeight),
       height: statusBarHeight + barHeight,
       child: Center(
         child: Text(
           title,
           style: TextStyle(
-              color: Colors.blue.shade900,
+              color: Colors.blue.shade800,
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w600,
               fontSize: 24.0),
