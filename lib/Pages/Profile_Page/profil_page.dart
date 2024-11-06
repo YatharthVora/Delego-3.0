@@ -193,12 +193,12 @@ class _ProfilePageState extends State<ProfilePage> {
 
               // Check for Contact Number format
               if (field == 'Contact Number') {
-                final contactPattern = RegExp(r"^(98\d{8})$");
+                final contactPattern = RegExp(
+                    r"^\+?\d{1,4}[\s\-]?\(?\d{1,4}\)?[\s\-]?\d{1,4}[\s\-]?\d{1,4}$");
                 if (!contactPattern.hasMatch(newValue)) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                        content:
-                            Text("Invalid contact number. Format: 98*******2."),
+                        content: Text("Invalid contact number"),
                         backgroundColor: Colors.red),
                   );
                   return;
