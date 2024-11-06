@@ -90,7 +90,7 @@ class _HomePageState extends State<HomePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SizedBox(
-                              width: 230,
+                              width: 250,
                               height: 30,
                               child: Text(
                                 'MUMBAI MUN',
