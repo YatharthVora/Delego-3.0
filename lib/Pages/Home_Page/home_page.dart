@@ -1,11 +1,12 @@
+import 'package:delego/Pages/Login_Page/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:delego/Pages/Home_Page/my_drawer.dart';
 import 'package:delego/Pages/Profile_Page/profil_page.dart';
 import 'package:delego/Pages/Room_Page/room_page.dart';
 import 'package:delego/Pages/Schedule_Page/schedule_page.dart';
-import 'package:delego/Pages/Login_Page/login_page.dart';
 import 'package:delego/Pages/Study Guides/study_guidespage.dart';
 import 'package:delego/Pages/Qr_Page/Qr_code.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -43,9 +44,22 @@ class _HomePageState extends State<HomePage> {
         context, MaterialPageRoute(builder: (context) => StudyGuidespage()));
   }
 
-  void Signout() {
-    Navigator.pop(context);
-    Navigator.pop(context, HomePage());
+  Signout() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove("token");
+    prefs.remove("id");
+    prefs.remove("firstname");
+    prefs.remove("lastname");
+    prefs.remove("email");
+    prefs.remove("contact");
+    prefs.remove("dateOfBirth");
+    prefs.remove("gender");
+    prefs.remove("qr");
+
+    Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+        (Route<dynamic> route) => false);
   }
 
   @override
@@ -58,7 +72,9 @@ class _HomePageState extends State<HomePage> {
         ),
         drawer: MyDrawer(
           onProfileTap: goToProfilePage,
-          onSignoutTap: Signout,
+          onSignoutTap: () async {
+            await Signout();
+          },
         ),
         body: Center(
           child: ListView(children: [

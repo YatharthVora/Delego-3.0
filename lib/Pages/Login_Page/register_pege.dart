@@ -20,8 +20,20 @@ class _RegisterPageState extends State<RegisterPage> {
   final confirmPasswordController = TextEditingController();
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
+
   // sign user in method
   void signUserUp() async {
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevents dialog from closing on outside tap
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+
     final email = usernameController.text.trim();
     final password = passwordController.text.trim();
     final confirmPassword = confirmPasswordController.text.trim();
@@ -88,7 +100,7 @@ class _RegisterPageState extends State<RegisterPage> {
         ));
       }
     } catch (e) {
-      print(e.toString());
+      Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content:
             Text("An error occurred. Please check your internet connection."),

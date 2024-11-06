@@ -61,6 +61,17 @@ class _LoginPageState extends State<LoginPage> {
 
   // sign user in method
   void signUserIn() async {
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevents dialog from closing on outside tap
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+
     // Get the values from the text fields
     final email = usernameController.text.trim();
     final password = passwordController.text.trim();
@@ -99,7 +110,7 @@ class _LoginPageState extends State<LoginPage> {
         final String token = responseData['access_token'];
 
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('access_token', token);
+        await prefs.setString('token', token);
 
         final response = await http.get(
           Uri.parse(Backend.baseUrl + '/delegates/me'),
@@ -108,8 +119,21 @@ class _LoginPageState extends State<LoginPage> {
           },
         );
 
-        final id = json.decode(response.body)['id'];
+        final data = json.decode(response.body);
+        final id = data['id'] ?? '';
+        final firstname = data['firstname'] ?? '';
+        final lastname = data['lastname'] ?? '';
+        final email = data['email'] ?? '';
+        final contact = data['contact'] ?? '';
+        final dateofbirth = data['dateofbirth'] ?? '';
+        final gender = data['gender'] ?? '';
         await prefs.setString('id', id);
+        await prefs.setString('firstname', firstname);
+        await prefs.setString('lastname', lastname);
+        await prefs.setString('email', email);
+        await prefs.setString('contact', contact);
+        await prefs.setString('dateofbirth', dateofbirth);
+        await prefs.setString('gender', gender);
 
         await fetchAndStoreImage(id);
 
@@ -144,6 +168,7 @@ class _LoginPageState extends State<LoginPage> {
         ));
       }
     } catch (e) {
+      Navigator.of(context).pop();
       // Handle network or other errors
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content:
