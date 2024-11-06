@@ -31,7 +31,7 @@ class RoomPage extends StatelessWidget {
                     children: [
                       //name
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'COPUOS',
@@ -48,7 +48,7 @@ class RoomPage extends StatelessWidget {
                         height: 6,
                       ),
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'CR 404',
@@ -106,7 +106,7 @@ class RoomPage extends StatelessWidget {
                     children: [
                       //name
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'AIPPM',
@@ -123,7 +123,7 @@ class RoomPage extends StatelessWidget {
                         height: 6,
                       ),
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'CR 401',
@@ -182,7 +182,7 @@ class RoomPage extends StatelessWidget {
                     children: [
                       //name
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'H.UNGA',
@@ -199,7 +199,7 @@ class RoomPage extends StatelessWidget {
                         height: 6,
                       ),
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'CR 403',
@@ -258,7 +258,7 @@ class RoomPage extends StatelessWidget {
                     children: [
                       //name
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'ILC',
@@ -275,7 +275,7 @@ class RoomPage extends StatelessWidget {
                         height: 6,
                       ),
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'CR 607',
@@ -334,7 +334,7 @@ class RoomPage extends StatelessWidget {
                     children: [
                       //name
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'UNDP',
@@ -351,7 +351,7 @@ class RoomPage extends StatelessWidget {
                         height: 6,
                       ),
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'CR 604',
@@ -427,7 +427,7 @@ class RoomPage extends StatelessWidget {
                         height: 6,
                       ),
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'CR 603',
@@ -503,7 +503,7 @@ class RoomPage extends StatelessWidget {
                         height: 6,
                       ),
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'CR 606',
@@ -579,7 +579,7 @@ class RoomPage extends StatelessWidget {
                         height: 6,
                       ),
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'CR 605',
@@ -639,7 +639,7 @@ class RoomPage extends StatelessWidget {
                     children: [
                       //name
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'WHO',
@@ -656,7 +656,7 @@ class RoomPage extends StatelessWidget {
                         height: 6,
                       ),
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'CR 406',
@@ -714,7 +714,7 @@ class RoomPage extends StatelessWidget {
                     children: [
                       //name
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'UNSC',
@@ -731,7 +731,7 @@ class RoomPage extends StatelessWidget {
                         height: 6,
                       ),
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'CR 506',
@@ -807,7 +807,7 @@ class RoomPage extends StatelessWidget {
                         height: 6,
                       ),
                       SizedBox(
-                        width: 250,
+                        width: 150,
                         height: 30,
                         child: Text(
                           'CR 405',
