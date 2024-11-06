@@ -162,6 +162,7 @@ class _LoginPageState extends State<LoginPage> {
           );
         }
       } else {
+        Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(responseData['detail'].toString()),
           backgroundColor: Colors.red,

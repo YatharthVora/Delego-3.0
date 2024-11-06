@@ -94,6 +94,7 @@ class _RegisterPageState extends State<RegisterPage> {
           backgroundColor: Colors.green,
         ));
       } else {
+        Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(responseData['detail'].toString()),
           backgroundColor: Colors.red,
