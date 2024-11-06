@@ -182,7 +182,8 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.of(context).pop();
       // Handle network or other errors
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(e.toString()),
+        content:
+            Text("An error occurred. Please check your internet connection."),
         backgroundColor: Colors.red,
       ));
     }
