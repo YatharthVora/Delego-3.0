@@ -178,7 +178,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             SizedBox(
                               width: 176.35,
-                              height: 17.80,
+                              height: 50,
                               child: Text(
                                 'Study Guides',
                                 style: TextStyle(
@@ -240,7 +240,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             SizedBox(
                               width: 176.35,
-                              height: 17.80,
+                              height: 50,
                               child: Text(
                                 'My QR',
                                 style: TextStyle(
@@ -302,7 +302,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             SizedBox(
                               width: 176.35,
-                              height: 17.80,
+                              height: 50,
                               child: Text(
                                 'Rooms',
                                 style: TextStyle(
@@ -364,7 +364,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             SizedBox(
                               width: 176.35,
-                              height: 17.80,
+                              height: 50,
                               child: Text(
                                 'Schedule',
                                 style: TextStyle(
