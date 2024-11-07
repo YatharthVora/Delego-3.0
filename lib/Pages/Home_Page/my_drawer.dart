@@ -35,7 +35,7 @@ class MyDrawer extends StatelessWidget {
               // Profile list tile
               MyListTile(
                   icon: Icons.person,
-                  text: 'P R O F I L E',
+                  text: 'S E T T I N G S',
                   onTap: onProfileTap),
             ],
           ),
