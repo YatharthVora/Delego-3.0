@@ -96,7 +96,7 @@ class _HomePageState extends State<HomePage> {
                                 'MUMBAI MUN',
                                 style: TextStyle(
                                   color: Color(0xFF114C90),
-                                  fontSize: 33.59,
+                                  fontSize: 32,
                                   fontFamily: 'Poppins-Bold',
                                   fontWeight: FontWeight.bold,
                                   height: 0.03,
@@ -110,7 +110,7 @@ class _HomePageState extends State<HomePage> {
                                 '2024',
                                 style: TextStyle(
                                   color: Color(0xFF114C90),
-                                  fontSize: 33.59,
+                                  fontSize: 24,
                                   fontFamily: 'Poppins',
                                   fontWeight: FontWeight.bold,
                                   height: 0.03,
@@ -121,8 +121,8 @@ class _HomePageState extends State<HomePage> {
                         ),
                         Container(
                           margin: EdgeInsets.zero,
-                          height: 90,
-                          width: 90,
+                          height: 80,
+                          width: 80,
                           child:
                               Image.asset('assets/icons/Blue_outline_logo.png'),
                         )

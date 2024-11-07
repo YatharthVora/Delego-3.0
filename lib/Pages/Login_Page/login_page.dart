@@ -120,6 +120,16 @@ class _LoginPageState extends State<LoginPage> {
         );
 
         final data = json.decode(response.body);
+
+        if (data['detail'] == 'Please verify your email!') {
+          Navigator.of(context).pop();
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(data['detail']),
+            backgroundColor: Colors.red,
+          ));
+          return;
+        }
+
         final id = data['id'] ?? '';
         final firstname = data['firstname'] ?? '';
         final lastname = data['lastname'] ?? '';
@@ -172,7 +182,8 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.of(context).pop();
       // Handle network or other errors
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(e.toString()),
+        content:
+            Text("An error occurred. Please check your internet connection."),
         backgroundColor: Colors.red,
       ));
     }

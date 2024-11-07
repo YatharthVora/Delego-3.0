@@ -54,7 +54,7 @@ class SchedulePage extends StatelessWidget {
               body: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  GradientAppBar("Novemeber 9, 2024"),
+                  GradientAppBar("November 9, 2024"),
                   HomePageBodyDay2(),
                 ],
               ),
