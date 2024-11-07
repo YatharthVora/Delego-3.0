@@ -26,6 +26,8 @@ class SchedulePage extends StatelessWidget {
           ),
           bottom: TabBar(
             indicatorColor: Colors.white,
+            labelColor: Colors.white, 
+            unselectedLabelColor: Colors.white70,
             tabs: <Widget>[
               Tab(
                 text: "Day 1",
