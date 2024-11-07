@@ -160,15 +160,7 @@ class _LaunchScreenState extends State<LaunchScreen> with TickerProviderStateMix
                     color: Colors.black,
                   ),
                   children: [
-                    TextSpan(text: 'DEFINING THE NO'),
-                    TextSpan(
-                      text: 'R',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    TextSpan(text: 'M'),
+                    TextSpan(text: 'REDEFINE THE NORM'),
                   ],
                 ),
               ),
