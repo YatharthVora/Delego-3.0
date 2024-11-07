@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/Aippm_pdfviewer.dart';
-import 'package:delego/Pages/Study Guides/PDF_viewers/Copuos_pdfviewer.dart'; // Added COPUOS import
+import 'package:delego/Pages/Study Guides/PDF_viewers/Copuos_pdfviewer.dart'; 
 import 'package:delego/Pages/Study Guides/PDF_viewers/HUNGA_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/ILC_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/IPC_pdfviewer.dart';
@@ -14,122 +14,56 @@ import 'package:delego/Pages/Study Guides/PDF_viewers/WORLD_BANK_pdfviewer.dart'
 
 class StudyGuidespage extends StatefulWidget {
   @override
-  State<StudyGuidespage> createState() => _StudyGuidespageState();
+  State<StudyGuidespage> createState() => _StudyGuidesPageState();
 }
 
-class _StudyGuidespageState extends State<StudyGuidespage> {
+class _StudyGuidesPageState extends State<StudyGuidespage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        backgroundColor: Colors.blue.shade900,
+        iconTheme: IconThemeData(
+        color: Colors.white,
+        ),
+      ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => Aippm_PdfViwer())); // AIPPM
-              },
-              child: _buildStudyGuideButton('AIPPM', Aippm_PdfViwer()),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => Copuos_PdfViewer()));
-                // COPUOS
-              },
-              child: _buildStudyGuideButton('COPUOS', Copuos_PdfViewer()),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Ilc_PdfViewer()));
-                // ILC
-              },
-              child: _buildStudyGuideButton('ILC', Ilc_PdfViewer()),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => IPC_PdfViwer()));
-                // IPC
-              },
-              child: _buildStudyGuideButton('IPC', IPC_PdfViwer()),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Undp_PdfViewer()));
-                // UNDP
-              },
-              child: _buildStudyGuideButton('UNDP', Undp_PdfViewer()),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Unodc_PdfViewer()));
-                // UNODC
-              },
-              child: _buildStudyGuideButton('UNODC', Unodc_PdfViewer()),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Who_PdfViewer()));
-                // WHO
-              },
-              child: _buildStudyGuideButton('WHO', Who_PdfViewer()),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => WorldBank_PdfViewer()));
-                // WORLD BANK
-              },
-              child:
-                  _buildStudyGuideButton('WORLD BANK', WorldBank_PdfViewer()),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Unhrc_PdfViewer()));
-                // UNHRC
-              },
-              child: _buildStudyGuideButton('UNHRC', Unhrc_PdfViewer()),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Hunga_PdfViewer()));
-                // H.UNGA
-              },
-              child: _buildStudyGuideButton('H.UNGA', Hunga_PdfViewer()),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Unsc_PdfViewer()));
-                // UNSC
-              },
-              child: _buildStudyGuideButton('UNSC', Unsc_PdfViewer()),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => Unfccc_PdfViewer()));
-                // UNFCCC-COP
-              },
-              child: _buildStudyGuideButton('UNFCCC-COP', Unfccc_PdfViewer()),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Study Guides",
+                style: TextStyle(
+                  fontSize: 30.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8.0),
+              const Text(
+                "Click to view the PDF",
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 20.0),
+              _buildStudyGuideButton('AIPPM', Aippm_PdfViwer()),
+              _buildStudyGuideButton('COPUOS', Copuos_PdfViewer()),
+              _buildStudyGuideButton('ILC', Ilc_PdfViewer()),
+              _buildStudyGuideButton('IPC', IPC_PdfViwer()),
+              _buildStudyGuideButton('UNDP', Undp_PdfViewer()),
+              _buildStudyGuideButton('UNODC', Unodc_PdfViewer()),
+              _buildStudyGuideButton('WHO', Who_PdfViewer()),
+              _buildStudyGuideButton('WORLD BANK', WorldBank_PdfViewer()),
+              _buildStudyGuideButton('UNHRC', Unhrc_PdfViewer()),
+              _buildStudyGuideButton('H.UNGA', Hunga_PdfViewer()),
+              _buildStudyGuideButton('UNSC', Unsc_PdfViewer()),
+              _buildStudyGuideButton('UNFCCC-COP', Unfccc_PdfViewer()),
+            ],
+          ),
         ),
       ),
     );
@@ -137,30 +71,47 @@ class _StudyGuidespageState extends State<StudyGuidespage> {
 
   // Helper function to create the Study Guide button
   Widget _buildStudyGuideButton(String title, Widget? page) {
-    return Container(
-      margin: const EdgeInsets.all(8.0),
-      padding: const EdgeInsets.all(30.0),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade900,
-        borderRadius: BorderRadius.circular(15.0),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 25.0,
-              fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => page!));
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 10.0),
+        padding: const EdgeInsets.all(20.0),
+        decoration: BoxDecoration(
+          color: Colors.blue.shade900,
+          borderRadius: BorderRadius.circular(12.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8.0,
+              offset: Offset(0, 2),
             ),
-          ),
-          const Icon(
-            Icons.book,
-            size: 45.0,
-            color: Colors.white,
-          ),
-        ],
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const Icon(
+              Icons.picture_as_pdf,
+              size: 40.0,
+              color: Colors.white,
+            ),
+          ],
+        ),
       ),
     );
   }
