@@ -21,17 +21,23 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _startLaunchScreen();
+    _initializeApp();
   }
 
-  Future<void> _startLaunchScreen() async {
-    await Future.delayed(
-        Duration(seconds: 5)); // Duration for the launch screen
+
+  Future<void> _initializeApp() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
+    String? token = prefs.getString('token'); 
+
     setState(() {
-      isLoggedIn = token != null && token.isNotEmpty;
-      showLaunchScreen = false;
+      isLoggedIn = token != null && token.isNotEmpty; 
+    });
+
+
+    Future.delayed(Duration(seconds: 3), () {
+      setState(() {
+        showLaunchScreen = false; 
+      });
     });
   }
 
@@ -40,13 +46,12 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: showLaunchScreen
-          ? LaunchScreen(
-              onLaunchComplete: _startHomePage) // Pass function for transition
+          ? LaunchScreen(onLaunchComplete: _onLaunchComplete) 
           : (isLoggedIn == true ? HomePage() : LoginPage()),
     );
   }
 
-  void _startHomePage() {
+  void _onLaunchComplete() {
     setState(() {
       showLaunchScreen = false;
     });
@@ -54,8 +59,7 @@ class _MyAppState extends State<MyApp> {
 }
 
 class LaunchScreen extends StatefulWidget {
-  final Function
-      onLaunchComplete; // Callback for when the launch screen animation finishes
+  final Function onLaunchComplete; 
 
   LaunchScreen({required this.onLaunchComplete});
 
@@ -63,8 +67,7 @@ class LaunchScreen extends StatefulWidget {
   _LaunchScreenState createState() => _LaunchScreenState();
 }
 
-class _LaunchScreenState extends State<LaunchScreen>
-    with TickerProviderStateMixin {
+class _LaunchScreenState extends State<LaunchScreen> with TickerProviderStateMixin {
   late AnimationController _logoController;
   late AnimationController _textController1;
   late AnimationController _textController2;
@@ -73,25 +76,21 @@ class _LaunchScreenState extends State<LaunchScreen>
   void initState() {
     super.initState();
 
-    // Logo animation controller
     _logoController = AnimationController(
       vsync: this,
       duration: Duration(seconds: 1),
     )..forward();
 
-    // "MumbaiMUN 2024" text animation controller
     _textController1 = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 400),
     );
 
-    // "DEFINING THE NORM" text animation controller
     _textController2 = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 400),
     );
 
-    // Start text animations in sequence
     _logoController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         _textController1.forward();
@@ -104,13 +103,10 @@ class _LaunchScreenState extends State<LaunchScreen>
       }
     });
 
-    // After all animations, navigate to the next page
     _textController2.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        // Introduce a delay after animations to make the transition smooth
         Future.delayed(Duration(milliseconds: 500), () {
-          widget
-              .onLaunchComplete(); // Trigger the callback to transition to HomePage
+          widget.onLaunchComplete(); 
         });
       }
     });
@@ -136,7 +132,7 @@ class _LaunchScreenState extends State<LaunchScreen>
             FadeTransition(
               opacity: _logoController,
               child: Image.asset(
-                'assets/icons/Blue_outline_logo.png', // Ensure logo is in assets folder
+                'assets/icons/Blue_outline_logo.png',
                 height: 100,
               ),
             ),
