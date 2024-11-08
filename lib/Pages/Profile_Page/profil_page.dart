@@ -307,7 +307,7 @@ class _ProfilePageState extends State<ProfilePage> {
         centerTitle: true,
         title: const Text(
           'Settings',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
       body: ListView(

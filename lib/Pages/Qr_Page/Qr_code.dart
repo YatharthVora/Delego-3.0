@@ -19,7 +19,6 @@ class _QrCodeState extends State<QrCode> {
     _loadQrCodeImage();
   }
 
-
   Future<void> _loadQrCodeImage() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? base64Image = prefs.getString('qr');
@@ -38,14 +37,16 @@ class _QrCodeState extends State<QrCode> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0.0,
+        backgroundColor: Colors.blue.shade900,
+        iconTheme: IconThemeData(
+          color: Colors.white,
+        ),
         title: const Text(
-          'Your QR Code',
-          style: TextStyle(color: Colors.black),
+          'Food QR Code',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: Center(
         child: Transform.translate(
@@ -116,3 +117,4 @@ class _QrCodeState extends State<QrCode> {
     );
   }
 }
+

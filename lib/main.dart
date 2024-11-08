@@ -160,7 +160,9 @@ class _LaunchScreenState extends State<LaunchScreen> with TickerProviderStateMix
                     color: Colors.black,
                   ),
                   children: [
-                    TextSpan(text: 'REDEFINE THE NORM'),
+                    TextSpan(
+                        text: 'REDEFINING THE NORM',
+                        style: TextStyle(color: Colors.blue.shade900)),
                   ],
                 ),
               ),
