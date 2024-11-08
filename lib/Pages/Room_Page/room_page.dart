@@ -6,7 +6,15 @@ class RoomPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.blue.shade900,
+        iconTheme: IconThemeData(
+          color: Colors.white,
+        ),
+        title: const Text(
+          'Alloted Rooms',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
       ),
       body: Center(
         child: ListView(

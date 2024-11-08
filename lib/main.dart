@@ -25,7 +25,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _startLaunchScreen() async {
-    await Future.delayed(Duration(seconds: 5)); // Duration for the launch screen
+    await Future.delayed(
+        Duration(seconds: 5)); // Duration for the launch screen
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
     setState(() {
@@ -39,7 +40,8 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: showLaunchScreen
-          ? LaunchScreen(onLaunchComplete: _startHomePage) // Pass function for transition
+          ? LaunchScreen(
+              onLaunchComplete: _startHomePage) // Pass function for transition
           : (isLoggedIn == true ? HomePage() : LoginPage()),
     );
   }
@@ -52,7 +54,8 @@ class _MyAppState extends State<MyApp> {
 }
 
 class LaunchScreen extends StatefulWidget {
-  final Function onLaunchComplete; // Callback for when the launch screen animation finishes
+  final Function
+      onLaunchComplete; // Callback for when the launch screen animation finishes
 
   LaunchScreen({required this.onLaunchComplete});
 
@@ -106,7 +109,8 @@ class _LaunchScreenState extends State<LaunchScreen>
       if (status == AnimationStatus.completed) {
         // Introduce a delay after animations to make the transition smooth
         Future.delayed(Duration(milliseconds: 500), () {
-          widget.onLaunchComplete(); // Trigger the callback to transition to HomePage
+          widget
+              .onLaunchComplete(); // Trigger the callback to transition to HomePage
         });
       }
     });
@@ -160,15 +164,9 @@ class _LaunchScreenState extends State<LaunchScreen>
                     color: Colors.black,
                   ),
                   children: [
-                    TextSpan(text: 'DEFINING THE NO'),
                     TextSpan(
-                      text: 'R',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    TextSpan(text: 'M'),
+                        text: 'REDEFINING THE NORM',
+                        style: TextStyle(color: Colors.blue.shade900)),
                   ],
                 ),
               ),

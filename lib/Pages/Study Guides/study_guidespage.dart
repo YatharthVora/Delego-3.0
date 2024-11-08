@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/Aippm_pdfviewer.dart';
-import 'package:delego/Pages/Study Guides/PDF_viewers/Copuos_pdfviewer.dart'; 
+import 'package:delego/Pages/Study Guides/PDF_viewers/Copuos_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/HUNGA_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/ILC_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/IPC_pdfviewer.dart';
@@ -24,45 +24,54 @@ class _StudyGuidesPageState extends State<StudyGuidespage> {
       appBar: AppBar(
         backgroundColor: Colors.blue.shade900,
         iconTheme: IconThemeData(
-        color: Colors.white,
+          color: Colors.white,
         ),
+        title: Text(
+          'Study Guides',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Study Guides",
-                style: TextStyle(
-                  fontSize: 30.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+      body: Container(
+        color: Colors.white,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Study Guides",
+                  style: TextStyle(
+                    fontSize: 30.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8.0),
-              const Text(
-                "Click to view the PDF",
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.grey,
+                const SizedBox(height: 8.0),
+                const Text(
+                  "Click to view the PDF",
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20.0),
-              _buildStudyGuideButton('AIPPM', Aippm_PdfViwer()),
-              _buildStudyGuideButton('COPUOS', Copuos_PdfViewer()),
-              _buildStudyGuideButton('ILC', Ilc_PdfViewer()),
-              _buildStudyGuideButton('IPC', IPC_PdfViwer()),
-              _buildStudyGuideButton('UNDP', Undp_PdfViewer()),
-              _buildStudyGuideButton('UNODC', Unodc_PdfViewer()),
-              _buildStudyGuideButton('WHO', Who_PdfViewer()),
-              _buildStudyGuideButton('WORLD BANK', WorldBank_PdfViewer()),
-              _buildStudyGuideButton('UNHRC', Unhrc_PdfViewer()),
-              _buildStudyGuideButton('H.UNGA', Hunga_PdfViewer()),
-              _buildStudyGuideButton('UNSC', Unsc_PdfViewer()),
-              _buildStudyGuideButton('UNFCCC-COP', Unfccc_PdfViewer()),
-            ],
+                const SizedBox(height: 20.0),
+                _buildStudyGuideButton('AIPPM', Aippm_PdfViwer()),
+                _buildStudyGuideButton('COPUOS', Copuos_PdfViewer()),
+                _buildStudyGuideButton('ILC', Ilc_PdfViewer()),
+                _buildStudyGuideButton('IPC', IPC_PdfViwer()),
+                _buildStudyGuideButton('UNDP', Undp_PdfViewer()),
+                _buildStudyGuideButton('UNODC', Unodc_PdfViewer()),
+                _buildStudyGuideButton('WHO', Who_PdfViewer()),
+                _buildStudyGuideButton('WORLD BANK', WorldBank_PdfViewer()),
+                _buildStudyGuideButton('UNHRC', Unhrc_PdfViewer()),
+                _buildStudyGuideButton('H.UNGA', Hunga_PdfViewer()),
+                _buildStudyGuideButton('UNSC', Unsc_PdfViewer()),
+                _buildStudyGuideButton('UNFCCC-COP', Unfccc_PdfViewer()),
+              ],
+            ),
           ),
         ),
       ),
@@ -116,3 +125,4 @@ class _StudyGuidesPageState extends State<StudyGuidespage> {
     );
   }
 }
+
