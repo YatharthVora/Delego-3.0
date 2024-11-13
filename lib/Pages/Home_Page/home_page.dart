@@ -387,7 +387,39 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
-              ]),
-            )));
+                // Container(
+                //   margin: EdgeInsets.fromLTRB(12, 2, 12, 2),
+                //   height: 73,
+                //   width: 73,
+                //   child: Row(
+                //     children: [
+                //       Text('Sponsored By:',
+                //         style: TextStyle(
+                //           fontSize: 18,
+                //           fontWeight: FontWeight.bold,
+                //           fontFamily: 'Poppins'
+                //         ),
+                //       ),
+                //       Container(
+                //         margin: EdgeInsets.fromLTRB(6, 0, 3, 0),
+                //           child: Image.asset('assets/icons/RiseUp_Logo.png')
+                //       ),
+                //     Container(
+                //         margin: EdgeInsets.fromLTRB(6, 0, 3, 0),
+                //           child: Image.asset('assets/icons/LytAds_Logo.png')
+                //       ),
+                //       Container(
+                //         height: 25,
+                //         margin: EdgeInsets.fromLTRB(6, 0, 3, 0),
+                //           child: Image.asset('assets/icons/Sultan_deli_Logo.png')
+                //       ),
+                //     ],
+                //   ),
+                // )
+              ]
+              ),
+            )
+        )
+    );
   }
 }

@@ -190,7 +190,7 @@ List<Schedule> schedules2 = [
     location: "Big Seminar Hall",
     time: "05:00 - 07:30PM",
     description:
-        "The time has come to bid adieu to what has hopefully been an enchanting experience, here at Mumbai MUN 2023. Participate in an elegant ceremony that not only celebrates the best diplomatic skills across all committees but also the alluring spirit of diplomacy!",
+        "The time has come to bid adieu to what has hopefully been an enchanting experience, here at Mumbai MUN 2024. Participate in an elegant ceremony that not only celebrates the best diplomatic skills across all committees but also the alluring spirit of diplomacy!",
     image: "assets/img/ceremony.jpg",
   ),
 ];
