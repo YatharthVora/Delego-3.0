@@ -89,23 +89,45 @@ class _HomePageState extends State<HomePage> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(
-                              width: 250,
+                            Container(
+                              width: 285,
                               height: 30,
-                              child: Text(
-                                'MUMBAI MUN',
-                                style: TextStyle(
-                                  color: Color(0xFF114C90),
-                                  fontSize: 32,
-                                  fontFamily: 'Poppins-Bold',
-                                  fontWeight: FontWeight.bold,
-                                  height: 0.03,
-                                ),
+                              margin: EdgeInsets.fromLTRB(0, 0, 2, 10),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    margin: EdgeInsets.fromLTRB(0,0,3,0),
+                                    child: Text(
+                                      'MUMBAI',
+                                      style: TextStyle(
+                                        color: Color(0xFF114C90),
+                                        fontSize: 32,
+                                        fontFamily: 'Poppins-Bold',
+                                        fontWeight: FontWeight.bold,
+                                        height: 0.03,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.fromLTRB(3, 0, 0, 0),
+                                    child: Text(
+                                      'MUN',
+                                      style: TextStyle(
+                                        color: Color(0xFF114C90),
+                                        fontSize: 32,
+                                        fontFamily: 'Poppins-Bold',
+                                        fontWeight: FontWeight.bold,
+                                        height: 0.03,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            SizedBox(
+                            Container(
                               width: 100,
                               height: 20,
+                              margin: EdgeInsets.fromLTRB(0, 2, 0, 0),
                               child: Text(
                                 '2024',
                                 style: TextStyle(

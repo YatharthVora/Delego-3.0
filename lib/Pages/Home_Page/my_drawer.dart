@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:delego/Pages/Home_Page/my_list_tile.dart';
 
-class MyDrawer extends StatelessWidget {
+class MyDrawer extends StatefulWidget {
   final void Function()? onProfileTap;
   final void Function()? onSignoutTap;
 
   const MyDrawer(
       {super.key, required this.onProfileTap, required this.onSignoutTap});
+
+  @override
+  State<MyDrawer> createState() => _MyDrawerState();
+}
+
+class _MyDrawerState extends State<MyDrawer> {
 
   @override
   Widget build(BuildContext context) {
@@ -36,14 +42,14 @@ class MyDrawer extends StatelessWidget {
               MyListTile(
                   icon: Icons.person,
                   text: 'S E T T I N G S',
-                  onTap: onProfileTap),
+                  onTap: widget.onProfileTap),
             ],
           ),
           // Logout tile
           Padding(
             padding: const EdgeInsets.only(bottom: 16.0),
             child: MyListTile(
-                icon: Icons.logout, text: 'L O G O U T', onTap: onSignoutTap),
+                icon: Icons.logout, text: 'L O G O U T', onTap: widget.onSignoutTap),
           )
         ],
       ),
