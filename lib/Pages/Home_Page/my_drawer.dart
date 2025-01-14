@@ -51,16 +51,13 @@ class _MyDrawerState extends State<MyDrawer> {
               MyListTile(
                   icon: Icons.person,
 
-                  text: 'P R O F I L E',
+                  text: 'S E T T I N G S',
                   onTap: widget.onProfileTap),
               MyListTile(
                 icon: Icons.handshake,
                 text: 'S P O N S O R S',
                 onTap: goToSponsorsPage,
               ),
-
-                  text: 'S E T T I N G S',
-                  onTap: widget.onProfileTap),
 
             ],
           ),
