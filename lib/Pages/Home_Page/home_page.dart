@@ -181,9 +181,10 @@ class _HomePageState extends State<HomePage> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(
+                            Container(
                               width: 61.02,
                               height: 16.10,
+                              margin: EdgeInsets.fromLTRB(0, 0, 0, 4),
                               child: Text(
                                 '01.',
                                 style: TextStyle(
@@ -195,21 +196,38 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                             ),
-                            SizedBox(
-                              height: 8,
-                            ),
-                            SizedBox(
-                              width: 176.35,
-                              height: 50,
-                              child: Text(
-                                'Study Guides',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontFamily: 'Poppins',
-                                  fontWeight: FontWeight.w600,
-                                  height: 0.06,
-                                ),
+
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 4, 0, 0),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    margin: EdgeInsets.fromLTRB(0, 0, 3, 0),
+                                    child: Text(
+                                      'Study',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 24,
+                                        fontFamily: 'Poppins',
+                                        fontWeight: FontWeight.w600,
+                                        height: 0.06,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.fromLTRB(3, 0, 0, 0),
+                                    child: Text(
+                                      'Guides',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 24,
+                                        fontFamily: 'Poppins',
+                                        fontWeight: FontWeight.w600,
+                                        height: 0.06,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             )
                           ],
@@ -243,9 +261,10 @@ class _HomePageState extends State<HomePage> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(
+                            Container(
                               width: 61.02,
                               height: 16.10,
+                              margin: EdgeInsets.fromLTRB(0, 0, 0, 4),
                               child: Text(
                                 '02.',
                                 style: TextStyle(
@@ -257,12 +276,11 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                             ),
-                            SizedBox(
-                              height: 8,
-                            ),
-                            SizedBox(
+
+                            Container(
                               width: 176.35,
                               height: 50,
+                              margin: EdgeInsets.fromLTRB(0, 4, 0, 0),
                               child: Text(
                                 'My QR',
                                 style: TextStyle(
@@ -305,9 +323,10 @@ class _HomePageState extends State<HomePage> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(
+                            Container(
                               width: 61.02,
                               height: 16.10,
+                              margin: EdgeInsets.fromLTRB(0, 0, 0, 4),
                               child: Text(
                                 '03.',
                                 style: TextStyle(
@@ -319,12 +338,11 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                             ),
-                            SizedBox(
-                              height: 6,
-                            ),
-                            SizedBox(
+
+                            Container(
                               width: 176.35,
                               height: 50,
+                              margin: EdgeInsets.fromLTRB(0, 4, 0, 0),
                               child: Text(
                                 'Rooms',
                                 style: TextStyle(
@@ -367,9 +385,10 @@ class _HomePageState extends State<HomePage> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(
+                            Container(
                               width: 61.02,
                               height: 16.10,
+                              margin: EdgeInsets.fromLTRB(0, 0, 0, 4),
                               child: Text(
                                 '04.',
                                 style: TextStyle(
@@ -381,12 +400,10 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                             ),
-                            SizedBox(
-                              height: 6,
-                            ),
-                            SizedBox(
+                            Container(
                               width: 176.35,
                               height: 50,
+                              margin: EdgeInsets.fromLTRB(0, 4, 0, 0),
                               child: Text(
                                 'Schedule',
                                 style: TextStyle(
@@ -406,7 +423,7 @@ class _HomePageState extends State<HomePage> {
                           child: Image.asset('assets/icons/schedule.png'),
                         )
                       ],
-                    ),
+                    ),  
                   ),
                 ),
                 // Container(
