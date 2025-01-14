@@ -1,3 +1,4 @@
+import 'package:delego/Pages/Login_Page/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:delego/constants/backend.dart';
 import 'package:delego/Pages/Profile_Page/text_box.dart';
@@ -125,6 +126,77 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  // Delete account function
+  Future<void> deleteAccount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    // Show confirmation dialog
+    bool confirmDelete = await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text("Delete Account"),
+            content: Text(
+                "Are you sure you want to delete your account? This action cannot be undone."),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text("Cancel"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text("Delete", style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (confirmDelete) {
+      try {
+        final response = await http.delete(
+          Uri.parse('${Backend.baseUrl}/account'),
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          await prefs.clear();
+
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => LoginPage()),
+              (Route<dynamic> route) => false);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Account deleted successfully."),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          final responseData = json.decode(response.body);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:
+                  Text("Failed to delete account: ${responseData['detail']}"),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error deleting account."),
+            backgroundColor: Colors.red,
+          ),
+        );
+        print("Error deleting account: $e");
+      }
+    }
+  }
+
   // Display dialog to edit specific field
   Future<void> editField(String field, String currentValue) async {
     String newValue = currentValue;
@@ -234,15 +306,15 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundColor: Colors.blue.shade900,
         centerTitle: true,
         title: const Text(
-          'Profile',
-          style: TextStyle(color: Colors.white),
+          'Settings',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
       body: ListView(
         children: [
-          const SizedBox(height: 50),
+          const SizedBox(height: 20),
           Icon(Icons.person, size: 72),
-          const SizedBox(height: 30),
+          const SizedBox(height: 10),
           Padding(
             padding: EdgeInsets.only(left: 25),
             child: Text(
@@ -255,57 +327,23 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
           ),
-          // First Name and Last Name Fields
-          Row(
-            children: [
-              Expanded(
-                child: MyTextBox(
-                  text: firstname ?? 'First Name',
-                  sectionName: 'First Name',
-                  onPressed: () => editField('First Name', firstname ?? ''),
-                ),
-              ),
-              Expanded(
-                child: MyTextBox(
-                  text: lastname ?? 'Last Name',
-                  sectionName: 'Last Name',
-                  onPressed: () => editField('Last Name', lastname ?? ''),
-                ),
-              ),
-            ],
-          ),
-          // Email Field
-          GestureDetector(
-            onTap: () => {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                    content: Text("Email cannot be edited."),
-                    backgroundColor: Colors.red),
-              )
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: EdgeInsets.all(15),
-              margin: EdgeInsets.only(left: 20, right: 20, top: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  //text
-                  Text(
-                    email ?? 'Email',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
-                  ),
-                ],
-              ),
-            ),
+          MyTextBox(
+            text: firstname ?? 'First Name',
+            sectionName: 'First Name',
+            onPressed: () => editField('First Name', firstname ?? ''),
           ),
           MyTextBox(
-            text: contact ?? 'Contact',
+            text: lastname ?? 'Last Name',
+            sectionName: 'Last Name',
+            onPressed: () => editField('Last Name', lastname ?? ''),
+          ),
+          MyTextBox(
+            text: email ?? 'email',
+            sectionName: 'Email',
+            onPressed: () => editField('Email', email ?? ''),
+          ),
+          MyTextBox(
+            text: contact ?? 'Contact Number',
             sectionName: 'Contact Number',
             onPressed: () => editField('Contact Number', contact ?? ''),
           ),
@@ -314,54 +352,22 @@ class _ProfilePageState extends State<ProfilePage> {
             sectionName: 'Date of Birth',
             onPressed: () => editField('Date of Birth', dateofbirth ?? ''),
           ),
-          // Gender Dropdown
+          MyTextBox(
+            text: gender ?? 'Gender',
+            sectionName: 'Gender',
+            onPressed: () => editField('Gender', gender ?? ''),
+          ),
           Padding(
-            padding: EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: EdgeInsets.all(15),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Gender',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: 'Poppins')),
-                          DropdownButton<String>(
-                            isExpanded: true,
-                            value: gender,
-                            hint: Text('Select Gender',
-                                style: TextStyle(fontFamily: 'Poppins')),
-                            items: <String>[
-                              'Male',
-                              'Female',
-                              'Other',
-                              'Prefer not to say'
-                            ]
-                                .map((String value) => DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(value,
-                                          style:
-                                              TextStyle(fontFamily: 'Poppins')),
-                                    ))
-                                .toList(),
-                            onChanged: (String? newValue) {
-                              if (newValue != null) {
-                                updateUserData('gender', newValue);
-                                setState(() {
-                                  gender = newValue;
-                                });
-                              }
-                            },
-                          ),
-                        ])),
-              ],
+            padding: const EdgeInsets.all(20),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              onPressed: deleteAccount,
+              child: Text(
+                "Delete Account",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ),
         ],

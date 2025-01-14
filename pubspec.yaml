@@ -36,12 +36,12 @@ dependencies:
   cupertino_icons: ^1.0.2
   shared_preferences: ^2.3.2
   http: ^1.2.2
+  syncfusion_flutter_pdfviewer: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
   device_preview: ^1.2.0
   flutter_launcher_icons: "^0.14.1"
-  syncfusion_flutter_pdfviewer: ^27.1.58
 
 flutter_launcher_icons:
   android: true

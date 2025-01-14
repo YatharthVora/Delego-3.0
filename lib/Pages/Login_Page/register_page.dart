@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:delego/constants/backend.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:delego/Pages/Login_Page/my_bottons.dart';
-import 'package:delego/Pages/Login_Page/my_textfild.dart';
+import 'package:delego/Pages/Login_Page/my_buttons.dart';
+import 'package:delego/Pages/Login_Page/my_textfield.dart';
 
 class RegisterPage extends StatefulWidget {
   RegisterPage({super.key});

@@ -89,23 +89,45 @@ class _HomePageState extends State<HomePage> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(
-                              width: 250,
+                            Container(
+                              width: 285,
                               height: 30,
-                              child: Text(
-                                'MUMBAI MUN',
-                                style: TextStyle(
-                                  color: Color(0xFF114C90),
-                                  fontSize: 32,
-                                  fontFamily: 'Poppins-Bold',
-                                  fontWeight: FontWeight.bold,
-                                  height: 0.03,
-                                ),
+                              margin: EdgeInsets.fromLTRB(0, 0, 2, 10),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    margin: EdgeInsets.fromLTRB(0,0,3,0),
+                                    child: Text(
+                                      'MUMBAI',
+                                      style: TextStyle(
+                                        color: Color(0xFF114C90),
+                                        fontSize: 32,
+                                        fontFamily: 'Poppins-Bold',
+                                        fontWeight: FontWeight.bold,
+                                        height: 0.03,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.fromLTRB(3, 0, 0, 0),
+                                    child: Text(
+                                      'MUN',
+                                      style: TextStyle(
+                                        color: Color(0xFF114C90),
+                                        fontSize: 32,
+                                        fontFamily: 'Poppins-Bold',
+                                        fontWeight: FontWeight.bold,
+                                        height: 0.03,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            SizedBox(
+                            Container(
                               width: 100,
                               height: 20,
+                              margin: EdgeInsets.fromLTRB(0, 2, 0, 0),
                               child: Text(
                                 '2024',
                                 style: TextStyle(
@@ -178,7 +200,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             SizedBox(
                               width: 176.35,
-                              height: 17.80,
+                              height: 50,
                               child: Text(
                                 'Study Guides',
                                 style: TextStyle(
@@ -240,7 +262,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             SizedBox(
                               width: 176.35,
-                              height: 17.80,
+                              height: 50,
                               child: Text(
                                 'My QR',
                                 style: TextStyle(
@@ -302,7 +324,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             SizedBox(
                               width: 176.35,
-                              height: 17.80,
+                              height: 50,
                               child: Text(
                                 'Rooms',
                                 style: TextStyle(
@@ -364,7 +386,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             SizedBox(
                               width: 176.35,
-                              height: 17.80,
+                              height: 50,
                               child: Text(
                                 'Schedule',
                                 style: TextStyle(
@@ -387,7 +409,39 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
-              ]),
-            )));
+                // Container(
+                //   margin: EdgeInsets.fromLTRB(12, 2, 12, 2),
+                //   height: 73,
+                //   width: 73,
+                //   child: Row(
+                //     children: [
+                //       Text('Sponsored By:',
+                //         style: TextStyle(
+                //           fontSize: 18,
+                //           fontWeight: FontWeight.bold,
+                //           fontFamily: 'Poppins'
+                //         ),
+                //       ),
+                //       Container(
+                //         margin: EdgeInsets.fromLTRB(6, 0, 3, 0),
+                //           child: Image.asset('assets/icons/RiseUp_Logo.png')
+                //       ),
+                //     Container(
+                //         margin: EdgeInsets.fromLTRB(6, 0, 3, 0),
+                //           child: Image.asset('assets/icons/LytAds_Logo.png')
+                //       ),
+                //       Container(
+                //         height: 25,
+                //         margin: EdgeInsets.fromLTRB(6, 0, 3, 0),
+                //           child: Image.asset('assets/icons/Sultan_deli_Logo.png')
+                //       ),
+                //     ],
+                //   ),
+                // )
+              ]
+              ),
+            )
+        )
+    );
   }
 }

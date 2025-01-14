@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:delego/Pages/Home_Page/my_list_tile.dart';
 import 'package:delego/Pages/Sponsors_Page/sponsor_page.dart';
+
 class MyDrawer extends StatefulWidget {
   final void Function()? onProfileTap;
   final void Function()? onSignoutTap;
@@ -13,6 +14,7 @@ class MyDrawer extends StatefulWidget {
 }
 
 class _MyDrawerState extends State<MyDrawer> {
+
 
   void goToSponsorsPage() {
     // pop the menu
@@ -48,6 +50,7 @@ class _MyDrawerState extends State<MyDrawer> {
               // Profile list tile
               MyListTile(
                   icon: Icons.person,
+
                   text: 'P R O F I L E',
                   onTap: widget.onProfileTap),
               MyListTile(
@@ -55,6 +58,10 @@ class _MyDrawerState extends State<MyDrawer> {
                 text: 'S P O N S O R S',
                 onTap: goToSponsorsPage,
               ),
+
+                  text: 'S E T T I N G S',
+                  onTap: widget.onProfileTap),
+
             ],
           ),
           // Logout tile
