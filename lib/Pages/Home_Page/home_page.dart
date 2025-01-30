@@ -90,13 +90,12 @@ class _HomePageState extends State<HomePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              width: 285,
-                              height: 30,
+
                               margin: EdgeInsets.fromLTRB(0, 0, 2, 10),
                               child: Row(
                                 children: [
                                   Container(
-                                    margin: EdgeInsets.fromLTRB(0,0,3,0),
+                                    margin: EdgeInsets.fromLTRB(0,0,3,5),
                                     child: Text(
                                       'MUMBAI',
                                       style: TextStyle(
@@ -109,7 +108,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
                                   Container(
-                                    margin: EdgeInsets.fromLTRB(3, 0, 0, 0),
+                                    margin: EdgeInsets.fromLTRB(3, 0, 0, 5),
                                     child: Text(
                                       'MUN',
                                       style: TextStyle(
@@ -125,9 +124,8 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             Container(
-                              width: 100,
-                              height: 20,
-                              margin: EdgeInsets.fromLTRB(0, 2, 0, 0),
+
+                              margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
                               child: Text(
                                 '2024',
                                 style: TextStyle(
@@ -142,7 +140,7 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                         Container(
-                          margin: EdgeInsets.zero,
+                          margin: EdgeInsets.fromLTRB(0, 0, 4, 0),
                           height: 80,
                           width: 80,
                           child:
