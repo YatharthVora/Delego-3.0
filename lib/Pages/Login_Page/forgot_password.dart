@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-// import 'package:delego/constants/backend.dart';
-// import 'package:delego/Pages/Login_Page/my_buttons.dart';
-// import 'package:delego/Pages/Login_Page/my_textfield.dart';
+import 'package:delego/constants/backend.dart';
+import 'package:delego/Pages/Login_Page/my_buttons.dart';
+import 'package:delego/Pages/Login_Page/my_textfield.dart';
 
 class ForgotPassword extends StatefulWidget {
   const ForgotPassword({Key? key}) : super(key: key);
@@ -17,14 +17,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   bool isEmailSent = false; // Tracks whether the email was sent
 
   Future<void> sendEmail() async {
-    final email = emailController.text.trim();
-
-    if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your email.')),
-      );
-      return;
-    }
 
     // Show a loading indicator
     showDialog(
@@ -32,13 +24,22 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       barrierDismissible: false,
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
+    final email = emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your email.')),
+      );
+      return;
+    }
+
 
     try {
-      // Replace with your backend URL
-      final response = await http.post(
-        Uri.parse('https://your-backend-url.com/forgot_password'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email}),
+      // Send email
+      final response = await http.get(
+        Uri.parse('${Backend.baseUrl}/forgot_password?email=$email'),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
       );
 
       Navigator.of(context).pop(); // Close the loading dialog
