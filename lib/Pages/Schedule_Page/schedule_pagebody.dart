@@ -30,54 +30,54 @@ class ShedulePageBody extends StatelessWidget {
   }
 }
 
-class HomePageBodyDay2 extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return new Expanded(
-      child: new Container(
-        color: new Color(0xFFFFFFFF),
-        child: new CustomScrollView(
-          scrollDirection: Axis.vertical,
-          shrinkWrap: false,
-          slivers: <Widget>[
-            new SliverPadding(
-              padding: const EdgeInsets.symmetric(vertical: 24.0),
-              sliver: new SliverList(
-                delegate: new SliverChildBuilderDelegate(
-                  (context, index) => new ScheduleSummary(schedules1[index]),
-                  childCount: schedules1.length,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class HomePageBodyDay3 extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return new Expanded(
-      child: new Container(
-        color: new Color(0xFFFFFFFF),
-        child: new CustomScrollView(
-          scrollDirection: Axis.vertical,
-          shrinkWrap: false,
-          slivers: <Widget>[
-            new SliverPadding(
-              padding: const EdgeInsets.symmetric(vertical: 24.0),
-              sliver: new SliverList(
-                delegate: new SliverChildBuilderDelegate(
-                  (context, index) => new ScheduleSummary(schedules2[index]),
-                  childCount: schedules2.length,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// class HomePageBodyDay2 extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return new Expanded(
+//       child: new Container(
+//         color: new Color(0xFFFFFFFF),
+//         child: new CustomScrollView(
+//           scrollDirection: Axis.vertical,
+//           shrinkWrap: false,
+//           slivers: <Widget>[
+//             new SliverPadding(
+//               padding: const EdgeInsets.symmetric(vertical: 24.0),
+//               sliver: new SliverList(
+//                 delegate: new SliverChildBuilderDelegate(
+//                   (context, index) => new ScheduleSummary(schedules1[index]),
+//                   childCount: schedules1.length,
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+//
+// class HomePageBodyDay3 extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return new Expanded(
+//       child: new Container(
+//         color: new Color(0xFFFFFFFF),
+//         child: new CustomScrollView(
+//           scrollDirection: Axis.vertical,
+//           shrinkWrap: false,
+//           slivers: <Widget>[
+//             new SliverPadding(
+//               padding: const EdgeInsets.symmetric(vertical: 24.0),
+//               sliver: new SliverList(
+//                 delegate: new SliverChildBuilderDelegate(
+//                   (context, index) => new ScheduleSummary(schedules2[index]),
+//                   childCount: schedules2.length,
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
