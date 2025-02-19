@@ -229,6 +229,7 @@ class _LoginPageState extends State<LoginPage> {
                   controller: usernameController,
                   hintText: 'Email ID',
                   obscureText: false,
+
                 ),
 
                 const SizedBox(height: 10),

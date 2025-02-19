@@ -95,9 +95,9 @@ class _HomePageState extends State<HomePage> {
                               child: Row(
                                 children: [
                                   Container(
-                                    margin: EdgeInsets.fromLTRB(0,0,3,5),
+                                    margin: EdgeInsets.fromLTRB(0,0,3,6),
                                     child: Text(
-                                      'MUMBAI',
+                                      'INTRA',
                                       style: TextStyle(
                                         color: Color(0xFF114C90),
                                         fontSize: 32,
@@ -108,7 +108,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
                                   Container(
-                                    margin: EdgeInsets.fromLTRB(3, 0, 0, 5),
+                                    margin: EdgeInsets.fromLTRB(3, 0, 0, 6),
                                     child: Text(
                                       'MUN',
                                       style: TextStyle(
@@ -125,9 +125,9 @@ class _HomePageState extends State<HomePage> {
                             ),
                             Container(
 
-                              margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                              margin: EdgeInsets.fromLTRB(2, 10, 0, 0),
                               child: Text(
-                                '2024',
+                                '12.0',
                                 style: TextStyle(
                                   color: Color(0xFF114C90),
                                   fontSize: 24,
@@ -140,9 +140,9 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                         Container(
-                          margin: EdgeInsets.fromLTRB(0, 0, 4, 0),
-                          height: 80,
-                          width: 80,
+                          margin: EdgeInsets.fromLTRB(0, 0, 6, 0),
+                          height: 85,
+                          width: 85,
                           child:
                               Image.asset('assets/icons/Blue_outline_logo.png'),
                         )

@@ -87,8 +87,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20), // Add horizontal padding
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -113,34 +111,29 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   const SizedBox(height: 20),
 
                   // Email Input Field
-                  TextField(
-                    controller: emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Enter your email',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      prefixIcon: const Icon(Icons.email),
-                    ),
-                  ),
+                  MyTextField(
+                      controller: emailController,
+                      hintText:"Email-ID",
+                      obscureText:false),
                   const SizedBox(height: 20),
 
                   // Send/Resend Email Button
                   GestureDetector(
                     onTap: sendEmail,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
                       width: double.infinity,
                       decoration: BoxDecoration(
                         color: Colors.blue[900],
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Center(
                         child: Text(
                           isEmailSent ? 'Resend Email' : 'Send Email',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 25,
+                            fontSize: 26,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -171,7 +164,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }
