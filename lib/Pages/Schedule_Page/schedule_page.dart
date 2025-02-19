@@ -36,7 +36,7 @@ class SchedulePage extends StatelessWidget {
               //   text: "Day 2",
               // ),
               Tab(
-                text: "IntraMUN 11.0",
+                text: "IntraMUN 12.0",
               ),
             ],
           ),
