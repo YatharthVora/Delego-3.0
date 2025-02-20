@@ -62,7 +62,7 @@ class _StudyGuidesPageState extends State<StudyGuidespage> {
                 ),
                 const SizedBox(height: 20.0),
                 _buildStudyGuideButton('ICC', Icc_PdfViewer()),
-                _buildStudyGuideButton('NATA', Nata_PdfViewer()),
+                _buildStudyGuideButton('NATO', Nata_PdfViewer()),
                 _buildStudyGuideButton('UNGA-ECOFIN', Unga_Ecofin_PdfViewer()),
                 // _buildStudyGuideButton('AIPPM', Aippm_PdfViwer()),
                 // _buildStudyGuideButton('COPUOS', Copuos_PdfViewer()),

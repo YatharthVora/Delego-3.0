@@ -16,7 +16,7 @@ class Unga_Ecofin_PdfViewer extends StatelessWidget {
             ),
           ),
         ),
-        body: SfPdfViewer.asset("assets/pdfs/UNGU_ECOFIN_Study_Guide.pdf")
+        body: SfPdfViewer.asset("assets/pdfs/UNGA_ECOFIN_Study_Guide.pdf")
     );
   }
 }
