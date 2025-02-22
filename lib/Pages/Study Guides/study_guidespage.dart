@@ -64,6 +64,7 @@ class _StudyGuidesPageState extends State<StudyGuidespage> {
                 _buildStudyGuideButton('ICC', Icc_PdfViewer()),
                 _buildStudyGuideButton('NATO', Nata_PdfViewer()),
                 _buildStudyGuideButton('UNGA-ECOFIN', Unga_Ecofin_PdfViewer()),
+                _buildStudyGuideButton('IPC', IPC_PdfViwer()),
                 // _buildStudyGuideButton('AIPPM', Aippm_PdfViwer()),
                 // _buildStudyGuideButton('COPUOS', Copuos_PdfViewer()),
                 // _buildStudyGuideButton('ILC', Ilc_PdfViewer()),

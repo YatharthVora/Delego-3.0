@@ -17,6 +17,6 @@ class IPC_PdfViwer extends StatelessWidget {
             ),
           ),
         ),
-        body: SfPdfViewer.asset("assets/pdfs/IPC_Study_Guide.pdf"));
+        body: SfPdfViewer.asset("assets/pdfs/IPC_IntraMun__Study_Guide.pdf"));
   }
 }
