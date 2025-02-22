@@ -144,7 +144,7 @@ List<Schedule> schedules2 = [
     id: "1",
     name: "Delegate Registrations",
     location: "MPSTME",
-    time: "09:00 - 09:15",
+    time: "08:00 - 08:30",
     description:
         "The delegates and the executive board members first proceed for registrations as we commence for IntraMUN 11.0.",
     image: "assets/img/reg.jpg",
@@ -154,7 +154,7 @@ List<Schedule> schedules2 = [
     id: "2",
     name: "Opening Ceremony",
     location: "Big Seminar Hall",
-    time: "09:15 - 10:00",
+    time: "08:30 - 09:00",
     description:
         "The opening ceremony marks the start of the Eleventh installment of this resplendent Conference.The distinguished Secretariat delivers keynote addresses to set the underlying tone and summarize the core message for the event coupled with a panel discussion from our illustrious guest speakers who will engage the audience in a comprehensive dialogue.",
     image: "assets/img/ceremony.jpg",
@@ -174,7 +174,7 @@ List<Schedule> schedules2 = [
     id: "3",
     name: "Committee Session 1",
     location: "Allocated Rooms in MPSTME",
-    time: "10:00 - 13:00",
+    time: "09:00 - 12:00",
     description:
         "After two days of intense debate, the moment of truth is finally here. Dot the I’s and cross the T’s as delegates across all committees strive to ensure that their agenda is taken care of, as tough negotiations ensue.",
     image: "assets/img/sessions.jpg",
@@ -184,7 +184,7 @@ List<Schedule> schedules2 = [
     id: "4",
     name: "Lunch",
     location: "Canteen",
-    time: "13:00 - 13:30",
+    time: "12:00 - 13:00",
     description:
         "Indulge in a delectable lunch, with last-minute lobbying that can make or break days worth of deliberation. But in all the frantic discussions and pursuing last-minute votes, do not forget to treat your palate to the epitome of culinary excellence. Bon Appétit!",
     image: "assets/img/lunch.jpeg",
@@ -194,7 +194,7 @@ List<Schedule> schedules2 = [
     id: "5",
     name: "Committee Session 2",
     location: "Allocated Rooms in MPSTME",
-    time: "13:30 - 16:45",
+    time: "13:00 - 16:00",
     description:
         "Revel in the pinnacle of diplomatic success after what has been the greatest test of diplomatic powers! The fate of the world hangs in balance, and it all depends on the delegates to alter its course. The paradox of progress is bound to leave its mark, even as the delegates strive to ensure that justice and peace prevails.",
     image: "assets/img/sessions.jpg",
@@ -202,31 +202,33 @@ List<Schedule> schedules2 = [
 
   const Schedule(
     id: "6",
+    name: "Closing Ceremony",
+    location: "Big Seminar Hall",
+    time: "16:00 - 17:00",
+    description:
+    "The time has come to bid adieu to what has hopefully been an enchanting experience, here at IntraMUN 11.0. Participate in an elegant ceremony that not only celebrates the best diplomatic skills across all committees but also the alluring spirit of diplomacy!",
+    image: "assets/img/ceremony.jpg",
+  ),
+
+  const Schedule(
+    id: "7",
     name: "High Tea",
     location: "Canteen",
-    time: "16:45 - 17:15",
+    time: "17:00 - 17:30",
     description:
         "Reinvigorate your mind with a kick of caffeine and luscious snacks to prepare for lobbying with potential allies and foes who will play a decisive role in dissensions to follow.",
     image: "assets/img/hightea.jpg",
   ),
 
-  const Schedule(
-    id: "7",
-    name: "Formal Socials",
-    location: "Big Seminar Hall",
-    time: "17:15 - 17:45",
-    description:
-        "Join us for an evening of entertainment, mingling, and networking at the Formal Socials event. It's a great opportunity to meet fellow Delegates, enjoy some light refreshments, and unwind after a busy week. Whether you're looking to make new friends, catch up with old ones, or just relax, this event has something for everyone.",
-    image: "assets/img/socials.jpg",
-  ),
+  // const Schedule(
+  //   id: "7",
+  //   name: "Formal Socials",
+  //   location: "Big Seminar Hall",
+  //   time: "17:15 - 17:45",
+  //   description:
+  //       "Join us for an evening of entertainment, mingling, and networking at the Formal Socials event. It's a great opportunity to meet fellow Delegates, enjoy some light refreshments, and unwind after a busy week. Whether you're looking to make new friends, catch up with old ones, or just relax, this event has something for everyone.",
+  //   image: "assets/img/socials.jpg",
+  // ),
 
-  const Schedule(
-    id: "8",
-    name: "Closing Ceremony",
-    location: "Big Seminar Hall",
-    time: "17:45",
-    description:
-        "The time has come to bid adieu to what has hopefully been an enchanting experience, here at IntraMUN 11.0. Participate in an elegant ceremony that not only celebrates the best diplomatic skills across all committees but also the alluring spirit of diplomacy!",
-    image: "assets/img/ceremony.jpg",
-  ),
+
 ];
