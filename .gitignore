@@ -45,3 +45,5 @@ app.*.map.json
 
 # Appbundle
 appbundle/
+.vscode
+Lab1.session.sql
