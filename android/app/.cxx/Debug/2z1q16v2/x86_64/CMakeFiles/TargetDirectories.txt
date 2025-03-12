@@ -1,2 +1,0 @@
-C:/Users/Mithil Save/Documents/GitHub/Delego/android/app/.cxx/Debug/2z1q16v2/x86_64/CMakeFiles/edit_cache.dir
-C:/Users/Mithil Save/Documents/GitHub/Delego/android/app/.cxx/Debug/2z1q16v2/x86_64/CMakeFiles/rebuild_cache.dir

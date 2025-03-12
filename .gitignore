@@ -47,3 +47,7 @@ app.*.map.json
 appbundle/
 .vscode
 Lab1.session.sql
+
+linux/*
+macos/*
+android/app/.cxx/*
