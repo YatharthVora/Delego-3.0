@@ -1,6 +1,6 @@
 # Delego
 
-Delego is a Flutter-based application aimed at simplifying task delegation and management. It allows users to assign, track, and manage tasks efficiently within teams or personal projects.
+Delego is a Flutter-based application aimed at simplifying task delegation and management. It allows users / Delegate to track, and manage tasks efficiently during MUN.
 
 ## Features
 
