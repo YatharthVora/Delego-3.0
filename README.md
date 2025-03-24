@@ -24,7 +24,11 @@ To set up the development environment for Delego, follow these steps:
 
    Ensure you have the latest version of JDK installed. You can download it from the [official Oracle website](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html).
 
-3. **Upgrade Flutter**:
+3. **Install Flutter**:
+
+   If you haven't installed Flutter yet, follow the official installation guide [here](https://docs.flutter.dev/get-started/install).
+
+4. **Upgrade Flutter**:
 
    Make sure you're using the latest version of Flutter:
 
@@ -32,7 +36,7 @@ To set up the development environment for Delego, follow these steps:
    flutter upgrade
    ```
 
-4. **Install Dependencies**:
+5. **Install Dependencies**:
 
    Clean previous builds and fetch the necessary packages:
 
@@ -41,7 +45,7 @@ To set up the development environment for Delego, follow these steps:
    flutter pub get
    ```
 
-5. **Run the Application**:
+6. **Run the Application**:
 
    Start your preferred emulator or connect a physical device, then execute:
 
