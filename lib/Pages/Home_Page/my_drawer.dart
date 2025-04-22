@@ -1,28 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:delego/Pages/Home_Page/my_list_tile.dart';
 import 'package:delego/Pages/Sponsors_Page/sponsor_page.dart';
+import 'package:delego/Pages/Policy_Page/policy_page.dart';
 
 class MyDrawer extends StatefulWidget {
   final void Function()? onProfileTap;
   final void Function()? onSignoutTap;
 
-  const MyDrawer(
-      {super.key, required this.onProfileTap, required this.onSignoutTap});
+  const MyDrawer({
+    Key? key,
+    required this.onProfileTap,
+    required this.onSignoutTap,
+  }) : super(key: key);
 
   @override
   State<MyDrawer> createState() => _MyDrawerState();
 }
 
 class _MyDrawerState extends State<MyDrawer> {
-
-
   void goToSponsorsPage() {
-    // pop the menu
     Navigator.pop(context);
-    //naviget to Profile Page
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => SponsorPage()));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => SponsorPage()));
   }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -32,41 +32,77 @@ class _MyDrawerState extends State<MyDrawer> {
         children: [
           Column(
             children: [
-              // header
+              // Drawer Header
               DrawerHeader(
-                child: Icon(
-                  Icons.person,
-                  color: Colors.white,
-                  size: 64,
-                ),
+                child: Icon(Icons.person, color: Colors.white, size: 64),
               ),
-
-              //home list tile
+              // HOME
               MyListTile(
                 icon: Icons.home,
-                text: 'H O M E',
+                text: 'HOME',
                 onTap: () => Navigator.pop(context),
               ),
-              // Profile list tile
+              // SETTINGS
               MyListTile(
-                  icon: Icons.person,
-
-                  text: 'S E T T I N G S',
-                  onTap: widget.onProfileTap),
+                icon: Icons.person,
+                text: 'SETTINGS',
+                onTap: widget.onProfileTap,
+              ),
+              // SPONSORS
               MyListTile(
                 icon: Icons.handshake,
-                text: 'S P O N S O R S',
+                text: 'SPONSORS',
                 onTap: goToSponsorsPage,
               ),
 
+              MyListTile(
+                icon: Icons.policy_sharp,
+                text: 'POLICIES',
+                onTap: () {},
+                trailing: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'POSH Policy',
+                        child: Text('POSH Policy', style: TextStyle(color: Colors.black)),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Conference Policy',
+                        child: Text('Conference Policy', style: TextStyle(color: Colors.black)),
+                      ),
+                    ],
+                    onChanged: (String? value) {
+                      if (value != null) {
+
+                        Navigator.pop(context);
+
+                        final pdfAsset = (value == 'POSH Policy')
+                            ? 'assets/pdfs/Mumbai MUN 2024 POSH Policy.pdf'
+                            : 'assets/pdfs/Mumbai MUN 2024 Conference Policy.pdf';
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PdfViewerPage(pdfAsset: pdfAsset),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ),
             ],
           ),
-          // Logout tile
+
           Padding(
             padding: const EdgeInsets.only(bottom: 16.0),
             child: MyListTile(
-                icon: Icons.logout, text: 'L O G O U T', onTap: widget.onSignoutTap),
-          )
+              icon: Icons.logout,
+              text: 'LOGOUT',
+              onTap: widget.onSignoutTap,
+            ),
+          ),
         ],
       ),
     );

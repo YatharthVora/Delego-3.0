@@ -4,25 +4,38 @@ class MyListTile extends StatelessWidget {
   final IconData icon;
   final String text;
   final void Function()? onTap;
+  final Widget? trailing;
+
   const MyListTile({
-    super.key,
+    Key? key,
     required this.icon,
     required this.text,
     required this.onTap,
-  });
+    this.trailing,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: Colors.white,
-        size: 30,
-      ),
+    return InkWell(
       onTap: onTap,
-      title: Text(
-        text,
-        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 10, 20, 12),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.white),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                text,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            if (trailing != null) trailing!,
+          ],
+        ),
       ),
     );
   }
