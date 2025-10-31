@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
-class IPC_PdfViwer extends StatelessWidget {
-  const IPC_PdfViwer({super.key});
+class IpcPdfviewer extends StatelessWidget {
+  const IpcPdfviewer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -10,13 +10,13 @@ class IPC_PdfViwer extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.blue.shade900,
           centerTitle: true,
-          title: Text(
-            'PDF Viewer',
+          title: Text('PDF Viewer',
             style: TextStyle(
               color: Colors.white,
             ),
           ),
         ),
-        body: SfPdfViewer.asset("assets/pdfs/IPC_IntraMun__Study_Guide.pdf"));
+        body: SfPdfViewer.asset("assets/pdfs/IPC.pdf")
+    );
   }
 }

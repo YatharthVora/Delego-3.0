@@ -1,4 +1,4 @@
-import 'package:delego/Pages/Profile_Page/profil_page.dart';
+import 'package:delego/Pages/Profile_Page/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -209,7 +209,7 @@ class _LoginPageState extends State<LoginPage> {
                   margin: EdgeInsets.all(0),
                   height: 200,
                   width: 200,
-                  child: Image.asset("assets/icons/Blue_outline_logo.png"),
+                  child: Image.asset("assets/icons/logo.png"),
                 ),
 
                 // text

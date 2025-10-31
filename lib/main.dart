@@ -132,7 +132,7 @@ class _LaunchScreenState extends State<LaunchScreen> with TickerProviderStateMix
             FadeTransition(
               opacity: _logoController,
               child: Image.asset(
-                'assets/icons/Blue_outline_logo.png',
+                'assets/icons/logo.png',
                 height: 100,
               ),
             ),

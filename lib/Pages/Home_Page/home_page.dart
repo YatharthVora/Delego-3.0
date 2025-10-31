@@ -1,7 +1,7 @@
 import 'package:delego/Pages/Login_Page/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:delego/Pages/Home_Page/my_drawer.dart';
-import 'package:delego/Pages/Profile_Page/profil_page.dart';
+import 'package:delego/Pages/Profile_Page/profile_page.dart';
 import 'package:delego/Pages/Room_Page/room_page.dart';
 import 'package:delego/Pages/Schedule_Page/schedule_page.dart';
 import 'package:delego/Pages/Study Guides/study_guidespage.dart';
@@ -20,7 +20,7 @@ class _HomePageState extends State<HomePage> {
   void goToProfilePage() {
     // pop the menu
     Navigator.pop(context);
-    //naviget to Profile Page
+    //navigate to Profile Page
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => ProfilePage()));
   }
@@ -97,7 +97,7 @@ class _HomePageState extends State<HomePage> {
                                   Container(
                                     margin: EdgeInsets.fromLTRB(0,0,3,6),
                                     child: Text(
-                                      'INTRA',
+                                      'Mumbai',
                                       style: TextStyle(
                                         color: Color(0xFF114C90),
                                         fontSize: 32,
@@ -127,7 +127,7 @@ class _HomePageState extends State<HomePage> {
 
                               margin: EdgeInsets.fromLTRB(2, 10, 0, 0),
                               child: Text(
-                                '12.0',
+                                '2025',
                                 style: TextStyle(
                                   color: Color(0xFF114C90),
                                   fontSize: 24,
@@ -144,7 +144,7 @@ class _HomePageState extends State<HomePage> {
                           height: 85,
                           width: 85,
                           child:
-                              Image.asset('assets/icons/Blue_outline_logo.png'),
+                              Image.asset('assets/icons/logo.png'),
                         )
                       ],
                     )),

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:delego/constants/backend.dart';
-import 'package:delego/Pages/Login_Page/my_buttons.dart';
 import 'package:delego/Pages/Login_Page/my_textfield.dart';
 
 class ForgotPassword extends StatefulWidget {
@@ -95,7 +94,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   Container(
                     height: 200,
                     width: 200,
-                    child: Image.asset("assets/icons/Blue_outline_logo.png"),
+                    child: Image.asset("assets/icons/logo.png"),
                   ),
 
                   // text

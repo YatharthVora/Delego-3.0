@@ -1,6 +1,6 @@
 import 'package:delego/Pages/Schedule_Page/schedule_cards.dart';
 import 'package:flutter/material.dart';
-import 'package:delego/models/shedule.dart';
+import 'package:delego/models/schedule.dart';
 import 'package:delego/constants/separator.dart';
 import 'package:delego/constants/text_style.dart';
 
@@ -30,8 +30,8 @@ class DetailPage extends StatelessWidget {
 
   Container _getBackground() {
     return Container(
-      child: Image.asset(
-        schedule.image!,
+      child: Image.network(
+        schedule.imageUrl,
         fit: BoxFit.cover,
         height: 300.0,
       ),

@@ -127,7 +127,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   margin: EdgeInsets.all(0),
                   height: 200,
                   width: 200,
-                  child: Image.asset("assets/icons/Blue_outline_logo.png"),
+                  child: Image.asset("assets/icons/logo.png"),
                 ),
 
                 // text

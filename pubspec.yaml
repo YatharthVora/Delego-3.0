@@ -1,5 +1,5 @@
 name: delego
-description: A new Flutter project.
+description: Delego is a Flutter-based application aimed at simplifying task delegation and management. It allows users / Delegate to track, and manage tasks efficiently during MUN.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:delego/models/shedule.dart';
+import 'package:delego/models/schedule.dart';
 import 'package:delego/constants/fonts.dart';
 import 'package:delego/constants/text_style.dart';
 import 'package:delego/constants/separator.dart';
@@ -16,15 +16,17 @@ class ScheduleSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheduleThumbnail = Container(
-      margin: EdgeInsets.symmetric(vertical: 16.0),
-      alignment:
-          horizontal ? FractionalOffset.centerLeft : FractionalOffset.center,
+      // ...
       child: Hero(
         tag: "schedule-hero-${schedule.id}",
-        child: Image(
-          image: AssetImage(schedule.image!),
-          height: 92.0,
-          width: 92.0,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8.0),
+          child: Image.network(
+            schedule.imageUrl,
+            height: 92.0,
+            width: 92.0,
+            fit: BoxFit.cover,
+          ),
         ),
       ),
     );

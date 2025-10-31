@@ -1,20 +1,12 @@
-import 'package:delego/Pages/Study%20Guides/PDF_viewers/Nata_pdfviewer.dart';
 import 'package:flutter/material.dart';
-import 'package:delego/Pages/Study Guides/PDF_viewers/Aippm_pdfviewer.dart';
-import 'package:delego/Pages/Study Guides/PDF_viewers/Copuos_pdfviewer.dart';
-import 'package:delego/Pages/Study Guides/PDF_viewers/HUNGA_pdfviewer.dart';
-import 'package:delego/Pages/Study Guides/PDF_viewers/ILC_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_viewers/G20_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/IPC_pdfviewer.dart';
-import 'package:delego/Pages/Study Guides/PDF_viewers/UNDP_pdfviewer.dart';
-import 'package:delego/Pages/Study Guides/PDF_viewers/WHO_pdfviewer.dart';
-import 'package:delego/Pages/Study Guides/PDF_viewers/UNSC_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_viewers/LokSabha_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_viewers/UNCSW_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_viewers/UNEA_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/UNODC_pdfviewer.dart';
-import 'package:delego/Pages/Study Guides/PDF_viewers/UNHRC_pdfviewer.dart';
-import 'package:delego/Pages/Study Guides/PDF_viewers/UNFCCC-COP_pdfviewer.dart';
-import 'package:delego/Pages/Study Guides/PDF_viewers/WORLD_BANK_pdfviewer.dart';
+import 'package:delego/Pages/Study Guides/PDF_viewers/UNSC_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/Icc_pdfviewer.dart';
-import 'package:delego/Pages/Study Guides/PDF_viewers/Nata_pdfviewer.dart';
-import 'package:delego/Pages/Study Guides/PDF_viewers/UNGA_ECOFIN_pdfviewer.dart';
 class StudyGuidespage extends StatefulWidget {
   @override
   State<StudyGuidespage> createState() => _StudyGuidesPageState();
@@ -61,22 +53,13 @@ class _StudyGuidesPageState extends State<StudyGuidespage> {
                   ),
                 ),
                 const SizedBox(height: 20.0),
-                _buildStudyGuideButton('ICC', Icc_PdfViewer()),
-                _buildStudyGuideButton('NATO', Nata_PdfViewer()),
-                _buildStudyGuideButton('UNGA-ECOFIN', Unga_Ecofin_PdfViewer()),
-                _buildStudyGuideButton('IPC', IPC_PdfViwer()),
-                // _buildStudyGuideButton('AIPPM', Aippm_PdfViwer()),
-                // _buildStudyGuideButton('COPUOS', Copuos_PdfViewer()),
-                // _buildStudyGuideButton('ILC', Ilc_PdfViewer()),
-                // _buildStudyGuideButton('IPC', IPC_PdfViwer()),
-                // _buildStudyGuideButton('UNDP', Undp_PdfViewer()),
-                // _buildStudyGuideButton('UNODC', Unodc_PdfViewer()),
-                // _buildStudyGuideButton('WHO', Who_PdfViewer()),
-                // _buildStudyGuideButton('WORLD BANK', WorldBank_PdfViewer()),
-                // _buildStudyGuideButton('UNHRC', Unhrc_PdfViewer()),
-                // _buildStudyGuideButton('H.UNGA', Hunga_PdfViewer()),
-                // _buildStudyGuideButton('UNSC', Unsc_PdfViewer()),
-                // _buildStudyGuideButton('UNFCCC-COP', Unfccc_PdfViewer()),
+                _buildStudyGuideButton('G20', G20Pdfviewer()),
+                _buildStudyGuideButton('Historical Lok Sabha', LoksabhaPdfviewer()),
+                _buildStudyGuideButton('IPC', IpcPdfviewer()),
+                _buildStudyGuideButton('UNCSW', UncswPdfviewer()),
+                _buildStudyGuideButton('UNEA', UneaPdfviewer()),
+                _buildStudyGuideButton('UNODC', UnodcPdfviewer()),
+                _buildStudyGuideButton('UNSC', UnscPdfviewer()),
               ],
             ),
           ),

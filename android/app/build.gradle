@@ -31,7 +31,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace "com.example.delego" // Use your project's namespace
     compileSdkVersion flutter.compileSdkVersion.toInteger()
-    ndkVersion "25.1.8937393"
+    ndkVersion = "26.1.10909125"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
