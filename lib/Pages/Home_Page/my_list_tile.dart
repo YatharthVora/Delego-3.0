@@ -16,19 +16,22 @@ class MyListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return InkWell(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 10, 20, 12),
         child: Row(
           children: [
-            Icon(icon, color: Colors.white),
+            Icon(icon, color: scheme.onSurface),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 text,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: textTheme.bodyLarge?.copyWith(
+                  color: scheme.onSurface,
                   fontSize: 16,
                 ),
               ),

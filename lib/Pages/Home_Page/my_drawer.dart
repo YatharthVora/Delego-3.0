@@ -20,48 +20,46 @@ class MyDrawer extends StatefulWidget {
 class _MyDrawerState extends State<MyDrawer> {
   void goToSponsorsPage() {
     Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (context) => SponsorPage()));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => const SponsorPage()));
   }
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Drawer(
-      backgroundColor: Colors.blue.shade900,
+      backgroundColor: scheme.surface,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Column(
             children: [
-              // Drawer Header
               DrawerHeader(
-                child: Icon(Icons.person, color: Colors.white, size: 64),
+                child: Icon(Icons.person, color: scheme.onSurface, size: 64),
               ),
-              // HOME
               MyListTile(
                 icon: Icons.home,
                 text: 'HOME',
                 onTap: () => Navigator.pop(context),
               ),
-              // SETTINGS
               MyListTile(
                 icon: Icons.person,
                 text: 'SETTINGS',
                 onTap: widget.onProfileTap,
               ),
-              // SPONSORS
               MyListTile(
                 icon: Icons.handshake,
                 text: 'SPONSORS',
                 onTap: goToSponsorsPage,
               ),
-
               MyListTile(
                 icon: Icons.policy_sharp,
                 text: 'POLICIES',
                 onTap: () {},
                 trailing: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
-                    icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                    icon: Icon(Icons.arrow_drop_down, color: scheme.onSurface),
+                    dropdownColor: scheme.surface,
                     items: const [
                       DropdownMenuItem(
                         value: 'POSH Policy',
@@ -74,7 +72,6 @@ class _MyDrawerState extends State<MyDrawer> {
                     ],
                     onChanged: (String? value) {
                       if (value != null) {
-
                         Navigator.pop(context);
 
                         final pdfAsset = (value == 'POSH Policy')
@@ -94,7 +91,6 @@ class _MyDrawerState extends State<MyDrawer> {
               ),
             ],
           ),
-
           Padding(
             padding: const EdgeInsets.only(bottom: 16.0),
             child: MyListTile(

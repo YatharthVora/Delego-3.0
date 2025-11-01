@@ -3,15 +3,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'Pages/Login_Page/login_page.dart';
 import 'Pages/Home_Page/home_page.dart';
 
+// Centralized theming imports
+import 'Theme/app_theme.dart';
+import 'Theme/theme_controller.dart';
+
 void main() {
-  runApp(MyApp());
+  runApp(MyApp(controller: ThemeController()));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  final ThemeController controller;
+  const MyApp({super.key, required this.controller});
 
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
@@ -24,34 +29,46 @@ class _MyAppState extends State<MyApp> {
     _initializeApp();
   }
 
-
   Future<void> _initializeApp() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token'); 
+    final String? token = prefs.getString('token');
 
+    if (!mounted) return;
     setState(() {
-      isLoggedIn = token != null && token.isNotEmpty; 
+      isLoggedIn = token != null && token.isNotEmpty;
     });
 
-
-    Future.delayed(Duration(seconds: 3), () {
+    // Keep the timed splash dismissal (3s) from your updated code
+    Future.delayed(const Duration(seconds: 3), () {
+      if (!mounted) return;
       setState(() {
-        showLaunchScreen = false; 
+        showLaunchScreen = false;
       });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: showLaunchScreen
-          ? LaunchScreen(onLaunchComplete: _onLaunchComplete) 
-          : (isLoggedIn == true ? HomePage() : LoginPage()),
+    return AnimatedBuilder(
+      animation: widget.controller,
+      builder: (context, _) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: getLightTheme(),
+          darkTheme: getDarkTheme(),
+          themeMode: widget.controller.mode,
+          home: showLaunchScreen
+              ? LaunchScreen(onLaunchComplete: _onLaunchComplete)
+              : (isLoggedIn == true
+              ? HomePage(controller: widget.controller)
+              : LoginPage(controller: widget.controller)),
+        );
+      },
     );
   }
 
   void _onLaunchComplete() {
+    if (!mounted) return;
     setState(() {
       showLaunchScreen = false;
     });
@@ -59,15 +76,15 @@ class _MyAppState extends State<MyApp> {
 }
 
 class LaunchScreen extends StatefulWidget {
-  final Function onLaunchComplete; 
-
-  LaunchScreen({required this.onLaunchComplete});
+  final VoidCallback onLaunchComplete;
+  const LaunchScreen({super.key, required this.onLaunchComplete});
 
   @override
   _LaunchScreenState createState() => _LaunchScreenState();
 }
 
-class _LaunchScreenState extends State<LaunchScreen> with TickerProviderStateMixin {
+class _LaunchScreenState extends State<LaunchScreen>
+    with TickerProviderStateMixin {
   late AnimationController _logoController;
   late AnimationController _textController1;
   late AnimationController _textController2;
@@ -76,20 +93,14 @@ class _LaunchScreenState extends State<LaunchScreen> with TickerProviderStateMix
   void initState() {
     super.initState();
 
-    _logoController = AnimationController(
-      vsync: this,
-      duration: Duration(seconds: 1),
-    )..forward();
+    _logoController =
+    AnimationController(vsync: this, duration: const Duration(seconds: 1))
+      ..forward();
 
     _textController1 = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 400),
-    );
-
+        vsync: this, duration: const Duration(milliseconds: 400));
     _textController2 = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 400),
-    );
+        vsync: this, duration: const Duration(milliseconds: 400));
 
     _logoController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -105,8 +116,9 @@ class _LaunchScreenState extends State<LaunchScreen> with TickerProviderStateMix
 
     _textController2.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        Future.delayed(Duration(milliseconds: 500), () {
-          widget.onLaunchComplete(); 
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (!mounted) return;
+          widget.onLaunchComplete();
         });
       }
     });
@@ -122,47 +134,51 @@ class _LaunchScreenState extends State<LaunchScreen> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scheme.surface,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             FadeTransition(
               opacity: _logoController,
               child: Image.asset(
-                'assets/icons/logo.png',
+                // Use your new updated asset if needed; keeping prior themed version:
+                'assets/icons/Blue_outline_logo.png',
                 height: 100,
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             FadeTransition(
               opacity: _textController1,
               child: Text(
                 'MumbaiMUN 2024',
-                style: TextStyle(
-                  fontSize: 24,
+                style: textTheme.titleLarge?.copyWith(
+                  color: scheme.onSurface,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Poppins',
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             FadeTransition(
               opacity: _textController2,
               child: RichText(
                 text: TextSpan(
-                  style: TextStyle(
-                    fontSize: 20,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: scheme.onSurface,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Poppins',
-                    color: Colors.black,
                   ),
                   children: [
                     TextSpan(
-                        text: 'REDEFINING THE NORM',
-                        style: TextStyle(color: Colors.blue.shade900)),
+                      text: 'REDEFINING THE NORM',
+                      // Primary color adapts to light/dark and your brand palette
+                      style: TextStyle(color: scheme.primary),
+                    ),
                   ],
                 ),
               ),

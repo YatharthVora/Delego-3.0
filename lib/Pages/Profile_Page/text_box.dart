@@ -4,6 +4,7 @@ class MyTextBox extends StatefulWidget {
   final String text;
   final String sectionName;
   final void Function()? onPressed;
+
   const MyTextBox({
     super.key,
     required this.text,
@@ -18,42 +19,48 @@ class MyTextBox extends StatefulWidget {
 class _MyTextBoxState extends State<MyTextBox> {
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: scheme.secondaryContainer, // previously Colors.grey[200]
         borderRadius: BorderRadius.circular(8),
       ),
-      padding: EdgeInsets.only(left: 15, bottom: 15),
-      margin: EdgeInsets.only(left: 20, right: 20, top: 20),
+      padding: const EdgeInsets.only(left: 15, bottom: 15),
+      margin: const EdgeInsets.only(left: 20, right: 20, top: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // section name
+          // section name and edit button
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 widget.sectionName,
-                style: TextStyle(
-                    fontWeight: FontWeight.w500, fontFamily: 'Poppins'),
+                style: textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: scheme.onSecondaryContainer,
+                  fontFamily: 'Poppins',
+                ),
               ),
-
-              //edit botton
               IconButton(
                 onPressed: widget.onPressed,
                 icon: Icon(
                   Icons.edit_outlined,
-                  color: Colors.blue.shade900,
+                  color: scheme.primary, // previously Colors.blue.shade900
                 ),
-              )
+              ),
             ],
           ),
-
-          //text
+          // text value
           Text(
             widget.text,
-            style:
-                TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+            style: textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: scheme.onSecondaryContainer,
+              fontFamily: 'Poppins',
+            ),
           ),
         ],
       ),

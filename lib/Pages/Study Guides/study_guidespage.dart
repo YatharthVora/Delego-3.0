@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+// Updated PDF viewers (from your new data)
 import 'package:delego/Pages/Study Guides/PDF_viewers/G20_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/IPC_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/LokSabha_pdfviewer.dart';
@@ -7,6 +9,7 @@ import 'package:delego/Pages/Study Guides/PDF_viewers/UNEA_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/UNODC_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/UNSC_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/Icc_pdfviewer.dart';
+
 class StudyGuidespage extends StatefulWidget {
   @override
   State<StudyGuidespage> createState() => _StudyGuidesPageState();
@@ -15,99 +18,155 @@ class StudyGuidespage extends StatefulWidget {
 class _StudyGuidesPageState extends State<StudyGuidespage> {
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue.shade900,
-        iconTheme: IconThemeData(
-          color: Colors.white,
-        ),
+        backgroundColor: scheme.primary,
+        iconTheme: IconThemeData(color: scheme.onPrimary),
         title: Text(
           'Study Guides',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: textTheme.titleLarge?.copyWith(
+            color: scheme.onPrimary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
       ),
-      body: Container(
-        color: Colors.white,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Study Guides",
-                  style: TextStyle(
-                    fontSize: 30.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+      backgroundColor: scheme.surface,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Study Guides",
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: scheme.onSurface,
+                  fontSize: 30.0,
                 ),
-                const SizedBox(height: 8.0),
-                const Text(
-                  "Click to view the PDF",
-                  style: TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.grey,
-                  ),
+              ),
+              const SizedBox(height: 8.0),
+              Text(
+                "Click to view the PDF",
+                style: textTheme.bodyMedium?.copyWith(
+                  fontSize: 16.0,
+                  color: scheme.onSurface.withOpacity(0.7),
                 ),
-                const SizedBox(height: 20.0),
-                _buildStudyGuideButton('G20', G20Pdfviewer()),
-                _buildStudyGuideButton('Historical Lok Sabha', LoksabhaPdfviewer()),
-                _buildStudyGuideButton('IPC', IpcPdfviewer()),
-                _buildStudyGuideButton('UNCSW', UncswPdfviewer()),
-                _buildStudyGuideButton('UNEA', UneaPdfviewer()),
-                _buildStudyGuideButton('UNODC', UnodcPdfviewer()),
-                _buildStudyGuideButton('UNSC', UnscPdfviewer()),
-              ],
-            ),
+              ),
+              const SizedBox(height: 20.0),
+
+              // Updated list items from your new data, themed buttons preserved
+              _buildStudyGuideButton(
+                context,
+                scheme,
+                textTheme,
+                'G20',
+                G20Pdfviewer(),
+              ),
+              _buildStudyGuideButton(
+                context,
+                scheme,
+                textTheme,
+                'Historical Lok Sabha',
+                LoksabhaPdfviewer(),
+              ),
+              _buildStudyGuideButton(
+                context,
+                scheme,
+                textTheme,
+                'IPC',
+                IpcPdfviewer(),
+              ),
+              _buildStudyGuideButton(
+                context,
+                scheme,
+                textTheme,
+                'UNCSW',
+                UncswPdfviewer(),
+              ),
+              _buildStudyGuideButton(
+                context,
+                scheme,
+                textTheme,
+                'UNEA',
+                UneaPdfviewer(),
+              ),
+              _buildStudyGuideButton(
+                context,
+                scheme,
+                textTheme,
+                'UNODC',
+                UnodcPdfviewer(),
+              ),
+              _buildStudyGuideButton(
+                context,
+                scheme,
+                textTheme,
+                'UNSC',
+                UnscPdfviewer(),
+              ),
+              // _buildStudyGuideButton(
+              //   context,
+              //   scheme,
+              //   textTheme,
+              //   'ICC',
+              //   Icc_PdfViewer(),
+              // ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  // Helper function to create the Study Guide button
-  Widget _buildStudyGuideButton(String title, Widget? page) {
+  // Themed button helper (no hard-coded colors)
+  Widget _buildStudyGuideButton(
+      BuildContext context,
+      ColorScheme scheme,
+      TextTheme textTheme,
+      String title,
+      Widget page,
+      ) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => page!));
-      },
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => page),
+      ),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 10.0),
         padding: const EdgeInsets.all(20.0),
         decoration: BoxDecoration(
-          color: Colors.blue.shade900,
+          color: scheme.primary,
           borderRadius: BorderRadius.circular(12.0),
           boxShadow: [
             BoxShadow(
-              color: Colors.black12,
+              color: scheme.shadow.withOpacity(0.12),
               blurRadius: 8.0,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+            // Left side: Title
+            Text(
+              title,
+              style: textTheme.titleMedium?.copyWith(
+                color: scheme.onPrimary,
+                fontWeight: FontWeight.bold,
+                fontSize: 22.0,
+              ),
             ),
-            const Icon(
+            // Right side: PDF icon
+            Icon(
               Icons.picture_as_pdf,
               size: 40.0,
-              color: Colors.white,
+              color: scheme.onPrimary,
             ),
           ],
         ),
@@ -115,4 +174,3 @@ class _StudyGuidesPageState extends State<StudyGuidespage> {
     );
   }
 }
-

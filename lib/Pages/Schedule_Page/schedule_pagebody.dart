@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:delego/models/schedule.dart'; // Use the updated model
+import 'package:delego/models/schedule.dart';
 import 'package:delego/Pages/Schedule_Page/schedule_cards.dart';
 
-// Use a single widget that accepts the list of events
+// Widget for displaying the full day's schedule list, using theme
 class SchedulePageBody extends StatelessWidget {
   final List<Schedule> schedules;
 
@@ -10,12 +10,17 @@ class SchedulePageBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     if (schedules.isEmpty) {
-      return const Expanded(
-        child: Center(
-          child: Text(
+      return Expanded(
+        child: Container(
+          color: scheme.surface,
+          child: const Center(
+            child: Text(
               "No events scheduled for this day.",
-              style: TextStyle(fontSize: 16.0, color: Colors.black54)
+              style: TextStyle(fontSize: 16.0, color: Colors.black54),
+            ),
           ),
         ),
       );
@@ -23,7 +28,7 @@ class SchedulePageBody extends StatelessWidget {
 
     return Expanded(
       child: Container(
-        color: const Color(0xFFFFFFFF),
+        color: scheme.surface,
         child: CustomScrollView(
           scrollDirection: Axis.vertical,
           shrinkWrap: false,

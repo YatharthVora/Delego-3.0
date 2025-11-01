@@ -6,22 +6,24 @@ import 'package:delego/constants/text_style.dart';
 
 class DetailPage extends StatelessWidget {
   final Schedule schedule;
-
   DetailPage(this.schedule);
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Container(
         constraints: BoxConstraints.expand(),
-        color: Colors.blue.shade900,
+        color: scheme.primary,
         child: Stack(
           children: <Widget>[
             _getBackground(),
-            _getGradient(),
-            _getContent(),
-            _getToolbar(context),
+            _getGradient(scheme),
+            _getContent(context, scheme, textTheme),
+            _getToolbar(context, scheme),
           ],
         ),
       ),
@@ -35,49 +37,57 @@ class DetailPage extends StatelessWidget {
         fit: BoxFit.cover,
         height: 300.0,
       ),
-      constraints: BoxConstraints.expand(height: 295.0),
+      constraints: const BoxConstraints.expand(height: 295.0),
     );
   }
 
-  Container _getGradient() {
+  Container _getGradient(ColorScheme scheme) {
     return Container(
-      margin: EdgeInsets.only(top: 190.0),
+      margin: const EdgeInsets.only(top: 190.0),
       height: 110.0,
-      // decoration:  BoxDecoration(
-      //   gradient:  LinearGradient(
-      //     colors: <Color>[
-      //        Color(0x00736AB7),
-      //        Color(0xFF736AB7)
-      //     ],
-      //     stops: [0.0, 0.9],
-      //     begin: const FractionalOffset(0.0, 0.0),
-      //     end: const FractionalOffset(0.0, 1.0),
-      //   ),
-      // ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            scheme.primary.withOpacity(0.0),
+            scheme.primary.withOpacity(0.95),
+          ],
+          stops: [0.0, 0.9],
+          begin: FractionalOffset.topCenter,
+          end: FractionalOffset.bottomCenter,
+        ),
+      ),
     );
   }
 
-  Container _getContent() {
+  Container _getContent(BuildContext context, ColorScheme scheme, TextTheme textTheme) {
     final _overviewTitle = "Overview".toUpperCase();
     return Container(
       child: ListView(
-        padding: EdgeInsets.fromLTRB(0.0, 72.0, 0.0, 20.0),
+        padding: const EdgeInsets.fromLTRB(0.0, 72.0, 0.0, 20.0),
         children: <Widget>[
           ScheduleSummary(
             schedule,
             horizontal: false,
           ),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 32.0),
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
                   _overviewTitle,
-                  style: Style.headerTextStyle,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: scheme.onPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Separator(),
-                Text(schedule.description!, style: Style.commonTextStyle),
+                Text(
+                  schedule.description ?? '',
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: scheme.onPrimary.withOpacity(0.85),
+                  ),
+                ),
               ],
             ),
           ),
@@ -86,10 +96,10 @@ class DetailPage extends StatelessWidget {
     );
   }
 
-  Container _getToolbar(BuildContext context) {
+  Container _getToolbar(BuildContext context, ColorScheme scheme) {
     return Container(
       margin: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-      child: BackButton(color: Colors.white),
+      child: BackButton(color: scheme.onPrimary),
     );
   }
 }
