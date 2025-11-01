@@ -1,36 +1,29 @@
 import 'dart:convert';
-import 'package:delego/constants/backend.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:delego/Pages/Login_Page/my_buttons.dart';
-import 'package:delego/Pages/Login_Page/my_textfield.dart';
+import 'package:delego/constants/backend.dart';
 
 class RegisterPage extends StatefulWidget {
-  RegisterPage({super.key});
+  const RegisterPage({super.key});
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  // text editing controllers
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
 
-  // sign user in method
-  void signUserUp() async {
-    // Show loading indicator
+  Future<void> signUserUp() async {
+    final scheme = Theme.of(context).colorScheme;
+
     showDialog(
       context: context,
-      barrierDismissible: false, // Prevents dialog from closing on outside tap
-      builder: (context) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      },
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
     );
 
     final email = usernameController.text.trim();
@@ -44,29 +37,26 @@ class _RegisterPageState extends State<RegisterPage> {
         confirmPassword.isEmpty ||
         firstName.isEmpty ||
         lastName.isEmpty) {
-      // Show a snackbar or alert if fields are empty
-      Navigator.of(context).pop(); // Close loading indicator
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Please fill in all fields."),
-      ));
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill in all fields.")),
+      );
       return;
     }
 
     if (password != confirmPassword) {
-      // Show a snackbar or alert if passwords don't match
-      Navigator.of(context).pop(); // Close loading indicator
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Passwords do not match."),
-      ));
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Passwords do not match.")),
+      );
       return;
     }
 
     if (password.length < 8) {
-      // Show a snackbar or alert if password is too short
-      Navigator.of(context).pop(); // Close loading indicator
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Password must be at least 8 characters long."),
-      ));
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Password must be at least 8 characters long.")),
+      );
       return;
     }
 
@@ -78,13 +68,12 @@ class _RegisterPageState extends State<RegisterPage> {
     };
 
     try {
-      // Send the POST request to the server
       final response = await http.post(
-        Uri.parse(Backend.baseUrl + '/mumbaimun/register'),
+        Uri.parse('${Backend.baseUrl}/mumbaimun/register'),
         body: jsonEncode(body),
         headers: {
           'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
       );
 
@@ -92,131 +81,139 @@ class _RegisterPageState extends State<RegisterPage> {
       Navigator.of(context).pop();
 
       if (response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Registration successful. Please verify your email."),
-          backgroundColor: Colors.green,
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text("Registration successful. Please verify your email."),
+            backgroundColor: scheme.primary,
+          ),
+        );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(responseData['detail'].toString()),
-          backgroundColor: Colors.red,
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(responseData['detail'].toString()),
+            backgroundColor: scheme.error,
+          ),
+        );
       }
-    } catch (e) {
+    } catch (_) {
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content:
-            Text("An error occurred. Please check your internet connection."),
-        backgroundColor: Colors.red,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("An error occurred. Please check your internet connection."),
+          backgroundColor: scheme.error,
+        ),
+      );
     }
+  }
+
+  Widget buildTextField(TextEditingController controller, String hint, bool obscure) {
+    final scheme = Theme.of(context).colorScheme;
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      style: TextStyle(color: scheme.onSurface),
+      cursorColor: scheme.primary,
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(color: scheme.onSurfaceVariant),
+        filled: true,
+        fillColor: scheme.surfaceContainerHighest,
+        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.outlineVariant, width: 1.2),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.primary, width: 1.8),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scheme.background,
       body: SafeArea(
         child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // logo
-                Container(
-                  margin: EdgeInsets.all(0),
-                  height: 200,
-                  width: 200,
+                SizedBox(
+                  height: 160,
+                  width: 160,
                   child: Image.asset("assets/icons/logo.png"),
                 ),
-
-                // text
+                const SizedBox(height: 16),
                 Text(
                   'DELEGO',
-                  style: TextStyle(
-                    color: Colors.blue.shade900,
-                    fontSize: 28,
+                  style: textTheme.headlineMedium?.copyWith(
+                    color: scheme.primary,
                     fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
                   ),
                 ),
+                const SizedBox(height: 24),
 
+                buildTextField(firstNameController, 'First Name', false),
+                const SizedBox(height: 12),
+                buildTextField(lastNameController, 'Last Name', false),
+                const SizedBox(height: 12),
+                buildTextField(usernameController, 'Email ID', false),
+                const SizedBox(height: 12),
+                buildTextField(passwordController, 'Password', true),
+                const SizedBox(height: 12),
+                buildTextField(confirmPasswordController, 'Confirm Password', true),
+                const SizedBox(height: 24),
+
+                ElevatedButton(
+                  onPressed: signUserUp,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: scheme.primary,
+                    foregroundColor: scheme.onPrimary,
+                    minimumSize: const Size(double.infinity, 52),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 3,
+                  ),
+                  child: Text(
+                    'Sign Up',
+                    style: textTheme.titleMedium?.copyWith(
+                      color: scheme.onPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 20),
 
-                // FirstName textfild
-                MyTextField(
-                    controller: firstNameController,
-                    hintText: 'First Name',
-                    obscureText: false),
-
-                const SizedBox(height: 10),
-
-                // LastName textfild
-                MyTextField(
-                    controller: lastNameController,
-                    hintText: 'Last Name',
-                    obscureText: false),
-
-                const SizedBox(height: 10),
-
-                // username textfield
-                MyTextField(
-                  controller: usernameController,
-                  hintText: 'Email ID',
-                  obscureText: false,
-                ),
-
-                const SizedBox(height: 10),
-
-                // password textfield
-                MyTextField(
-                  controller: passwordController,
-                  hintText: 'Password',
-                  obscureText: true,
-                ),
-                const SizedBox(height: 10),
-
-                // confirm password textfield
-                MyTextField(
-                  controller: confirmPasswordController,
-                  hintText: 'Confirm Password',
-                  obscureText: true,
-                ),
-
-                const SizedBox(height: 15),
-
-                // sign up button
-                MyButton(
-                  text: 'Sign Up',
-                  onTap: signUserUp,
-                ),
-
-                const SizedBox(height: 30),
-
-                // not a member? register now
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       'Already a member?',
-                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: scheme.onBackground,
+                      ),
                     ),
                     TextButton(
-                      // style if needed
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
+                      onPressed: () => Navigator.pop(context),
                       child: Text(
                         'Login',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.blue.shade900,
-                          fontWeight: FontWeight.w900,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: scheme.primary,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 4),
                   ],
-                )
+                ),
               ],
             ),
           ),

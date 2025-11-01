@@ -11,15 +11,14 @@ class SchedulePageBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-
     if (schedules.isEmpty) {
       return Expanded(
         child: Container(
           color: scheme.surface,
-          child: const Center(
+          child: Center(
             child: Text(
               "No events scheduled for this day.",
-              style: TextStyle(fontSize: 16.0, color: Colors.black54),
+              style: TextStyle(fontSize: 16.0, color: scheme.onSurface),
             ),
           ),
         ),

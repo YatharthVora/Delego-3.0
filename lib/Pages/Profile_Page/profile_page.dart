@@ -251,11 +251,11 @@ class _ProfilePageState extends State<ProfilePage> {
             sectionName: 'Date of Birth',
             onPressed: () => editField('Date of Birth', dateofbirth ?? ''),
           ),
-          MyTextBox(
-            text: gender ?? 'Gender',
-            sectionName: 'Gender',
-            onPressed: () => editField('Gender', gender ?? ''),
-          ),
+          // MyTextBox(
+          //   text: gender ?? 'Gender',
+          //   sectionName: 'Gender',
+          //   onPressed: () => editField('Gender', gender ?? ''),
+          // ),
           const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),

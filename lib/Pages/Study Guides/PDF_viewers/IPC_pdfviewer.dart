@@ -6,13 +6,14 @@ class IpcPdfviewer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.blue.shade900,
+          backgroundColor: scheme.primary,
           centerTitle: true,
           title: Text('PDF Viewer',
             style: TextStyle(
-              color: Colors.white,
+              color: scheme.onPrimary,
             ),
           ),
         ),

@@ -147,7 +147,7 @@ class _LaunchScreenState extends State<LaunchScreen>
               opacity: _logoController,
               child: Image.asset(
                 // Use your new updated asset if needed; keeping prior themed version:
-                'assets/icons/Blue_outline_logo.png',
+                'assets/icons/logo.png',
                 height: 100,
               ),
             ),

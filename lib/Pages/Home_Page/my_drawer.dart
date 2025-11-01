@@ -20,7 +20,25 @@ class MyDrawer extends StatefulWidget {
 class _MyDrawerState extends State<MyDrawer> {
   void goToSponsorsPage() {
     Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (context) => const SponsorPage()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SponsorPage()),
+    );
+  }
+
+  void openPolicy(String policyName) {
+    Navigator.pop(context);
+
+    final pdfAsset = (policyName == 'POSH Policy')
+        ? 'assets/pdfs/POSH.pdf'
+        : 'assets/pdfs/ConferencePolicy.pdf';
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfViewerPage(pdfAsset: pdfAsset),
+      ),
+    );
   }
 
   @override
@@ -29,77 +47,87 @@ class _MyDrawerState extends State<MyDrawer> {
 
     return Drawer(
       backgroundColor: scheme.surface,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            children: [
-              DrawerHeader(
-                child: Icon(Icons.person, color: scheme.onSurface, size: 64),
+      child: SafeArea(
+        child: Column(
+          children: [
+            // HEADER
+            UserAccountsDrawerHeader(
+              decoration: BoxDecoration(color: scheme.primaryContainer),
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: scheme.primary,
+                child: Icon(Icons.person, color: scheme.onPrimary, size: 40),
               ),
-              MyListTile(
-                icon: Icons.home,
-                text: 'HOME',
-                onTap: () => Navigator.pop(context),
+              accountName: Text(
+                'Welcome!',
+                style: TextStyle(color: scheme.onPrimaryContainer),
               ),
-              MyListTile(
-                icon: Icons.person,
-                text: 'SETTINGS',
-                onTap: widget.onProfileTap,
-              ),
-              MyListTile(
-                icon: Icons.handshake,
-                text: 'SPONSORS',
-                onTap: goToSponsorsPage,
-              ),
-              MyListTile(
-                icon: Icons.policy_sharp,
-                text: 'POLICIES',
-                onTap: () {},
-                trailing: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    icon: Icon(Icons.arrow_drop_down, color: scheme.onSurface),
-                    dropdownColor: scheme.surface,
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'POSH Policy',
-                        child: Text('POSH Policy', style: TextStyle(color: Colors.black)),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Conference Policy',
-                        child: Text('Conference Policy', style: TextStyle(color: Colors.black)),
-                      ),
-                    ],
-                    onChanged: (String? value) {
-                      if (value != null) {
-                        Navigator.pop(context);
+              accountEmail: null,
+            ),
 
-                        final pdfAsset = (value == 'POSH Policy')
-                            ? 'assets/pdfs/Mumbai MUN 2024 POSH Policy.pdf'
-                            : 'assets/pdfs/Mumbai MUN 2024 Conference Policy.pdf';
+            // MAIN LIST
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  MyListTile(
+                    icon: Icons.home,
+                    text: 'HOME',
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  MyListTile(
+                    icon: Icons.person,
+                    text: 'SETTINGS',
+                    onTap: widget.onProfileTap,
+                  ),
+                  MyListTile(
+                    icon: Icons.handshake,
+                    text: 'SPONSORS',
+                    onTap: goToSponsorsPage,
+                  ),
 
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PdfViewerPage(pdfAsset: pdfAsset),
-                          ),
-                        );
-                      }
-                    },
+                  // POLICIES (Dropdown simplified)
+                  ListTile(
+                    leading: Icon(Icons.policy, color: scheme.onSurface),
+                    title: Text('POLICIES', style: TextStyle(color: scheme.onSurface)),
+                    trailing: PopupMenuButton<String>(
+                      icon: Icon(Icons.arrow_drop_down, color: scheme.onSurface),
+                      color: scheme.surface,
+                      onSelected: openPolicy,
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'POSH Policy',
+                          child: Text('POSH Policy'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'Conference Policy',
+                          child: Text('Conference Policy'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // LOGOUT BUTTON (bottom aligned)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: scheme.errorContainer,
+                  foregroundColor: scheme.onErrorContainer,
+                  minimumSize: const Size(double.infinity, 48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
+                icon: const Icon(Icons.logout),
+                label: const Text('LOGOUT'),
+                onPressed: widget.onSignoutTap,
               ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16.0),
-            child: MyListTile(
-              icon: Icons.logout,
-              text: 'LOGOUT',
-              onTap: widget.onSignoutTap,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:delego/Pages/Login_Page/my_buttons.dart';
-import 'package:delego/Pages/Login_Page/my_textfield.dart';
 import 'package:delego/Pages/Login_Page/register_page.dart';
 import 'package:delego/Pages/Home_Page/home_page.dart';
 import 'package:delego/constants/backend.dart';
@@ -31,21 +29,21 @@ class _LoginPageState extends State<LoginPage> {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('qr', base64Image);
       }
-    } catch (e) {}
+    } catch (_) {}
   }
 
-  setLoggedInBefore() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+  Future<void> setLoggedInBefore() async {
+    final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('lib', true);
   }
 
-  getLoggedInBefore() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+  Future<bool?> getLoggedInBefore() async {
+    final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('lib');
   }
 
-  clearPref() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+  Future<void> clearPref() async {
+    final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
   }
 
@@ -55,36 +53,45 @@ class _LoginPageState extends State<LoginPage> {
       barrierDismissible: false,
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
+
+    final scheme = Theme.of(context).colorScheme;
+
     final email = usernameController.text.trim();
     final password = passwordController.text.trim();
+
     if (email.isEmpty || password.isEmpty) {
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Please fill in both fields."),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill in both fields.")),
+      );
       return;
     }
+
     final body = {'username': email, 'password': password};
+
     try {
       final response = await http.post(
         Uri.parse(Backend.baseUrl + '/login'),
         body: body,
         headers: {
           'Accept': 'application/json',
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
         encoding: Encoding.getByName('utf-8'),
       );
+
       final responseData = json.decode(response.body);
       if (response.statusCode == 200) {
         final String token = responseData['access_token'];
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', token);
+
         final response2 = await http.get(
           Uri.parse(Backend.baseUrl + '/delegates/me'),
           headers: {'Authorization': 'Bearer $token'},
         );
         final data = json.decode(response2.body);
+
         if (data['detail'] == 'Please verify your email!') {
           Navigator.of(context).pop();
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -93,6 +100,7 @@ class _LoginPageState extends State<LoginPage> {
           ));
           return;
         }
+
         final id = data['id'] ?? '';
         await prefs.setString('id', id);
         await prefs.setString('firstname', data['firstname'] ?? '');
@@ -105,7 +113,9 @@ class _LoginPageState extends State<LoginPage> {
 
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => HomePage(controller: widget.controller)),
+          MaterialPageRoute(
+            builder: (context) => HomePage(controller: widget.controller),
+          ),
         );
 
         if (await getLoggedInBefore() != true) {
@@ -113,7 +123,7 @@ class _LoginPageState extends State<LoginPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Update Info'),
-              backgroundColor: Colors.grey.shade700,
+              backgroundColor: Theme.of(context).colorScheme.surface,
               action: SnackBarAction(
                 label: "Profile",
                 textColor: Theme.of(context).colorScheme.primary,
@@ -121,7 +131,8 @@ class _LoginPageState extends State<LoginPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ProfilePage(controller: widget.controller),
+                      builder: (context) =>
+                          ProfilePage(controller: widget.controller),
                     ),
                   );
                 },
@@ -131,17 +142,22 @@ class _LoginPageState extends State<LoginPage> {
         }
       } else {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(responseData['detail'].toString()),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(responseData['detail'].toString()),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
       }
     } catch (e) {
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text("An error occurred. Please check your internet connection."),
-        backgroundColor: Theme.of(context).colorScheme.error,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+              "An error occurred. Please check your internet connection."),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 
@@ -149,105 +165,154 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    InputDecoration themedInputDecoration(String hint) {
+      return InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(color: scheme.onSurfaceVariant),
+        filled: true,
+        fillColor: scheme.surfaceContainerHighest,
+        contentPadding:
+        const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.outlineVariant, width: 1.2),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.primary, width: 1.8),
+        ),
+      );
+    }
+
+    Widget loginButton() {
+      return SizedBox(
+        width: double.infinity,
+        height: 56,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: scheme.primary,
+            foregroundColor: scheme.onPrimary,
+            shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 2,
+          ),
+          onPressed: signUserIn,
+          child: Text(
+            'Login',
+            style: textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: scheme.onPrimary,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: scheme.surface,
-        elevation: 0.0,
+        elevation: 0,
         foregroundColor: scheme.onSurface,
       ),
       backgroundColor: scheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           child: Center(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // logo
                 Container(
-                  margin: EdgeInsets.all(0),
-                  height: 200,
-                  width: 200,
+                  height: 160,
+                  width: 160,
                   child: Image.asset("assets/icons/logo.png"),
                 ),
-                // text
+                const SizedBox(height: 8),
+                // title
                 Text(
                   'DELEGO',
                   style: textTheme.headlineMedium?.copyWith(
                     color: scheme.primary,
                     fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
                   ),
                 ),
-                const SizedBox(height: 20),
-                // username textfield
-                MyTextField(
+                const SizedBox(height: 30),
+
+                // username
+                TextField(
                   controller: usernameController,
-                  hintText: 'Email ID',
-                  obscureText: false,
+                  keyboardType: TextInputType.emailAddress,
+                  style: TextStyle(color: scheme.onSurface),
+                  cursorColor: scheme.primary,
+                  decoration: themedInputDecoration("Email ID"),
                 ),
-                const SizedBox(height: 10),
-                // password textfield
-                MyTextField(
+                const SizedBox(height: 16),
+
+                // password
+                TextField(
                   controller: passwordController,
-                  hintText: 'Password',
                   obscureText: true,
+                  style: TextStyle(color: scheme.onSurface),
+                  cursorColor: scheme.primary,
+                  decoration: themedInputDecoration("Password"),
                 ),
                 const SizedBox(height: 10),
-                // forgot password?
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => ForgotPassword()),
-                          );
-                        },
-                        child: Text(
-                          'Forgot Password?',
-                          style: textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: scheme.primary,
-                          ),
+
+                // forgot password
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ForgotPassword(),
                         ),
+                      );
+                    },
+                    child: Text(
+                      'Forgot Password?',
+                      style: textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: scheme.primary,
                       ),
-                    ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 25),
-                // sign in button
-                MyButton(
-                  text: 'Login',
-                  onTap: signUserIn,
-                ),
-                const SizedBox(height: 50),
-                // not a member? register now
+
+                // login button
+                loginButton(),
+                const SizedBox(height: 40),
+
+                // sign up redirect
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       'Not a member?',
-                      style: textTheme.bodyMedium?.copyWith(color: scheme.onSurface),
+                      style: textTheme.bodyMedium
+                          ?.copyWith(color: scheme.onSurface),
                     ),
                     TextButton(
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => RegisterPage()),
+                          MaterialPageRoute(
+                              builder: (context) => RegisterPage()),
                         );
                       },
                       child: Text(
                         'Sign Up',
                         style: textTheme.bodyMedium?.copyWith(
                           color: scheme.primary,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 6),
                   ],
                 ),
               ],

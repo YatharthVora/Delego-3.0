@@ -8,7 +8,6 @@ import 'package:delego/Pages/Study Guides/PDF_viewers/UNCSW_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/UNEA_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/UNODC_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/UNSC_pdfviewer.dart';
-import 'package:delego/Pages/Study Guides/PDF_viewers/Icc_pdfviewer.dart';
 
 class StudyGuidespage extends StatefulWidget {
   @override

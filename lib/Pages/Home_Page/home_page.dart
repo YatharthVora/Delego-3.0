@@ -18,49 +18,29 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  void goToProfilePage() {
-    Navigator.pop(context);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ProfilePage(controller: widget.controller),
-      ),
-    );
-  }
-
-  void goToRoomPage() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => RoomPage()));
-  }
-
-  void goToSchedulePage() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => SchedulePage()));
-  }
-
-  void goToQRPage() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => QrCode()));
-  }
-
-  void goToStugyguids() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => StudyGuidespage()));
-  }
-
-  Future<void> Signout() async {
+  Future<void> signOut() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove("token");
-    await prefs.remove("id");
-    await prefs.remove("firstname");
-    await prefs.remove("lastname");
-    await prefs.remove("email");
-    await prefs.remove("contact");
-    await prefs.remove("dateOfBirth");
-    await prefs.remove("gender");
-    await prefs.remove("qr");
+    await prefs.clear();
 
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => LoginPage(controller: widget.controller)),
-          (Route<dynamic> route) => false,
+          (route) => false,
+    );
+  }
+
+  void goToPage(Widget page) async {
+    // Safely close the drawer if it's open
+    final scaffoldState = Scaffold.maybeOf(context);
+    if (scaffoldState?.isDrawerOpen ?? false) {
+      Navigator.pop(context);
+    }
+
+    // Push the new page normally
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => page),
     );
   }
 
@@ -68,6 +48,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final size = MediaQuery.of(context).size;
 
     return PopScope(
       canPop: false,
@@ -75,145 +56,135 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: scheme.surface,
         appBar: AppBar(
           backgroundColor: scheme.surface,
-          elevation: 0.0,
+          elevation: 0,
           foregroundColor: scheme.onSurface,
+          title: Text(
+            "Home",
+            style: textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: scheme.onSurface,
+            ),
+          ),
+          centerTitle: true,
         ),
         drawer: MyDrawer(
-          onProfileTap: goToProfilePage,
-          onSignoutTap: () async => await Signout(),
+          onProfileTap: () => goToPage(ProfilePage(controller: widget.controller)),
+          onSignoutTap: signOut,
         ),
-        body: Center(
+        body: SafeArea(
           child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             children: [
-              Container(
-                margin: const EdgeInsets.fromLTRB(20, 15, 20, 0),
-                padding: EdgeInsets.zero,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.fromLTRB(0, 0, 2, 10),
-                          child: Row(
-                            children: [
-                              Container(
-                                margin: const EdgeInsets.fromLTRB(0, 0, 3, 6),
-                                child: Text(
-                                  'Mumbai',
-                                  style: textTheme.headlineSmall?.copyWith(
-                                    color: scheme.onSurface,
-                                    fontFamily: 'Poppins-Bold',
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.fromLTRB(3, 0, 0, 6),
-                                child: Text(
-                                  'MUN',
-                                  style: textTheme.headlineSmall?.copyWith(
-                                    color: scheme.onSurface,
-                                    fontFamily: 'Poppins-Bold',
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          margin: const EdgeInsets.fromLTRB(2, 10, 0, 0),
-                          child: Text(
-                            '2025',
-                            style: textTheme.titleLarge?.copyWith(
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Mumbai',
+                            style: textTheme.headlineSmall?.copyWith(
                               color: scheme.onSurface,
-                              fontFamily: 'Poppins',
                               fontWeight: FontWeight.bold,
+                              fontFamily: 'Poppins',
                             ),
                           ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'MUN',
+                            style: textTheme.headlineSmall?.copyWith(
+                              color: scheme.primary,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        '2025',
+                        style: textTheme.titleLarge?.copyWith(
+                          color: scheme.onSurface.withOpacity(0.8),
+                          fontWeight: FontWeight.w600,
                         ),
-                      ],
-                    ),
-                    Container(
-                      margin: const EdgeInsets.fromLTRB(0, 0, 6, 0),
-                      height: 85,
-                      width: 85,
-                      child: Image.asset('assets/icons/logo.png'),
-                    )
-                  ],
-                ),
-              ),
-              Container(
-                margin: const EdgeInsets.fromLTRB(6, 2, 6, 2),
-                width: 357.39,
-                height: 4.37,
-                decoration: ShapeDecoration(
-                  color: scheme.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(33.84),
+                      ),
+                    ],
                   ),
-                ),
+                  Image.asset(
+                    'assets/icons/logo.png',
+                    height: size.width * 0.18,
+                    width: size.width * 0.18,
+                  ),
+                ],
               ),
+
+              const SizedBox(height: 10),
+              Divider(
+                color: scheme.primary,
+                thickness: 3,
+                indent: size.width * 0.05,
+                endIndent: size.width * 0.05,
+              ),
+              const SizedBox(height: 20),
+
+              // Home cards
               _HomeCard(
                 indexText: '01.',
                 titleLeft: 'Study',
                 titleRight: 'Guides',
                 imageAsset: 'assets/icons/book_icon.png',
-                onTap: goToStugyguids,
+                onTap: () => goToPage(StudyGuidespage()),
               ),
               _HomeCard(
                 indexText: '02.',
                 titleLeft: 'My',
                 titleRight: 'QR',
                 imageAsset: 'assets/icons/qr_logo.png',
-                onTap: goToQRPage,
+                onTap: () => goToPage(QrCode()),
               ),
               _HomeCard(
                 indexText: '03.',
                 titleLeft: 'Rooms',
                 titleRight: '',
                 imageAsset: 'assets/icons/location.png',
-                onTap: goToRoomPage,
+                onTap: () => goToPage(RoomPage()),
               ),
               _HomeCard(
                 indexText: '04.',
                 titleLeft: 'Schedule',
                 titleRight: '',
                 imageAsset: 'assets/icons/schedule.png',
-                onTap: goToSchedulePage,
+                onTap: () => goToPage(SchedulePage()),
               ),
-              // Uncomment and adjust as needed for sponsor row:
-              // Container(
-              //   margin: EdgeInsets.fromLTRB(12, 2, 12, 2),
-              //   height: 73,
-              //   width: 73,
-              //   child: Row(
-              //     children: [
-              //       Text('Sponsored By:',
-              //         style: TextStyle(
-              //           fontSize: 18,
-              //           fontWeight: FontWeight.bold,
-              //           fontFamily: 'Poppins'
-              //         ),
-              //       ),
-              //       Container(
-              //         margin: EdgeInsets.fromLTRB(6, 0, 3, 0),
-              //           child: Image.asset('assets/icons/RiseUp_Logo.png')
-              //       ),
-              //     Container(
-              //         margin: EdgeInsets.fromLTRB(6, 0, 3, 0),
-              //           child: Image.asset('assets/icons/LytAds_Logo.png')
-              //       ),
-              //       Container(
-              //         height: 25,
-              //         margin: EdgeInsets.fromLTRB(6, 0, 3, 0),
-              //           child: Image.asset('assets/icons/Sultan_deli_Logo.png')
-              //       ),
-              //     ],
-              //   ),
-              // )
+
+              const SizedBox(height: 30),
+
+              // Optional Sponsor Section
+              Center(
+                child: Column(
+                  children: [
+                    Text(
+                      "Sponsored by",
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        Image.asset('assets/icons/toshiba.png', height: 20),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -242,68 +213,64 @@ class _HomeCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return GestureDetector(
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-        padding: const EdgeInsets.all(25),
-        width: 357.39,
-        height: 135.82,
-        decoration: ShapeDecoration(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
           color: scheme.primary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.92),
-          ),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: scheme.shadow.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(2, 4),
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            // Left text
             Column(
-              mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  width: 61.02,
-                  height: 16.10,
-                  child: Text(
-                    indexText,
-                    style: textTheme.titleMedium?.copyWith(
-                      color: scheme.onPrimary,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.w600,
-                    ),
+                Text(
+                  indexText,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: scheme.onPrimary.withOpacity(0.9),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                Container(
-                  margin: const EdgeInsets.fromLTRB(0, 4, 0, 0),
-                  child: Row(
-                    children: [
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Text(
+                      titleLeft,
+                      style: textTheme.headlineSmall?.copyWith(
+                        color: scheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (titleRight.isNotEmpty)
                       Text(
-                        titleLeft,
-                        style: textTheme.titleLarge?.copyWith(
+                        ' $titleRight',
+                        style: textTheme.headlineSmall?.copyWith(
                           color: scheme.onPrimary,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      if (titleRight.isNotEmpty)
-                        Text(
-                          ' ${titleRight}',
-                          style: textTheme.titleLarge?.copyWith(
-                            color: scheme.onPrimary,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                    ],
-                  ),
+                  ],
                 ),
               ],
             ),
-            SizedBox(
-              height: 80,
-              width: 80,
-              child: Image.asset(imageAsset),
+            // Right image
+            Image.asset(
+              imageAsset,
+              height: 70,
+              width: 70,
             ),
           ],
         ),

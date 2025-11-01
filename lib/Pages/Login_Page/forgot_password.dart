@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:delego/constants/backend.dart';
-import 'package:delego/Pages/Login_Page/my_textfield.dart';
 
 class ForgotPassword extends StatefulWidget {
   const ForgotPassword({Key? key}) : super(key: key);
@@ -13,17 +12,11 @@ class ForgotPassword extends StatefulWidget {
 
 class _ForgotPasswordState extends State<ForgotPassword> {
   final TextEditingController emailController = TextEditingController();
-  bool isEmailSent = false; // Tracks whether the email was sent
+  bool isEmailSent = false;
 
   Future<void> sendEmail() async {
-
-    // Show a loading indicator
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
-    );
     final email = emailController.text.trim();
+
     if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter your email.')),
@@ -31,44 +24,44 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       return;
     }
 
+    // Loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
 
     try {
-      // Send email
       final response = await http.get(
         Uri.parse('${Backend.baseUrl}/forgot_password?email=$email'),
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
       );
 
-      Navigator.of(context).pop(); // Close the loading dialog
-
+      Navigator.of(context).pop(); // close loader
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        setState(() {
-          isEmailSent = true; // Email was successfully sent
-        });
+        setState(() => isEmailSent = true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(responseData['message'] ?? 'Email sent successfully!'),
-            backgroundColor: Colors.green,
+            backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(responseData['error'] ?? 'Failed to send email.'),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
     } catch (error) {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('An error occurred. Please try again later.'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: const Text('An error occurred. Please try again later.'),
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
@@ -82,87 +75,130 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scheme.background,
       body: SafeArea(
         child: SingleChildScrollView(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // logo
-                  Container(
-                    height: 200,
-                    width: 200,
-                    child: Image.asset("assets/icons/logo.png"),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo
+                Container(
+                  height: 160,
+                  width: 160,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
                   ),
+                  child: Image.asset(
+                    "assets/icons/logo.png",
+                    fit: BoxFit.contain,
+                  ),
+                ),
 
-                  // text
-                  Text(
-                    'DELEGO',
-                    style: TextStyle(
-                      color: Colors.blue.shade900,
-                      fontSize: 28,
+                const SizedBox(height: 16),
+
+                // App name
+                Text(
+                  'DELEGO',
+                  style: textTheme.headlineMedium?.copyWith(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Modern themed email input
+                TextField(
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  style: TextStyle(
+                    color: scheme.onSurface,
+                    fontSize: 16,
+                  ),
+                  cursorColor: scheme.primary,
+                  decoration: InputDecoration(
+                    hintText: "Email ID",
+                    hintStyle: TextStyle(color: scheme.onSurfaceVariant),
+                    filled: true,
+                    fillColor: scheme.surfaceContainerHighest,
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16, horizontal: 18),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: scheme.outlineVariant,
+                        width: 1.2,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: scheme.primary,
+                        width: 1.8,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Send button
+                ElevatedButton(
+                  onPressed: sendEmail,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: scheme.primary,
+                    foregroundColor: scheme.onPrimary,
+                    minimumSize: const Size(double.infinity, 52),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 3,
+                  ),
+                  child: Text(
+                    isEmailSent ? 'Resend Email' : 'Send Email',
+                    style: textTheme.titleMedium?.copyWith(
+                      color: scheme.onPrimary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                ),
 
-                  const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-                  // Email Input Field
-                  MyTextField(
-                      controller: emailController,
-                      hintText:"Email-ID",
-                      obscureText:false),
-                  const SizedBox(height: 20),
-
-                  // Send/Resend Email Button
-                  GestureDetector(
-                    onTap: sendEmail,
-                    child: Container(
-                      margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                      padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.blue[900],
-                        borderRadius: BorderRadius.circular(8),
+                // Login redirect
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Already a member?',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: scheme.onBackground,
                       ),
-                      child: Center(
-                        child: Text(
-                          isEmailSent ? 'Resend Email' : 'Send Email',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                          ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        'Login',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: scheme.primary,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Already a Member? Login
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('Already a Member?'),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context); // Navigate back to login
-                        },
-                        child: const Text(
-                          'Login',
-                          style: TextStyle(color: Colors.blue,fontSize: 18) ,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
-      );
+      ),
+    );
   }
 }
