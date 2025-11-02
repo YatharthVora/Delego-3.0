@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "MMlogowhiteBG.png",
+      "filename" : "mm-logo-white-bg.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "MMlogowhiteBG 1.png",
+      "filename" : "mm-logo-white-bg.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "MMlogowhiteBG 2.png",
+      "filename" : "mm-logo-white-bg.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

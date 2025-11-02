@@ -1,4 +1,4 @@
-package com.example.delego
+package com.munsocietympstme.delego
 
 import io.flutter.embedding.android.FlutterActivity
 

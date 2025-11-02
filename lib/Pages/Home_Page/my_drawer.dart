@@ -55,10 +55,10 @@ class _MyDrawerState extends State<MyDrawer> {
               decoration: BoxDecoration(color: scheme.primaryContainer),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: scheme.primary,
-                child: Icon(Icons.person, color: scheme.onPrimary, size: 40),
+                child: Icon(Icons.accessibility, color: scheme.onPrimary, size: 40),
               ),
               accountName: Text(
-                'Welcome!',
+                'Welcome to Mumbai MUN 25',
                 style: TextStyle(color: scheme.onPrimaryContainer),
               ),
               accountEmail: null,

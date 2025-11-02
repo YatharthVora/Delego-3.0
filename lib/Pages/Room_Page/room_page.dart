@@ -167,7 +167,7 @@ class _RoomPageState extends State<RoomPage> {
           SizedBox(
             height: 70,
             width: 70,
-            child: Image.asset('assets/icons/location.png'),
+            child: Image.asset('assets/icons/loc.png'),
           ),
         ],
       ),

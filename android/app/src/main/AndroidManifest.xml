@@ -1,7 +1,7 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.munsocietympstme.delego">
     <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:label="Delego | Mumbai MUN 2024"
+        android:label="Delego | Mumbai MUN 2025"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
