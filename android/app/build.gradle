@@ -14,7 +14,7 @@ if (localPropertiesFile.exists()) {
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
-    flutterVersionCode = '3055' // Fallback version code if not provided in local.properties
+    flutterVersionCode = '6770' // Fallback version code if not provided in local.properties
 }
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')
@@ -30,8 +30,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace "com.munsocietympstme.delego" // Use your project's namespace
-    compileSdkVersion flutter.compileSdkVersion.toInteger()
-    ndkVersion = "26.1.10909125"
+    compileSdkVersion 35
+    ndkVersion = "28.0.12433566"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -49,7 +49,7 @@ android {
     defaultConfig {
         applicationId "com.munsocietympstme.delego" // Your application's ID
         minSdkVersion flutter.minSdkVersion.toInteger()
-        targetSdkVersion flutter.targetSdkVersion.toInteger()
+        targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
