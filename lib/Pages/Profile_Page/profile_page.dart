@@ -28,7 +28,7 @@ class _ProfilePageState extends State<ProfilePage> {
       contact = prefs.getString('contact');
       dateofbirth = prefs.getString('dateofbirth');
       gender = prefs.getString('gender');
-      if (contact == '') contact = '98*******2';
+      if (contact == '') contact = '-';
       if (gender == '') gender = 'Prefer not to say';
       if (dateofbirth == '') dateofbirth = 'dd-mm-yyyy';
     });

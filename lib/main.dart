@@ -7,8 +7,14 @@ import 'Pages/Home_Page/home_page.dart';
 import 'Theme/app_theme.dart';
 import 'Theme/theme_controller.dart';
 
-void main() {
-  runApp(MyApp(controller: ThemeController()));
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Load persisted theme mode before running the app
+  final controller = ThemeController();
+  await controller.loadThemeMode();
+
+  runApp(MyApp(controller: controller));
 }
 
 class MyApp extends StatefulWidget {
@@ -38,12 +44,10 @@ class _MyAppState extends State<MyApp> {
       isLoggedIn = token != null && token.isNotEmpty;
     });
 
-    // Keep the timed splash dismissal (3s) from your updated code
+    // Keep splash for 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
       if (!mounted) return;
-      setState(() {
-        showLaunchScreen = false;
-      });
+      setState(() => showLaunchScreen = false);
     });
   }
 
@@ -69,9 +73,7 @@ class _MyAppState extends State<MyApp> {
 
   void _onLaunchComplete() {
     if (!mounted) return;
-    setState(() {
-      showLaunchScreen = false;
-    });
+    setState(() => showLaunchScreen = false);
   }
 }
 
@@ -103,15 +105,11 @@ class _LaunchScreenState extends State<LaunchScreen>
         vsync: this, duration: const Duration(milliseconds: 400));
 
     _logoController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _textController1.forward();
-      }
+      if (status == AnimationStatus.completed) _textController1.forward();
     });
 
     _textController1.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _textController2.forward();
-      }
+      if (status == AnimationStatus.completed) _textController2.forward();
     });
 
     _textController2.addStatusListener((status) {
@@ -146,7 +144,6 @@ class _LaunchScreenState extends State<LaunchScreen>
             FadeTransition(
               opacity: _logoController,
               child: Image.asset(
-                // Use your new updated asset if needed; keeping prior themed version:
                 'assets/icons/logo.png',
                 height: 100,
               ),
@@ -175,8 +172,7 @@ class _LaunchScreenState extends State<LaunchScreen>
                   ),
                   children: [
                     TextSpan(
-                      text: 'REDEFINING THE NORM',
-                      // Primary color adapts to light/dark and your brand palette
+                      text: 'VOICE AMIDST THE VOID',
                       style: TextStyle(color: scheme.primary),
                     ),
                   ],
