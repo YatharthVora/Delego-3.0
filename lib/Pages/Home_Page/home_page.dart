@@ -104,7 +104,7 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                       Text(
-                        '2025',
+                        '2026',
                         style: textTheme.titleLarge?.copyWith(
                           color: scheme.onSurface.withOpacity(0.8),
                           fontWeight: FontWeight.w600,
