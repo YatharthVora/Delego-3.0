@@ -162,6 +162,13 @@ class _HomePageState extends State<HomePage> {
                 imageAsset: 'assets/icons/calendar.png',
                 onTap: () => goToPage(SchedulePage()),
               ),
+              _HomeCard(
+                indexText: '05.',
+                titleLeft: 'Scan',
+                titleRight: 'QR',
+                imageAsset: 'assets/icons/qr.png',
+                onTap: () => goToPage(QrScanner()),
+              ),
 
               const SizedBox(height: 30),
 
