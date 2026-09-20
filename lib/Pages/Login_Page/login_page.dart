@@ -79,7 +79,9 @@ class _LoginPageState extends State<LoginPage> {
         },
         encoding: Encoding.getByName('utf-8'),
       );
-
+      print('statusCode:${response.statusCode}');
+      print('statusBody:${response.body}');
+      print('Response headers: ${response.headers}');
       final responseData = json.decode(response.body);
       if (response.statusCode == 200) {
         final String token = responseData['access_token'];
@@ -149,16 +151,54 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
       }
-    } catch (e) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-              "An error occurred. Please check your internet connection."),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+    }catch (e) {
+  Navigator.of(context).pop();
+  
+  print('Error: $e');
+  print('Error Type: ${e.runtimeType}');
+  
+  String errorMessage = "An error occurred";
+  
+  try {
+    // Try to parse error from response
+    if (e.toString().contains('Bad state') || e.toString().contains('SocketException')) {
+      errorMessage = "Cannot connect to server";
+    } else {
+      // Extract error message from exception string
+      final errorString = e.toString();
+      
+      // If it contains JSON-like content, try to parse it
+      if (errorString.contains('{')) {
+        final jsonMatch = RegExp(r'\{.*\}').firstMatch(errorString);
+        if (jsonMatch != null) {
+          final jsonStr = jsonMatch.group(0);
+          final jsonResponse = jsonDecode(jsonStr!);
+          errorMessage = jsonResponse['detail'] ?? 
+                        jsonResponse['error'] ?? 
+                        jsonResponse['message'] ?? 
+                        errorString;
+        } else {
+          errorMessage = errorString;
+        }
+      } else {
+        errorMessage = errorString;
+      }
     }
+  } catch (parseError) {
+    print('Could not parse error: $parseError');
+    errorMessage = e.toString();
+  }
+  
+  print('Extracted Error: $errorMessage');
+  
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(errorMessage),
+      backgroundColor: Theme.of(context).colorScheme.error,
+      duration: Duration(seconds: 5),
+    ),
+  );
+}
   }
 
   @override

@@ -63,7 +63,7 @@ class _MyAppState extends State<MyApp> {
           themeMode: widget.controller.mode,
           home: showLaunchScreen
               ? LaunchScreen(onLaunchComplete: _onLaunchComplete)
-              : (isLoggedIn == true
+              : (isLoggedIn == true //logging screen->true  
               ? HomePage(controller: widget.controller)
               : LoginPage(controller: widget.controller)),
         );
@@ -84,7 +84,7 @@ class LaunchScreen extends StatefulWidget {
   @override
   _LaunchScreenState createState() => _LaunchScreenState();
 }
-
+  
 class _LaunchScreenState extends State<LaunchScreen>
     with TickerProviderStateMixin {
   late AnimationController _logoController;

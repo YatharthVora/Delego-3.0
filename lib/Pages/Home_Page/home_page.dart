@@ -8,6 +8,8 @@ import 'package:delego/Pages/Study Guides/study_guidespage.dart';
 import 'package:delego/Pages/Qr_Page/Qr_code.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:delego/Theme/theme_controller.dart';
+import 'package:delego/Pages/Qr_Page/Qr_scanner.dart';
+
 
 class HomePage extends StatefulWidget {
   final ThemeController controller;
@@ -25,8 +27,9 @@ class _HomePageState extends State<HomePage> {
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => LoginPage(controller: widget.controller)),
-          (route) => false,
+      MaterialPageRoute(
+          builder: (context) => LoginPage(controller: widget.controller)),
+      (route) => false,
     );
   }
 
@@ -68,7 +71,8 @@ class _HomePageState extends State<HomePage> {
           centerTitle: true,
         ),
         drawer: MyDrawer(
-          onProfileTap: () => goToPage(ProfilePage(controller: widget.controller)),
+          onProfileTap: () =>
+              goToPage(ProfilePage(controller: widget.controller)),
           onSignoutTap: signOut,
         ),
         body: SafeArea(
@@ -137,22 +141,22 @@ class _HomePageState extends State<HomePage> {
                 imageAsset: 'assets/icons/book.png',
                 onTap: () => goToPage(StudyGuidespage()),
               ),
-              // _HomeCard(
-              //   indexText: '02.',
-              //   titleLeft: 'My',
-              //   titleRight: 'QR',
-              //   imageAsset: 'assets/icons/qr.png',
-              //   onTap: () => goToPage(QrCode()),
-              // ),
               _HomeCard(
                 indexText: '02.',
+                titleLeft: 'My',
+                titleRight: 'QR',
+                imageAsset: 'assets/icons/qr.png',
+                onTap: () => goToPage(QrCode()),
+              ),
+              _HomeCard(
+                indexText: '03.',
                 titleLeft: 'Rooms',
                 titleRight: '',
                 imageAsset: 'assets/icons/loc.png',
                 onTap: () => goToPage(RoomPage()),
               ),
               _HomeCard(
-                indexText: '03.',
+                indexText: '04.',
                 titleLeft: 'Schedule',
                 titleRight: '',
                 imageAsset: 'assets/icons/calendar.png',
