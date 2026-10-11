@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
-
+import 'dart:convert';
+import 'package:provider/provider.dart';
+import 'package:delego/api/api_client.dart';
 import 'package:delego/constants/countries.dart';
 
 class EBToolsPage extends StatefulWidget {
@@ -14,8 +16,17 @@ class EBToolsPage extends StatefulWidget {
 class _EBToolsPageState extends State<EBToolsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
+  // --- API / Committee State ---
+  late final ApiClient _api;
+  bool _initDone = false;
+  List<Map<String, dynamic>> _committees = [];
+  int? _committeeId;
+  bool _loadingCommittees = true;
+
   // --- GSL State ---
-  final List<String> _gslList = [];
+  final Map<int, List<String>> _gslMap = {};
+  List<String> get _currentGslList =>
+      _committeeId != null ? (_gslMap[_committeeId!] ??= []) : [];
   final TextEditingController _countryController = TextEditingController();
   final FocusNode _countryFocus = FocusNode();
 
@@ -31,6 +42,47 @@ class _EBToolsPageState extends State<EBToolsPage> with SingleTickerProviderStat
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initDone) {
+      _api = context.read<ApiClient>();
+      _loadCommittees();
+      _initDone = true;
+    }
+  }
+
+  Future<void> _loadCommittees() async {
+    try {
+      final res = await _api.get('/committees');
+      if (res.statusCode == 200) {
+        final list = (jsonDecode(res.body) as List)
+            .map((c) => {'id': c['id'], 'name': c['name']})
+            .toList();
+        if (mounted) {
+          setState(() {
+            _committees = list;
+            if (_committeeId == null && list.isNotEmpty) {
+              _committeeId = list.first['id'] as int;
+            }
+            _loadingCommittees = false;
+          });
+        }
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loadingCommittees = false);
+    }
+  }
+
+  Future<void> _syncGSL() async {
+    if (_committeeId == null) return;
+    try {
+      await _api.postJson('/committees/$_committeeId/gsl', _currentGslList);
+    } catch (e) {
+      debugPrint("GSL Sync Error: $e");
+    }
+  }
+
+  @override
   void dispose() {
     _tabController.dispose();
     _countryController.dispose();
@@ -43,15 +95,22 @@ class _EBToolsPageState extends State<EBToolsPage> with SingleTickerProviderStat
   void _addCountry([String? picked]) {
     final country = (picked ?? _countryController.text).trim();
     if (country.isEmpty) return;
+    if (_committeeId == null) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(content: Text('Please select a committee first.')));
+      return;
+    }
 
     final exists =
-        _gslList.any((c) => c.toLowerCase() == country.toLowerCase());
+        _currentGslList.any((c) => c.toLowerCase() == country.toLowerCase());
     if (exists) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text('$country is already on the list.')));
     } else {
-      setState(() => _gslList.add(country));
+      setState(() => _currentGslList.add(country));
+      _syncGSL();
     }
     _countryController.clear();
     _countryFocus.requestFocus(); // keep typing the next one
@@ -59,8 +118,9 @@ class _EBToolsPageState extends State<EBToolsPage> with SingleTickerProviderStat
 
   void _removeCountry(int index) {
     setState(() {
-      _gslList.removeAt(index);
+      _currentGslList.removeAt(index);
     });
+    _syncGSL();
   }
 
   // --- Timer Functions ---
@@ -128,6 +188,33 @@ class _EBToolsPageState extends State<EBToolsPage> with SingleTickerProviderStat
   Widget _buildGSLTab(ColorScheme scheme) {
     return Column(
       children: [
+        // Committee Selector
+        if (_loadingCommittees)
+          const LinearProgressIndicator()
+        else if (_committees.isNotEmpty)
+          SizedBox(
+            height: 60,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              itemCount: _committees.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (_, i) {
+                final c = _committees[i];
+                final cid = c['id'] as int;
+                return ChoiceChip(
+                  label: Text('${c['name']}'),
+                  selected: cid == _committeeId,
+                  onSelected: (_) {
+                    setState(() => _committeeId = cid);
+                    _syncGSL(); // push whatever we have currently, or maybe fetch? For now just push.
+                  },
+                );
+              },
+            ),
+          ),
+        const Divider(height: 1),
+
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
@@ -201,29 +288,30 @@ class _EBToolsPageState extends State<EBToolsPage> with SingleTickerProviderStat
           ),
         ),
         Expanded(
-          child: _gslList.isEmpty
+          child: _currentGslList.isEmpty
               ? const Center(child: Text("GSL is empty"))
               : ReorderableListView.builder(
-                  itemCount: _gslList.length,
+                  itemCount: _currentGslList.length,
                   onReorder: (oldIndex, newIndex) {
                     setState(() {
                       if (oldIndex < newIndex) {
                         newIndex -= 1;
                       }
-                      final String item = _gslList.removeAt(oldIndex);
-                      _gslList.insert(newIndex, item);
+                      final String item = _currentGslList.removeAt(oldIndex);
+                      _currentGslList.insert(newIndex, item);
                     });
+                    _syncGSL();
                   },
                   itemBuilder: (context, index) {
                     return Card(
-                      key: ValueKey('${_gslList[index]}_$index'),
+                      key: ValueKey('${_currentGslList[index]}_$index'),
                       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       child: ListTile(
                         leading: CircleAvatar(
                           backgroundColor: scheme.primaryContainer,
                           child: Text('${index + 1}', style: TextStyle(color: scheme.onPrimaryContainer)),
                         ),
-                        title: Text(_gslList[index], style: const TextStyle(fontWeight: FontWeight.bold)),
+                        title: Text(_currentGslList[index], style: const TextStyle(fontWeight: FontWeight.bold)),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
                           onPressed: () => _removeCountry(index),
