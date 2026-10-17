@@ -1,3 +1,4 @@
+import 'package:delego/widgets/neon.dart';
 import 'package:flutter/material.dart';
 import 'package:delego/constants/backend.dart';
 import 'package:http/http.dart' as http;
@@ -72,12 +73,10 @@ class _RoomPageState extends State<RoomPage> {
     final cacheTimestamp = prefs.getString(_timestampKey);
     final now = DateTime.now().millisecondsSinceEpoch;
 
-    bool cacheValid = false;
     if (cachedData != null && cacheTimestamp != null) {
       final lastFetched = int.tryParse(cacheTimestamp) ?? 0;
       if (now - lastFetched < _cacheDurationMs) {
         _rooms = _parseRooms(cachedData);
-        cacheValid = true;
         setState(() { _isLoading = false; });
         return;
       }
@@ -123,74 +122,147 @@ class _RoomPageState extends State<RoomPage> {
     } catch (_) { return []; }
   }
 
-  final Map<String, Color> _committeeColors = const {
-    'UNSC': Color(0xFFa1be46),
-    'CCC': Color(0xFF0f5add),
-    'PSC': Color(0xFF33ad6f),
-    'WTO': Color(0xFF0f5add),
-    'UNODC': Color(0xFF884c6e),
-    'UNICEF': Color(0xFF859252),
-    'ECOSOC': Color(0xFF33ad6f),
-    'IPC': Color(0xFF984875),
-  };
+  static const List<({List<Color> colors, Color fg, Color accent})> _palettes = [
+    (
+      colors: [Color(0xFFD9FF1F), Color(0xFF8BC400)],
+      fg: Color(0xFF111111),
+      accent: Neon.orange,
+    ),
+    (
+      colors: [Color(0xFF2F55FF), Color(0xFF1226A8)],
+      fg: Colors.white,
+      accent: Neon.lime,
+    ),
+    (
+      colors: [Color(0xFF22D38F), Color(0xFF1B8F63)],
+      fg: Colors.white,
+      accent: Neon.yellow,
+    ),
+    (
+      colors: [Color(0xFFFF2BB4), Color(0xFFB51E9A)],
+      fg: Colors.white,
+      accent: Neon.yellow,
+    ),
+    (
+      colors: [Color(0xFF7A1BFF), Color(0xFF3E0CA8)],
+      fg: Colors.white,
+      accent: Neon.cyan,
+    ),
+    (
+      colors: [Color(0xFFFF4A22), Color(0xFFB82305)],
+      fg: Colors.white,
+      accent: Neon.yellow,
+    ),
+    (
+      colors: [Color(0xFF2AF5E0), Color(0xFF0E9F90)],
+      fg: Color(0xFF080824),
+      accent: Neon.navy,
+    ),
+    (
+      colors: [Color(0xFFFFF21A), Color(0xFFD4A800)],
+      fg: Color(0xFF111111),
+      accent: Neon.pink,
+    ),
+  ];
 
-  Widget _buildRoomCard(Room room, ColorScheme scheme, TextTheme textTheme) {
-    final bgColor = _committeeColors[room.committeeName.toUpperCase()] ?? scheme.primary;
+  Widget _buildRoomCard(Room room, int index) {
+    final p = _palettes[index % _palettes.length];
+    final fg = p.fg;
+    final floor = room.floor.trim();
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-      padding: const EdgeInsets.all(25),
-      width: double.infinity,
-      decoration: ShapeDecoration(
-        color: bgColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.92),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: p.colors,
         ),
-        shadows: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x33000000),
-            blurRadius: 4,
-            offset: Offset(0, 2),
+            color: p.colors.last.withValues(alpha: 0.35),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                room.committeeName,
-                style: textTheme.titleLarge?.copyWith(
-                  color: scheme.onPrimary,
-                  fontSize: 20.23, fontWeight: FontWeight.w600, fontFamily: 'Poppins',
-                ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: CustomPaint(
+                painter: GridPainter(
+                    color: Colors.black.withValues(alpha: 0.10), step: 10),
               ),
-              const SizedBox(height: 6),
-              Text(
-                room.roomCode,
-                style: textTheme.titleLarge?.copyWith(
-                  color: scheme.onPrimary,
-                  fontSize: 20.23, fontWeight: FontWeight.w600, fontFamily: 'Poppins',
-                ),
+            ),
+            Positioned(
+              right: 6,
+              bottom: 6,
+              width: 72,
+              height: 64,
+              child: CustomPaint(
+                painter: RingsPainter(
+                    color: p.accent.withValues(alpha: 0.45),
+                    count: 6,
+                    seed: index + 3),
               ),
-              const SizedBox(height: 10),
-              Text(
-                room.floor,
-                style: textTheme.titleMedium?.copyWith(
-                  color: scheme.onPrimary.withValues(alpha: 0.85),
-                  fontSize: 18.65, fontWeight: FontWeight.w600, fontFamily: 'Poppins',
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      room.committeeName,
+                      style: TextStyle(
+                        fontFamily: Neon.font,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 22,
+                        color: fg,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Text('ROOM',
+                      style: Neon.label(fg.withValues(alpha: 0.75),
+                          size: 10, spacing: 2)),
+                  const SizedBox(height: 2),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      room.roomCode,
+                      style: TextStyle(
+                        fontFamily: Neon.font,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 34,
+                        height: 1.05,
+                        color: fg,
+                      ),
+                    ),
+                  ),
+                  if (floor.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      floor,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: Neon.font,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12.5,
+                        color: fg.withValues(alpha: 0.85),
+                      ),
+                    ),
+                  ],
+                ],
               ),
-            ],
-          ),
-          SizedBox(
-            height: 70,
-            width: 70,
-            child: Image.asset('assets/icons/loc.png'),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -228,12 +300,26 @@ class _RoomPageState extends State<RoomPage> {
         ),
       );
     } else {
-      content = ListView.builder(
-        itemCount: _rooms.length,
-        itemBuilder: (context, index) {
-          return _buildRoomCard(_rooms[index], scheme, textTheme);
-        },
-      );
+      content = LayoutBuilder(builder: (context, c) {
+        const pad = 14.0, gap = 12.0;
+        final rows = (_rooms.length / 2).ceil().clamp(1, 100);
+        final tileW = (c.maxWidth - pad * 2 - gap) / 2;
+        final fitH = (c.maxHeight - pad * 2 - gap * (rows - 1)) / rows;
+        final tileH = fitH.clamp(130.0, 260.0);
+        return GridView.builder(
+          padding: const EdgeInsets.all(pad),
+          physics: const ClampingScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: gap,
+            crossAxisSpacing: gap,
+            childAspectRatio: tileW / tileH,
+          ),
+          itemCount: _rooms.length,
+          itemBuilder: (context, index) =>
+              _buildRoomCard(_rooms[index], index),
+        );
+      });
     }
 
     // Show snackBar for stale cache after widget build
@@ -252,7 +338,7 @@ class _RoomPageState extends State<RoomPage> {
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: AppBar(
-        backgroundColor: scheme.primary,
+        backgroundColor: const Color(0xFFFF2BB4),
         foregroundColor: scheme.onPrimary,
         iconTheme: IconThemeData(color: scheme.onPrimary),
         centerTitle: true,
@@ -260,7 +346,7 @@ class _RoomPageState extends State<RoomPage> {
           'Allotted Rooms',
           style: textTheme.titleLarge?.copyWith(
             color: scheme.onPrimary,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
           ),
         ),
         elevation: 0.0,

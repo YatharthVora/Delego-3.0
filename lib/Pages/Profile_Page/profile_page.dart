@@ -1,13 +1,11 @@
-import 'package:delego/Pages/Login_Page/login_page.dart';
-import 'package:flutter/material.dart';
-import 'package:delego/constants/backend.dart';
-import 'package:delego/Pages/Profile_Page/text_box.dart';
-import 'package:provider/provider.dart';
-import 'package:delego/api/scan_queue.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:delego/Pages/Profile_Page/text_box.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:delego/Theme/theme_controller.dart';
+import 'package:delego/constants/backend.dart';
+import 'package:delego/widgets/neon.dart';
 
 class ProfilePage extends StatefulWidget {
   final ThemeController controller;
@@ -18,215 +16,75 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String? id, firstname, lastname, email, contact, dateofbirth, gender, diet;
+  String? firstname, lastname, email, contact, dateofbirth, diet;
+
+  static String _formatDiet(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return 'Not Set';
+    switch (raw.trim().toLowerCase()) {
+      case 'veg':
+        return 'Veg';
+      case 'non_veg':
+      case 'non-veg':
+      case 'nonveg':
+        return 'Non-Veg';
+      case 'jain':
+        return 'Jain';
+      default:
+        return raw.trim();
+    }
+  }
 
   Future<void> loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
-      id = prefs.getString('id');
       firstname = prefs.getString('firstname');
       lastname = prefs.getString('lastname');
       email = prefs.getString('email');
       contact = prefs.getString('contact');
       dateofbirth = prefs.getString('dateofbirth');
-      gender = prefs.getString('gender');
-      diet = prefs.getString('diet');
-      if (contact == '') contact = '-';
-      if (gender == '') gender = 'Prefer not to say';
-      if (diet == '') diet = 'Not Set';
-      if (dateofbirth == '') dateofbirth = 'dd-mm-yyyy';
+      diet = _formatDiet(prefs.getString('diet'));
+      if (contact == null || contact!.isEmpty) contact = '-';
+      if (dateofbirth == null || dateofbirth!.isEmpty) {
+        dateofbirth = 'dd-mm-yyyy';
+      }
     });
-  }
 
-  Future<void> updateUserData(String field, String newValue) async {
-    switch (field) {
-      case 'First Name':
-        field = 'firstname'; break;
-      case 'Last Name':
-        field = 'lastname'; break;
-      case 'Contact Number':
-        field = 'contact'; break;
-      case 'Date of Birth':
-        field = 'dateofbirth'; break;
-      case 'Gender':
-        field = 'gender'; break;
-      case 'Food Preference':
-        field = 'diet'; break;
-    }
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString(field, newValue);
     final token = prefs.getString('token');
+    if (token == null || token.isEmpty) return;
+
     try {
-      final response = await http.patch(
-        Uri.parse('${Backend.baseUrl}/delegates/$id?$field=$newValue'),
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: [],
+      final mmRes = await http.get(
+        Uri.parse('${Backend.baseUrl}/mumbaimun/delegates/me'),
+        headers: {'Authorization': 'Bearer $token'},
       );
-      final responseData = json.decode(response.body);
-      if (response.statusCode == 200) {
-        switch (field) {
-          case 'firstname': field = 'First Name'; break;
-          case 'lastname': field = 'Last Name'; break;
-          case 'contact': field = 'Contact Number'; break;
-          case 'dateofbirth': field = 'Date of Birth'; break;
-          case 'gender': field = 'Gender'; break;
-          case 'diet': field = 'Food Preference'; break;
+      if (mmRes.statusCode == 200) {
+        final data = json.decode(mmRes.body);
+        final serverContact = (data['contact'] ?? '').toString();
+        final serverDob = (data['dateofbirth'] ?? '').toString();
+        final serverDiet = data['food_preference']?.toString();
+
+        if (serverContact.isNotEmpty) {
+          await prefs.setString('contact', serverContact);
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("$field updated successfully!"), backgroundColor: Colors.green),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(responseData.toString(), style: TextStyle(color: Colors.red))),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error updating $field."), backgroundColor: Colors.red),
-      );
-    }
-  }
-
-  Future<void> deleteAccount() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-    bool confirmDelete = await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Delete Account"),
-        content: const Text("Are you sure you want to delete your account? This action cannot be undone."),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text("Cancel")),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text("Delete", style: TextStyle(color: Colors.red))),
-        ],
-      ),
-    ) ?? false;
-    if (confirmDelete) {
-      final queue = context.read<ScanQueue>();
-      try {
-        final response = await http.delete(
-          Uri.parse('${Backend.baseUrl}/account'),
-          headers: {'Authorization': 'Bearer $token'},
-        );
-        if (response.statusCode == 200) {
-          await prefs.clear();
-          await queue.clearAll();
-          Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => LoginPage(controller: widget.controller)),
-                  (Route<dynamic> route) => false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Account deleted successfully."), backgroundColor: Colors.green),
-          );
-        } else {
-          final responseData = json.decode(response.body);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Failed to delete account: ${responseData['detail']}"), backgroundColor: Colors.red),
-          );
+        if (serverDob.isNotEmpty) {
+          await prefs.setString('dateofbirth', serverDob);
         }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Error deleting account."), backgroundColor: Colors.red),
-        );
+        if (serverDiet != null && serverDiet.isNotEmpty) {
+          await prefs.setString('diet', _formatDiet(serverDiet));
+        }
+
+        if (!mounted) return;
+        setState(() {
+          if (serverContact.isNotEmpty) contact = serverContact;
+          if (serverDob.isNotEmpty) dateofbirth = serverDob;
+          if (serverDiet != null && serverDiet.isNotEmpty) {
+            diet = _formatDiet(serverDiet);
+          }
+        });
       }
-    }
+    } catch (_) {}
   }
-
-  Future<void> editField(String field, String currentValue) async {
-    String newValue = currentValue;
-    final scheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    await showDialog(
-      context: context,
-      builder: (context) {
-        String dropDownValue = newValue.isEmpty || newValue == 'Not Set' ? 'non-jain' : newValue;
-        return StatefulBuilder(
-          builder: (context, setStateDialog) {
-            return AlertDialog(
-              backgroundColor: scheme.surface,
-              title: Text("Edit $field", style: textTheme.titleMedium?.copyWith(color: scheme.onSurface)),
-              content: field == 'Food Preference' 
-                ? DropdownButton<String>(
-                    value: dropDownValue,
-                    isExpanded: true,
-                    dropdownColor: scheme.surface,
-                    style: textTheme.bodyMedium?.copyWith(color: scheme.onSurface),
-                    items: const [
-                      DropdownMenuItem(value: 'non-jain', child: Text('Non-Jain')),
-                      DropdownMenuItem(value: 'jain', child: Text('Jain')),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) {
-                        setStateDialog(() {
-                          dropDownValue = val;
-                          newValue = val;
-                        });
-                      }
-                    },
-                  )
-                : TextField(
-                    autofocus: true,
-                    style: textTheme.bodyMedium?.copyWith(color: scheme.onSurface),
-                    decoration: InputDecoration(
-                      hintText: field == 'Date of Birth' ? "dd-mm-yyyy" : "Enter new $field",
-                      hintStyle: textTheme.bodyMedium?.copyWith(color: scheme.onSurface.withValues(alpha: 0.5)),
-                    ),
-                    onChanged: (value) => newValue = value,
-                  ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text('Cancel', style: textTheme.bodyMedium?.copyWith(color: scheme.primary)),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    Navigator.of(context).pop();
-              if (field == 'Date of Birth') {
-                final datePattern = RegExp(r"^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-(\d{4})$");
-                if (!datePattern.hasMatch(newValue)) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Invalid date format. Use dd-mm-yyyy."), backgroundColor: Colors.red),
-                  );
-                  return;
-                }
-                final dateParts = newValue.split('-');
-                final day = int.parse(dateParts[0]);
-                final month = int.parse(dateParts[1]);
-                final year = int.parse(dateParts[2]);
-                if (day > 31 || month > 12 || year < 1900 || year > DateTime.now().year) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Invalid date entered."), backgroundColor: Colors.red),
-                  );
-                  return;
-                }
-              }
-              if (field == 'Contact Number') {
-                final contactPattern = RegExp(r"^\+?\d{1,4}[\s\-]?\(?\d{1,4}\)?[\s\-]?\d{1,4}[\s\-]?\d{4,}$");
-                if (!contactPattern.hasMatch(newValue)) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Invalid contact number"), backgroundColor: Colors.red),
-                  );
-                  return;
-                }
-              }
-              if (newValue.isNotEmpty && newValue != currentValue) {
-                await updateUserData(field, newValue);
-                loadUserData();
-              }
-            },
-            child: Text('Save', style: textTheme.bodyMedium?.copyWith(color: scheme.primary)),
-          ),
-        ],
-      );
-     },
-    );
-   },
-  );
-}
 
   @override
   void initState() {
@@ -234,119 +92,49 @@ class _ProfilePageState extends State<ProfilePage> {
     loadUserData();
   }
 
+  Widget _header(String text, TextTheme textTheme) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+      child: Text(
+        text.toUpperCase(),
+        style: textTheme.titleSmall?.copyWith(
+          color: Neon.pink,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.5,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: scheme.onPrimary),
-        backgroundColor: scheme.primary,
+        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Neon.pink,
         centerTitle: true,
-        title: Text('Settings', style: textTheme.titleLarge?.copyWith(color: scheme.onPrimary, fontWeight: FontWeight.bold)),
+        title: Text('Settings',
+            style: textTheme.titleLarge?.copyWith(
+                color: Colors.white, fontWeight: FontWeight.w700)),
       ),
       body: ListView(
+        padding: const EdgeInsets.only(bottom: 24),
         children: [
           const SizedBox(height: 20),
-          Icon(Icons.person, size: 72, color: scheme.primary),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.only(left: 25),
-            child: Text(
-              'My Profile',
-              style: textTheme.titleMedium?.copyWith(
-                color: scheme.onSurface,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
+          const Icon(Icons.person, size: 72, color: Neon.pink),
+          _header('My Profile', textTheme),
+          MyTextBox(text: firstname ?? 'First Name', sectionName: 'First Name'),
+          MyTextBox(text: lastname ?? 'Last Name', sectionName: 'Last Name'),
+          MyTextBox(text: email ?? 'Email', sectionName: 'Email'),
           MyTextBox(
-            text: firstname ?? 'First Name',
-            sectionName: 'First Name',
-            onPressed: () => editField('First Name', firstname ?? ''),
-          ),
+              text: contact ?? 'Contact Number',
+              sectionName: 'Contact Number'),
           MyTextBox(
-            text: lastname ?? 'Last Name',
-            sectionName: 'Last Name',
-            onPressed: () => editField('Last Name', lastname ?? ''),
-          ),
-          MyTextBox(
-            text: email ?? 'Email',
-            sectionName: 'Email',
-            onPressed: () => editField('Email', email ?? ''),
-          ),
-          MyTextBox(
-            text: contact ?? 'Contact Number',
-            sectionName: 'Contact Number',
-            onPressed: () => editField('Contact Number', contact ?? ''),
-          ),
-          MyTextBox(
-            text: dateofbirth ?? 'Date of Birth',
-            sectionName: 'Date of Birth',
-            onPressed: () => editField('Date of Birth', dateofbirth ?? ''),
-          ),
-          MyTextBox(
-            text: diet ?? 'Not Set',
-            sectionName: 'Food Preference',
-            onPressed: () => editField('Food Preference', diet ?? ''),
-          ),
-          // MyTextBox(
-          //   text: gender ?? 'Gender',
-          //   sectionName: 'Gender',
-          //   onPressed: () => editField('Gender', gender ?? ''),
-          // ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: Text(
-              'App Theme',
-              style: textTheme.titleMedium?.copyWith(
-                color: scheme.onSurface,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          RadioListTile<ThemeMode>(
-            value: ThemeMode.system,
-            groupValue: widget.controller.mode,
-            onChanged: (mode) {
-              if (mode != null) setState(() => widget.controller.setThemeMode(mode));
-            },
-            title: Text('System Default', style: textTheme.bodyMedium?.copyWith(color: scheme.onSurface)),
-            activeColor: scheme.primary,
-          ),
-          RadioListTile<ThemeMode>(
-            value: ThemeMode.light,
-            groupValue: widget.controller.mode,
-            onChanged: (mode) {
-              if (mode != null) setState(() => widget.controller.setThemeMode(mode));
-            },
-            title: Text('Light', style: textTheme.bodyMedium?.copyWith(color: scheme.onSurface)),
-            activeColor: scheme.primary,
-          ),
-          RadioListTile<ThemeMode>(
-            value: ThemeMode.dark,
-            groupValue: widget.controller.mode,
-            onChanged: (mode) {
-              if (mode != null) setState(() => widget.controller.setThemeMode(mode));
-            },
-            title: Text('Dark', style: textTheme.bodyMedium?.copyWith(color: scheme.onSurface)),
-            activeColor: scheme.primary,
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: scheme.error,
-              ),
-              onPressed: deleteAccount,
-              child: Text(
-                "Delete Account",
-                style: textTheme.bodyMedium?.copyWith(color: scheme.onError),
-              ),
-            ),
-          ),
+              text: dateofbirth ?? 'Date of Birth',
+              sectionName: 'Date of Birth'),
+          MyTextBox(text: diet ?? 'Not Set', sectionName: 'Food Preference'),
         ],
       ),
     );

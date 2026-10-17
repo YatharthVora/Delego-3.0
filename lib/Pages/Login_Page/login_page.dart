@@ -1,4 +1,3 @@
-import 'package:delego/Pages/Profile_Page/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -27,15 +26,20 @@ class _LoginPageState extends State<LoginPage> {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
 
-
-  Future<void> setLoggedInBefore() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('lib', true);
-  }
-
-  Future<bool?> getLoggedInBefore() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('lib');
+  static String _formatDietLabel(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return '';
+    switch (raw.trim().toLowerCase()) {
+      case 'veg':
+        return 'Veg';
+      case 'non_veg':
+      case 'non-veg':
+      case 'nonveg':
+        return 'Non-Veg';
+      case 'jain':
+        return 'Jain';
+      default:
+        return raw.trim();
+    }
   }
 
   Future<void> clearPref() async {
@@ -64,8 +68,6 @@ class _LoginPageState extends State<LoginPage> {
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
-    final scheme = Theme.of(context).colorScheme;
-
     final email = usernameController.text.trim();
     final password = passwordController.text.trim();
 
@@ -89,9 +91,6 @@ class _LoginPageState extends State<LoginPage> {
         },
         encoding: Encoding.getByName('utf-8'),
       );
-      // print('statusCode:${response.statusCode}');
-      // print('statusBody:${response.body}');
-      // print('Response headers: ${response.headers}');
 
       final responseData = json.decode(response.body);
       if (response.statusCode == 200) {
@@ -105,8 +104,6 @@ class _LoginPageState extends State<LoginPage> {
         );
         final data = json.decode(response2.body);
 
-        print("data=$data"); //printing the data returned from the backend
-
         if (data['detail'] == 'Please verify your email!') {
           await prefs.remove('token'); // not signed in until the email is verified
           Navigator.of(context).pop();
@@ -114,15 +111,94 @@ class _LoginPageState extends State<LoginPage> {
           return;
         }
 
-        final id = data['id'] ?? '';
+        final String id = (data['id'] ?? '').toString();
+        final String emailKey = (data['email'] ?? email).toString().toLowerCase();
+
+        String contact = (data['contact'] ?? '').toString();
+        String dob = (data['dateofbirth'] ?? '').toString();
+        String? rawFoodPref = data['food_preference']?.toString();
+
+        final pendingContact = prefs.getString('pending_contact_$emailKey');
+        final pendingDob = prefs.getString('pending_dob_$emailKey');
+        final pendingFoodPref = prefs.getString('pending_food_pref_$emailKey');
+
+        // If contact/DOB were collected at sign-up and the server doesn't have them yet,
+        // push them via PATCH /delegates/{id}.
+        if (id.isNotEmpty &&
+            ((contact.isEmpty && pendingContact != null && pendingContact.isNotEmpty) ||
+                (dob.isEmpty && pendingDob != null && pendingDob.isNotEmpty))) {
+          final newContact = contact.isNotEmpty ? contact : (pendingContact ?? '');
+          final newDob = dob.isNotEmpty ? dob : (pendingDob ?? '');
+          try {
+            final patchUri = Uri.parse('${Backend.baseUrl}/delegates/$id')
+                .replace(queryParameters: {
+              if (newContact.isNotEmpty) 'contact': newContact,
+              if (newDob.isNotEmpty) 'dateofbirth': newDob,
+            });
+            final patchRes = await http.patch(
+              patchUri,
+              headers: {'Authorization': 'Bearer $token'},
+            );
+            if (patchRes.statusCode == 200) {
+              contact = newContact;
+              dob = newDob;
+              await prefs.remove('pending_contact_$emailKey');
+              await prefs.remove('pending_dob_$emailKey');
+            }
+          } catch (_) {}
+        }
+
+        if (contact.isEmpty && pendingContact != null && pendingContact.isNotEmpty) {
+          contact = pendingContact;
+        }
+        if (dob.isEmpty && pendingDob != null && pendingDob.isNotEmpty) {
+          dob = pendingDob;
+        }
+
+        // Sync or fetch Mumbai MUN food_preference.
+        if (id.isNotEmpty && pendingFoodPref != null && pendingFoodPref.isNotEmpty) {
+          try {
+            final patchFoodRes = await http.patch(
+              Uri.parse('${Backend.baseUrl}/mumbaimun/delegates/$id/food_preference'),
+              headers: {
+                'Authorization': 'Bearer $token',
+                'Content-Type': 'application/json',
+              },
+              body: jsonEncode({'food_preference': pendingFoodPref}),
+            );
+            if (patchFoodRes.statusCode == 200) {
+              rawFoodPref = pendingFoodPref;
+              await prefs.remove('pending_food_pref_$emailKey');
+            }
+          } catch (_) {}
+        }
+
+        if (rawFoodPref == null || rawFoodPref.isEmpty) {
+          try {
+            final mmRes = await http.get(
+              Uri.parse('${Backend.baseUrl}/mumbaimun/delegates/me'),
+              headers: {'Authorization': 'Bearer $token'},
+            );
+            if (mmRes.statusCode == 200) {
+              final mmData = json.decode(mmRes.body);
+              rawFoodPref = mmData['food_preference']?.toString();
+            }
+          } catch (_) {}
+        }
+
+        final dietLabel = _formatDietLabel(rawFoodPref ?? pendingFoodPref);
+
         await prefs.setString('id', id);
         await prefs.setString('firstname', data['firstname'] ?? '');
         await prefs.setString('lastname', data['lastname'] ?? '');
         await prefs.setString('email', data['email'] ?? '');
-        await prefs.setString('contact', data['contact'] ?? '');
-        await prefs.setString('dateofbirth', data['dateofbirth'] ?? '');
+        await prefs.setString('contact', contact);
+        await prefs.setString('dateofbirth', dob);
         await prefs.setString('gender', data['gender'] ?? '');
         await prefs.setString('role', data['role'] ?? '');
+        if (dietLabel.isNotEmpty) {
+          await prefs.setString('diet', dietLabel);
+        }
 
         // Permissions come from the server; load them before the home screen decides
         // what to show (the sign-in token is already saved, so the call is authorised).
@@ -135,29 +211,6 @@ class _LoginPageState extends State<LoginPage> {
             builder: (context) => HomePage(controller: widget.controller),
           ),
         );
-
-        if (await getLoggedInBefore() != true) {
-          setLoggedInBefore();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Update Info'),
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              action: SnackBarAction(
-                label: "Profile",
-                textColor: Theme.of(context).colorScheme.primary,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          ProfilePage(controller: widget.controller),
-                    ),
-                  );
-                },
-              ),
-            ),
-          );
-        }
       } else if (response.statusCode == 403 &&
           responseData['detail'].toString().toLowerCase().contains('verify')) {
         // Right password, but the emailed code has not been entered yet.

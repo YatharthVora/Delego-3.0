@@ -165,7 +165,7 @@ class _SchedulePageState extends State<SchedulePage> {
             "Schedule",
             style: textTheme.titleLarge?.copyWith(
               color: scheme.onPrimary,
-              fontFamily: 'Poppins',
+              fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -185,7 +185,8 @@ class _SchedulePageState extends State<SchedulePage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   GradientAppBar(day.displayDate),
-                  SchedulePageBody(schedules: filteredEvents),
+                  SchedulePageBody(
+                      schedules: filteredEvents, dateText: day.displayDate),
                 ],
               ),
             );
@@ -216,7 +217,7 @@ class GradientAppBar extends StatelessWidget {
           title,
           style: textTheme.titleLarge?.copyWith(
               color: scheme.onPrimary,
-              fontFamily: 'Poppins',
+              fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
               fontSize: 24.0
           ),

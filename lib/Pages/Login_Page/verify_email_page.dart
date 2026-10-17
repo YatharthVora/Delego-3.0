@@ -153,7 +153,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
               maxLength: 6,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               style: const TextStyle(
-                  fontSize: 30, fontWeight: FontWeight.w800, letterSpacing: 10),
+                  fontSize: 30, fontWeight: FontWeight.w600, letterSpacing: 10),
               decoration: const InputDecoration(
                 counterText: '',
                 hintText: '------',

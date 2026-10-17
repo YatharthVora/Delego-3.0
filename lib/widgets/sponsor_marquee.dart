@@ -76,7 +76,7 @@ class _SponsorMarqueeState extends State<SponsorMarquee>
         ? Wrap(
             alignment: WrapAlignment.center,
             runSpacing: 8,
-            children: [for (final s in kSponsors) _logo(s)],
+            children: [for (final s in kSponsors) _logo(s.logo)],
           )
         : SizedBox(
             height: widget.height,
@@ -100,7 +100,7 @@ class _SponsorMarqueeState extends State<SponsorMarquee>
                   scrollDirection: Axis.horizontal,
                   physics: const NeverScrollableScrollPhysics(),
                   // No itemCount: the list repeats the sponsors for as long as it runs.
-                  itemBuilder: (_, i) => _logo(kSponsors[i % kSponsors.length]),
+                  itemBuilder: (_, i) => _logo(kSponsors[i % kSponsors.length].logo),
                 ),
               ),
             ),
