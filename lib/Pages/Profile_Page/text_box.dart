@@ -1,65 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:delego/widgets/neon.dart';
 
-class MyTextBox extends StatefulWidget {
+/// Read-only display of a profile field (no editing).
+class MyTextBox extends StatelessWidget {
   final String text;
   final String sectionName;
-  final void Function()? onPressed;
 
   const MyTextBox({
     super.key,
     required this.text,
     required this.sectionName,
-    required this.onPressed,
   });
 
-  @override
-  State<MyTextBox> createState() => _MyTextBoxState();
-}
-
-class _MyTextBoxState extends State<MyTextBox> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
-        color: scheme.secondaryContainer, // previously Colors.grey[200]
-        borderRadius: BorderRadius.circular(8),
+        color: scheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Neon.pink.withValues(alpha: 0.35)),
       ),
-      padding: const EdgeInsets.only(left: 15, bottom: 15),
-      margin: const EdgeInsets.only(left: 20, right: 20, top: 20),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+      margin: const EdgeInsets.only(left: 20, right: 20, top: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // section name and edit button
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                widget.sectionName,
-                style: textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: scheme.onSecondaryContainer,
-                  fontFamily: 'Poppins',
-                ),
-              ),
-              IconButton(
-                onPressed: widget.onPressed,
-                icon: Icon(
-                  Icons.edit_outlined,
-                  color: scheme.primary, // previously Colors.blue.shade900
-                ),
-              ),
-            ],
-          ),
-          // text value
           Text(
-            widget.text,
+            sectionName.toUpperCase(),
+            style: textTheme.labelSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1.2,
+              color: Neon.pink,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            text,
             style: textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: scheme.onSecondaryContainer,
-              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w500,
+              color: scheme.onSurface,
             ),
           ),
         ],

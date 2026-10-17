@@ -1,5 +1,6 @@
 import 'package:delego/widgets/mun_logo.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:delego/Pages/Home_Page/my_list_tile.dart';
 import 'package:delego/Pages/Sponsors_Page/sponsor_page.dart';
 import 'package:delego/Pages/Policy_Page/policy_page.dart';
@@ -112,25 +113,17 @@ class _MyDrawerState extends State<MyDrawer> {
                     onTap: goToSponsorsPage,
                   ),
 
-                  // POLICIES (Dropdown simplified)
-                  ListTile(
-                    leading: Icon(Icons.policy, color: scheme.onSurface),
-                    title: Text('POLICIES', style: TextStyle(color: scheme.onSurface)),
-                    trailing: PopupMenuButton<String>(
-                      icon: Icon(Icons.arrow_drop_down, color: scheme.onSurface),
-                      color: scheme.surface,
-                      onSelected: openPolicy,
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 'POSH Policy',
-                          child: Text('POSH Policy'),
-                        ),
-                        const PopupMenuItem(
-                          value: 'Conference Policy',
-                          child: Text('Conference Policy'),
-                        ),
-                      ],
-                    ),
+                  MyListTile(
+                    icon: Icons.account_balance_rounded,
+                    text: 'UN CHARTER',
+                    onTap: () async {
+                      Navigator.pop(context);
+                      await launchUrl(
+                        Uri.parse(
+                            'https://www.un.org/en/about-us/un-charter/full-text'),
+                        mode: LaunchMode.externalApplication,
+                      );
+                    },
                   ),
                   if (caps.can(Perm.adminRoles))
                     MyListTile(
@@ -177,6 +170,27 @@ class _MyDrawerState extends State<MyDrawer> {
                         );
                       },
                     ),
+
+                  // POLICIES (kept at the bottom of the list)
+                  ListTile(
+                    leading: Icon(Icons.policy, color: scheme.onSurface),
+                    title: Text('POLICIES', style: TextStyle(color: scheme.onSurface)),
+                    trailing: PopupMenuButton<String>(
+                      icon: Icon(Icons.arrow_drop_down, color: scheme.onSurface),
+                      color: scheme.surface,
+                      onSelected: openPolicy,
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'POSH Policy',
+                          child: Text('POSH Policy'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'Conference Policy',
+                          child: Text('Conference Policy'),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),

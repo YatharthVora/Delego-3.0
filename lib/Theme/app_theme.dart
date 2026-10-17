@@ -21,7 +21,7 @@ ThemeData _build(ColorScheme scheme, {required AppTokens tokens}) {
       centerTitle: true,
       titleTextStyle: TextStyle(
         fontFamily: Neon.font,
-        fontWeight: FontWeight.w900,
+        fontWeight: FontWeight.w700,
         fontSize: 18,
         letterSpacing: 0.8,
         color: onSurface,
@@ -32,7 +32,7 @@ ThemeData _build(ColorScheme scheme, {required AppTokens tokens}) {
         backgroundColor: scheme.primary,
         foregroundColor: scheme.onPrimary,
         textStyle: const TextStyle(
-            fontFamily: Neon.font, fontWeight: FontWeight.w900, letterSpacing: 0.6),
+            fontFamily: Neon.font, fontWeight: FontWeight.w700, letterSpacing: 0.6),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     ),
@@ -41,7 +41,7 @@ ThemeData _build(ColorScheme scheme, {required AppTokens tokens}) {
         backgroundColor: scheme.primary,
         foregroundColor: scheme.onPrimary,
         textStyle: const TextStyle(
-            fontFamily: Neon.font, fontWeight: FontWeight.w900, letterSpacing: 0.6),
+            fontFamily: Neon.font, fontWeight: FontWeight.w700, letterSpacing: 0.6),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     ),

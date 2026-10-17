@@ -29,7 +29,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   // Height of the transparent top bar; the banner starts right below it.
-  static const _barHeight = 40.0;
+  static const _barHeight = 48.0;
 
   Future<void> signOut() async {
     final caps = context.read<Capabilities>();
@@ -175,19 +175,50 @@ class _HomePageState extends State<HomePage> {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final onBg = dark ? Colors.white : Neon.navy;
 
+    final isDelegate = caps.role == 'delegate' &&
+        !caps.can(Perm.foodScan) &&
+        !caps.can(Perm.ebTools) &&
+        !caps.can(Perm.adminRoles);
+
+    final Widget sponsors = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Center(
+          child: Text('SPONSORED BY',
+              style: Neon.label(onBg.withValues(alpha: 0.6),
+                  size: 11, spacing: 3)),
+        ),
+        const SizedBox(height: 8),
+        // Runs edge to edge (past the page padding) so the logos slide off-screen.
+        SizedBox(
+          height: 58,
+          child: OverflowBox(
+            minWidth: MediaQuery.of(context).size.width,
+            maxWidth: MediaQuery.of(context).size.width,
+            child: SponsorMarquee(onTap: () => goToPage(const SponsorPage())),
+          ),
+        ),
+      ],
+    );
+
     final Widget content = SafeArea(
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, _barHeight, 20, 28),
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
         children: [
-          const MunLogoLink(
-            borderRadius: BorderRadius.all(Radius.circular(28)),
-            child: HeroBanner(),
+          MunLogoLink(
+            borderRadius: const BorderRadius.all(Radius.circular(28)),
+            child: HeroBanner(height: isDelegate ? 182 : 210),
           ),
           NowStrip(onTap: () => goToPage(SchedulePage())),
+          if (isDelegate) ...[
+            const SizedBox(height: 4),
+            sponsors,
+            const SizedBox(height: 16),
+          ],
           Text('Quick Access',
               style: TextStyle(
                 fontFamily: Neon.font,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 fontSize: 20,
                 color: onBg,
               )),
@@ -218,22 +249,10 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ..._tiles(caps),
-          const SizedBox(height: 28),
-          Center(
-            child: Text('SPONSORED BY',
-                style: Neon.label(onBg.withValues(alpha: 0.6),
-                    size: 11, spacing: 3)),
-          ),
-          const SizedBox(height: 10),
-          // Runs edge to edge (past the page padding) so the logos slide off-screen.
-          SizedBox(
-            height: 64,
-            child: OverflowBox(
-              minWidth: MediaQuery.of(context).size.width,
-              maxWidth: MediaQuery.of(context).size.width,
-              child: SponsorMarquee(onTap: () => goToPage(const SponsorPage())),
-            ),
-          ),
+          if (!isDelegate) ...[
+            const SizedBox(height: 28),
+            sponsors,
+          ],
         ],
       ),
     );
@@ -246,7 +265,15 @@ class _HomePageState extends State<HomePage> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           toolbarHeight: _barHeight,
-          title: const Text('Delego'),
+          title: const Text(
+            'Delego',
+            style: TextStyle(
+              fontFamily: Neon.font,
+              fontSize: 27,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.2,
+            ),
+          ),
           leading: Builder(
             builder: (ctx) => IconButton(
               tooltip: 'Menu',

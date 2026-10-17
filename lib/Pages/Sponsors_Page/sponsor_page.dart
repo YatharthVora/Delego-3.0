@@ -10,8 +10,6 @@ class SponsorPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final size = MediaQuery.of(context).size;
-
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -21,7 +19,7 @@ class SponsorPage extends StatelessWidget {
           style: textTheme.titleLarge?.copyWith(
             color: scheme.onSurface,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
           ),
         ),
         centerTitle: true,
@@ -33,30 +31,10 @@ class SponsorPage extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: ListView.separated(
-            itemCount: kSponsors.length + 1, // +1 = the video card at the top
+            itemCount: kSponsors.length,
             separatorBuilder: (_, __) => const SizedBox(height: 24),
-            itemBuilder: (context, index) {
-              if (index == 0) return const SponsorVideoCard();
-              final sponsor = kSponsors[index - 1];
-              return Card(
-                elevation: 4,
-                shadowColor: scheme.shadow.withValues(alpha: 0.2),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                color: scheme.primaryContainer,
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Center(
-                    child: Image.asset(
-                      sponsor,
-                      height: size.height * 0.2, // 20% of screen height
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-              );
-            },
+            itemBuilder: (context, index) =>
+                SponsorVideoCard(sponsor: kSponsors[index]),
           ),
         ),
       ),

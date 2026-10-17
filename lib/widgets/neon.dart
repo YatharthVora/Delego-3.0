@@ -16,13 +16,13 @@ class Neon {
   static const cyan = Color(0xFF2AF5E0);
   static const violet = Color(0xFF7A1BFF);
 
-  static const font = 'Rubik';
+  static const font = 'Inter';
 
   /// Wide, tracked, heavy label used on cards and section tags.
   static TextStyle label(Color color, {double size = 16, double spacing = 0.6}) =>
       TextStyle(
         fontFamily: font,
-        fontWeight: FontWeight.w900,
+        fontWeight: FontWeight.w700,
         fontSize: size,
         letterSpacing: spacing,
         height: 1.05,
@@ -153,11 +153,17 @@ class NeonCard extends StatelessWidget {
                         colorBlendMode: BlendMode.srcIn,
                       ),
                     ),
-                  Positioned.fill(
+                  // Rings stay strictly behind the icon (bottom-right) so they
+                  // never overlap the label text.
+                  Positioned(
+                    right: 8,
+                    bottom: 8,
+                    width: wide ? 76 : 86,
+                    height: wide ? 68 : 82,
                     child: CustomPaint(
                       painter: RingsPainter(
-                        color: labelColor.withValues(alpha: 0.85),
-                        count: wide ? 22 : 16,
+                        color: labelColor.withValues(alpha: 0.55),
+                        count: wide ? 6 : 8,
                         seed: seed,
                       ),
                     ),
@@ -185,16 +191,16 @@ class NeonCard extends StatelessWidget {
 /// Home hero: pink gradient card, the Gateway of India from the official banner
 /// zoomed in on the right, event title drawn on the left.
 class HeroBanner extends StatelessWidget {
-  const HeroBanner({super.key});
+  const HeroBanner({super.key, this.height = 210});
 
-  static const _height = 210.0;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       label: 'Mumbai MUN 2026. An Axiom Apart.',
       child: Container(
-        height: _height,
+        height: height,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(28),
           gradient: const LinearGradient(
@@ -237,7 +243,7 @@ class HeroBanner extends StatelessWidget {
                       alignment: Alignment.bottomRight,
                       child: Image.asset(
                         'assets/images/banner_2026.webp',
-                        height: _height * 1.12,
+                        height: height * 1.12,
                         fit: BoxFit.fitHeight,
                         alignment: Alignment.bottomRight,
                       ),
@@ -246,30 +252,43 @@ class HeroBanner extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(22, 0, 22, 24),
+                padding: const EdgeInsets.fromLTRB(22, 0, 22, 22),
                 child: Align(
                   alignment: Alignment.bottomLeft,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('MUMBAI MUN',
-                          style: Neon.label(Neon.yellow, size: 13, spacing: 3)),
-                      const SizedBox(height: 4),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text('MUMBAI MUN',
+                            maxLines: 1,
+                            style: Neon.label(Neon.yellow, size: 28, spacing: 2)),
+                      ),
+                      const SizedBox(height: 2),
                       const Text(
                         '2026',
                         style: TextStyle(
                           fontFamily: Neon.font,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 54,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 40,
                           height: 1,
-                          letterSpacing: -1,
+                          letterSpacing: -0.5,
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Text('AN AXIOM APART',
-                          style: Neon.label(Colors.white, size: 11, spacing: 3)),
+                      const SizedBox(height: 10),
+                      Text(
+                        'AN AXIOM APART',
+                        style: Neon.label(Colors.white, size: 14.5, spacing: 2.5)
+                            .copyWith(
+                          fontWeight: FontWeight.w600,
+                          shadows: const [
+                            Shadow(color: Color(0x66000000), blurRadius: 4),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -350,7 +369,7 @@ class FolderCard extends StatelessWidget {
                         tag,
                         style: const TextStyle(
                           fontFamily: Neon.font,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           fontSize: 12,
                           letterSpacing: 1,
                           color: Colors.white,

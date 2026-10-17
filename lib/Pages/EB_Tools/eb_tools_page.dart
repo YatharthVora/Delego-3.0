@@ -34,6 +34,8 @@ class _EBToolsPageState extends State<EBToolsPage> with SingleTickerProviderStat
   Timer? _timer;
   int _remainingSeconds = 0;
   bool _isRunning = false;
+  bool _unmod = false;
+  int _unmodSeconds = 600;
 
   @override
   void initState() {
@@ -325,7 +327,18 @@ class _EBToolsPageState extends State<EBToolsPage> with SingleTickerProviderStat
     );
   }
 
+  static const _mono = TextStyle(
+    fontFamily: 'RobotoMono',
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+
+  void _selectMode({required bool unmod}) {
+    _unmod = unmod;
+    _setTimer(unmod ? _unmodSeconds : 0);
+  }
+
   Widget _buildTimerTab(ColorScheme scheme) {
+    final low = _remainingSeconds <= 10 && _remainingSeconds > 0;
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -336,57 +349,97 @@ class _EBToolsPageState extends State<EBToolsPage> with SingleTickerProviderStat
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-          Text(
-            _formatTime(_remainingSeconds),
-            style: TextStyle(
-              fontSize: 80,
-              fontWeight: FontWeight.bold,
-              color: _remainingSeconds <= 10 && _remainingSeconds > 0 
-                  ? scheme.error 
-                  : scheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              FloatingActionButton(
-                heroTag: "timer_play",
-                onPressed: _isRunning ? _stopTimer : _startTimer,
-                backgroundColor: _isRunning ? scheme.error : scheme.primary,
-                child: Icon(_isRunning ? Icons.pause : Icons.play_arrow, color: _isRunning ? scheme.onError : scheme.onPrimary),
+                  if (_unmod)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        'UNMODERATED CAUCUS',
+                        style: TextStyle(
+                          color: scheme.primary,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: _isRunning ? null : _showCustomTimerDialog,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          _formatTime(_remainingSeconds),
+                          style: _mono.copyWith(
+                            fontSize: 80,
+                            fontWeight: FontWeight.w700,
+                            color: low ? scheme.error : scheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (!_isRunning)
+                    TextButton.icon(
+                      onPressed: _showCustomTimerDialog,
+                      icon: const Icon(Icons.edit, size: 18),
+                      label: const Text('Edit time'),
+                    ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      FloatingActionButton(
+                        heroTag: "timer_play",
+                        onPressed: _isRunning ? _stopTimer : _startTimer,
+                        backgroundColor:
+                            _isRunning ? scheme.error : scheme.primary,
+                        child: Icon(_isRunning ? Icons.pause : Icons.play_arrow,
+                            color:
+                                _isRunning ? scheme.onError : scheme.onPrimary),
+                      ),
+                      const SizedBox(width: 24),
+                      FloatingActionButton(
+                        heroTag: "timer_reset",
+                        onPressed: () => _setTimer(0),
+                        backgroundColor: scheme.secondary,
+                        child: Icon(Icons.stop, color: scheme.onSecondary),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 40),
+                  const Text("Quick Presets",
+                      style:
+                          TextStyle(fontWeight: FontWeight.w600, fontSize: 18)),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      _buildPresetButton("1:00", 60, scheme),
+                      _buildPresetButton("1:30", 90, scheme),
+                      _buildPresetButton("10:00", 600, scheme),
+                      _buildPresetButton("15:00", 900, scheme),
+                      ChoiceChip(
+                        avatar: const Icon(Icons.groups, size: 18),
+                        label: Text('UNMOD ${_formatTime(_unmodSeconds)}',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w700)),
+                        selected: _unmod,
+                        onSelected: (_) => _selectMode(unmod: !_unmod),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: _showCustomTimerDialog,
+                    icon: const Icon(Icons.edit_calendar),
+                    label: Text(_unmod ? "Edit UNMOD duration" : "Custom Timer"),
+                  ),
+                ],
               ),
-              const SizedBox(width: 24),
-              FloatingActionButton(
-                heroTag: "timer_reset",
-                onPressed: () => _setTimer(0),
-                backgroundColor: scheme.secondary,
-                child: Icon(Icons.stop, color: scheme.onSecondary),
-              ),
-            ],
-          ),
-          const SizedBox(height: 48),
-          const Text("Quick Presets", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            alignment: WrapAlignment.center,
-            children: [
-              _buildPresetButton("60s (Speech)", 60, scheme),
-              _buildPresetButton("90s (Speech)", 90, scheme),
-              _buildPresetButton("10m (Caucus)", 600, scheme),
-              _buildPresetButton("15m (Caucus)", 900, scheme),
-            ],
-          ),
-          const SizedBox(height: 16),
-          OutlinedButton.icon(
-            onPressed: _showCustomTimerDialog,
-            icon: const Icon(Icons.edit_calendar),
-            label: const Text("Custom Timer"),
-          ),
-        ],
-      ),
             ),
           ),
         );
@@ -395,9 +448,13 @@ class _EBToolsPageState extends State<EBToolsPage> with SingleTickerProviderStat
   }
 
   /// Lets the EB type any duration (minutes + seconds) instead of a preset.
+  /// In UNMOD mode this also updates the UNMOD default duration.
   Future<void> _showCustomTimerDialog() async {
-    final minCtrl = TextEditingController(text: '2');
-    final secCtrl = TextEditingController(text: '0');
+    final initial = _remainingSeconds > 0
+        ? _remainingSeconds
+        : (_unmod ? _unmodSeconds : 120);
+    final minCtrl = TextEditingController(text: '${initial ~/ 60}');
+    final secCtrl = TextEditingController(text: '${initial % 60}');
 
     final seconds = await showDialog<int>(
       context: context,
@@ -405,43 +462,43 @@ class _EBToolsPageState extends State<EBToolsPage> with SingleTickerProviderStat
         String? error;
         return StatefulBuilder(
           builder: (ctx, setLocal) => AlertDialog(
-            title: const Text('Custom Timer'),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: minCtrl,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                          decoration: const InputDecoration(labelText: 'Minutes'),
-                        ),
+            scrollable: true,
+            title: Text(_unmod ? 'Set UNMOD Duration' : 'Set Timer'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: minCtrl,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        decoration: const InputDecoration(labelText: 'Minutes'),
                       ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: Text(':', style: TextStyle(fontSize: 24)),
-                      ),
-                      Expanded(
-                        child: TextField(
-                          controller: secCtrl,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                          decoration: const InputDecoration(labelText: 'Seconds'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (error != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: Text(error!,
-                          style: TextStyle(color: Theme.of(ctx).colorScheme.error)),
                     ),
-                ],
-              ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(':', style: TextStyle(fontSize: 24)),
+                    ),
+                    Expanded(
+                      child: TextField(
+                        controller: secCtrl,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        decoration: const InputDecoration(labelText: 'Seconds'),
+                      ),
+                    ),
+                  ],
+                ),
+                if (error != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text(error!,
+                        style:
+                            TextStyle(color: Theme.of(ctx).colorScheme.error)),
+                  ),
+              ],
             ),
             actions: [
               TextButton(
@@ -473,15 +530,20 @@ class _EBToolsPageState extends State<EBToolsPage> with SingleTickerProviderStat
 
     minCtrl.dispose();
     secCtrl.dispose();
-    if (seconds != null) _setTimer(seconds);
+    if (seconds != null) {
+      if (_unmod) setState(() => _unmodSeconds = seconds);
+      _setTimer(seconds);
+    }
   }
 
   Widget _buildPresetButton(String label, int seconds, ColorScheme scheme) {
     return ActionChip(
-      label: Text(label),
+      label: Text(label, style: _mono),
       backgroundColor: scheme.surfaceContainerHighest,
-      onPressed: () => _setTimer(seconds),
+      onPressed: () {
+        _unmod = false;
+        _setTimer(seconds);
+      },
     );
   }
 }
-

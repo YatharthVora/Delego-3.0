@@ -7,11 +7,11 @@
 
 class AppFontFamilies {
   static final List<String> fonts = [
-    'CircularBook',
-    'Avenir',
+    'Inter',
+    'Inter',
     'Proxima Nova',
     'Britanica',
-    'Poppins'
+    'Inter'
   ];
 
   static final String mainFont = fonts[1];
