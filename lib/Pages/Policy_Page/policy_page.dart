@@ -23,13 +23,15 @@ class PolicyPage extends StatelessWidget {
 
 class PdfViewerPage extends StatelessWidget {
   final String pdfAsset;
+  final String title;
 
-  const PdfViewerPage({super.key, required this.pdfAsset});
+  const PdfViewerPage(
+      {super.key, required this.pdfAsset, this.title = 'Policy'});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Policy')),
+      appBar: AppBar(title: Text(title)),
       body: SfPdfViewer.asset(pdfAsset),
     );
   }
