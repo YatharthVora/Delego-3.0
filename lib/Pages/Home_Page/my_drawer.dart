@@ -1,3 +1,4 @@
+import 'package:delego/widgets/mun_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:delego/Pages/Home_Page/my_list_tile.dart';
 import 'package:delego/Pages/Sponsors_Page/sponsor_page.dart';
@@ -43,7 +44,8 @@ class _MyDrawerState extends State<MyDrawer> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PdfViewerPage(pdfAsset: pdfAsset),
+        builder: (context) =>
+            PdfViewerPage(pdfAsset: pdfAsset, title: policyName),
       ),
     );
   }
@@ -74,7 +76,9 @@ class _MyDrawerState extends State<MyDrawer> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.asset('assets/images/logo_solid.webp', height: 34),
+                  MunLogoLink(
+                    child: Image.asset('assets/images/logo_solid.webp', height: 34),
+                  ),
                   const SizedBox(height: 10),
                   Text('MUMBAI MUN',
                       style: Neon.label(Neon.yellow, size: 12, spacing: 3)),
@@ -109,25 +113,21 @@ class _MyDrawerState extends State<MyDrawer> {
                     onTap: goToSponsorsPage,
                   ),
 
-                  // POLICIES (Dropdown simplified)
-                  ListTile(
-                    leading: Icon(Icons.policy, color: scheme.onSurface),
-                    title: Text('POLICIES', style: TextStyle(color: scheme.onSurface)),
-                    trailing: PopupMenuButton<String>(
-                      icon: Icon(Icons.arrow_drop_down, color: scheme.onSurface),
-                      color: scheme.surface,
-                      onSelected: openPolicy,
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 'POSH Policy',
-                          child: Text('POSH Policy'),
+                  MyListTile(
+                    icon: Icons.account_balance_rounded,
+                    text: 'UN CHARTER',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PdfViewerPage(
+                            pdfAsset: 'assets/pdfs/UNCharter.pdf',
+                            title: 'UN Charter',
+                          ),
                         ),
-                        const PopupMenuItem(
-                          value: 'Conference Policy',
-                          child: Text('Conference Policy'),
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                   if (caps.can(Perm.adminRoles))
                     MyListTile(
@@ -174,9 +174,54 @@ class _MyDrawerState extends State<MyDrawer> {
                         );
                       },
                     ),
+
+                  // POLICIES (kept at the bottom of the list)
+                  ListTile(
+                    leading: Icon(Icons.policy, color: scheme.onSurface),
+                    title: Text('POLICIES', style: TextStyle(color: scheme.onSurface)),
+                    trailing: PopupMenuButton<String>(
+                      icon: Icon(Icons.arrow_drop_down, color: scheme.onSurface),
+                      color: scheme.surface,
+                      onSelected: openPolicy,
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'POSH Policy',
+                          child: Text('POSH Policy'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'Conference Policy',
+                          child: Text('Conference Policy'),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
+
+            // GRIEVANCES CONTACT
+            Builder(builder: (context) {
+              final isDark = Theme.of(context).brightness == Brightness.dark;
+              final ink = isDark ? const Color(0xFFEDEAE6) : scheme.onSurface;
+              final body = TextStyle(color: ink, fontSize: 12, height: 1.4);
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('For grievances, contact',
+                          style: body.copyWith(color: ink.withValues(alpha: 0.7))),
+                      const SizedBox(height: 4),
+                      Text('secretariat.mumbaimun@gmail.com',
+                          style: body.copyWith(
+                              fontSize: 13, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                ),
+              );
+            }),
 
             // LOGOUT BUTTON (bottom aligned)
             Padding(

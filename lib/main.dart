@@ -246,7 +246,7 @@ class _LaunchScreenState extends State<LaunchScreen>
                 style: textTheme.titleLarge?.copyWith(
                   color: scheme.onSurface,
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Inter',
                 ),
               ),
             ),
@@ -258,7 +258,7 @@ class _LaunchScreenState extends State<LaunchScreen>
                   style: textTheme.titleMedium?.copyWith(
                     color: scheme.onSurface,
                     fontWeight: FontWeight.bold,
-                    fontFamily: 'Poppins',
+                    fontFamily: 'Inter',
                   ),
                   children: [
                     TextSpan(

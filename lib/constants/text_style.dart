@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 class Style {
   static const baseTextStyle = TextStyle(
-    fontFamily: 'Avenir',
+    fontFamily: 'Inter',
   );
   static final smallTextStyle = commonTextStyle.copyWith(
     fontSize: 9.0,

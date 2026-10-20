@@ -1,3 +1,4 @@
+import 'package:delego/widgets/mun_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -44,27 +45,26 @@ class _QrCodeState extends State<QrCode> {
       appBar: AppBar(centerTitle: false, title: const Text('My QR Badge')),
       body: !_loaded
           ? const SizedBox.shrink()
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-              children: [
-                Text('DELEGATE PASS',
-                    style: Neon.label(scheme.onSurface.withValues(alpha: 0.5),
-                        size: 11, spacing: 3)),
-                const SizedBox(height: 6),
-                Text('Food QR Code',
-                    style: TextStyle(
-                      fontFamily: Neon.font,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 28,
-                      color: scheme.onSurface,
-                    )),
-                const SizedBox(height: 20),
-                if (_id == null)
-                  _Empty(scheme: scheme)
-                else
-                  _Ticket(id: _id!, name: _name),
-              ],
-            ),
+          : _id == null
+              ? _Empty(scheme: scheme)
+              : SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 14),
+                    // Slightly inset from the screen edges while still filling the page.
+                    child: LayoutBuilder(
+                      builder: (context, c) => Center(
+                        child: SingleChildScrollView(
+                          child: SizedBox(
+                            height: (c.maxHeight * 0.94).clamp(500.0, 680.0),
+                            child: _Ticket(id: _id!, name: _name),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
     );
   }
 }
@@ -75,9 +75,9 @@ class _Empty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 60),
+    return Center(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.qr_code_rounded,
               size: 90, color: scheme.onSurface.withValues(alpha: 0.4)),
@@ -160,10 +160,10 @@ class _Ticket extends StatelessWidget {
   Widget build(BuildContext context) {
     final sw = swatchFor(id);
     final mid = Color.lerp(sw.colors.first, sw.colors.last, 0.5)!;
-    final initial = name.isEmpty ? '?' : name.characters.first.toUpperCase();
+    final shown = name.isEmpty ? 'Delegate' : name;
 
     Widget texture(Widget child, int seed) => Stack(
-          fit: StackFit.passthrough,
+          fit: StackFit.expand,
           children: [
             Positioned.fill(
               child: CustomPaint(
@@ -195,51 +195,52 @@ class _Ticket extends StatelessWidget {
         ),
         child: texture(
           Padding(
-            padding: const EdgeInsets.fromLTRB(22, 24, 22, 40),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 22),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text('DELEGATE PASS',
-                          style: Neon.label(sw.accent, size: 11, spacing: 3)),
-                    ),
-                    Image.asset('assets/images/logo_solid.webp',
-                        height: 26,
-                        color: sw.accent,
-                        colorBlendMode: BlendMode.srcIn),
-                  ],
-                ),
-                const SizedBox(height: 22),
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: sw.accent, width: 2),
+                Text('DELEGATE PASS',
+                    style: Neon.label(sw.accent, size: 11.5, spacing: 3)),
+                const SizedBox(height: 6),
+                Expanded(
+                  flex: 5,
+                  child: Center(
+                    child: MunLogoLink(
+                      child: FractionallySizedBox(
+                        widthFactor: 0.85,
+                        heightFactor: 0.88,
+                        child: Image.asset(
+                          'assets/images/logo_solid.webp',
+                          fit: BoxFit.contain,
+                          color: sw.accent,
+                          colorBlendMode: BlendMode.srcIn,
+                        ),
                       ),
-                      child: Text(initial,
-                          style: Neon.label(sw.accent, size: 18, spacing: 0)),
                     ),
-                    const SizedBox(width: 14),
-                    Expanded(
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Expanded(
+                  flex: 4,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 340),
                       child: Text(
-                        name.isEmpty ? 'Delegate' : name,
+                        shown,
                         maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
                         style: TextStyle(
                           fontFamily: Neon.font,
                           fontWeight: FontWeight.w700,
-                          fontSize: 21,
+                          fontSize: 38,
+                          height: 1.05,
                           color: sw.nameColor,
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -261,7 +262,7 @@ class _Ticket extends StatelessWidget {
         ),
         child: texture(
           Stack(
-            fit: StackFit.passthrough,
+            fit: StackFit.expand,
             children: [
               Positioned(
                 left: 0,
@@ -271,60 +272,79 @@ class _Ticket extends StatelessWidget {
                 child: CustomPaint(painter: _DashPainter(sw.accent)),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(22, 26, 22, 18),
+                padding: const EdgeInsets.fromLTRB(16, 18, 16, 14),
                 child: Column(
                   children: [
                     Text('SHOW THIS AT THE FOOD COUNTER',
                         textAlign: TextAlign.center,
-                        style: Neon.label(sw.accent, size: 11, spacing: 2.5)),
-                    const SizedBox(height: 16),
+                        style: Neon.label(sw.accent, size: 11.5, spacing: 2)),
+                    const SizedBox(height: 8),
                     // White plate + dark modules keep the code readable by the
                     // scanner; only the finder squares carry the ticket colour.
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Semantics(
-                        label: 'Your food QR code',
-                        child: QrImageView(
-                          data: id,
-                          size: 176,
-                          padding: EdgeInsets.zero,
-                          backgroundColor: Colors.white,
-                          errorCorrectionLevel: QrErrorCorrectLevel.Q,
-                          eyeStyle: QrEyeStyle(
-                            eyeShape: QrEyeShape.circle,
-                            color: sw.eye,
-                          ),
-                          dataModuleStyle: const QrDataModuleStyle(
-                            dataModuleShape: QrDataModuleShape.circle,
-                            color: Color(0xFF111111),
-                          ),
-                        ),
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, c) {
+                          final side = [
+                            c.maxWidth * 0.72,
+                            c.maxHeight * 0.94,
+                          ].reduce((a, b) => a < b ? a : b);
+                          return Center(
+                            child: Container(
+                              width: side,
+                              height: side,
+                              padding: EdgeInsets.all(side * 0.055),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Semantics(
+                                label: 'Your food QR code',
+                                child: QrImageView(
+                                  data: id,
+                                  padding: EdgeInsets.zero,
+                                  backgroundColor: Colors.white,
+                                  errorCorrectionLevel: QrErrorCorrectLevel.Q,
+                                  eyeStyle: QrEyeStyle(
+                                    eyeShape: QrEyeShape.circle,
+                                    color: sw.eye,
+                                  ),
+                                  dataModuleStyle: const QrDataModuleStyle(
+                                    dataModuleShape: QrDataModuleShape.circle,
+                                    color: Color(0xFF111111),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 8),
                     FittedBox(
                       fit: BoxFit.scaleDown,
-                      child: Text('ID: $id',
+                      child: Text(
+                        'ID: $id',
                         style: TextStyle(
                           fontFamily: 'RobotoMono',
-                          fontSize: 12,
+                          fontSize: 13,
                           letterSpacing: 1,
                           color: sw.accent,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Text('Bon appétit! Enjoy your meal',
+                    const SizedBox(height: 5),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'Bon app\u00e9tit! Enjoy your meal',
                         style: TextStyle(
                           fontFamily: Neon.font,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18.5,
                           color: sw.nameColor,
-                        )),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -338,7 +358,10 @@ class _Ticket extends StatelessWidget {
     // stretch: both halves must take the full width, not the width of their content.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [top, bottom],
+      children: [
+        Expanded(flex: 4, child: top),
+        Expanded(flex: 7, child: bottom),
+      ],
     );
   }
 }

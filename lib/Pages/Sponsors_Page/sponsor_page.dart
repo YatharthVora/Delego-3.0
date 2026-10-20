@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:delego/constants/sponsors.dart';
+import 'package:delego/widgets/sponsor_video.dart';
 
 class SponsorPage extends StatelessWidget {
   const SponsorPage({super.key});
@@ -9,8 +10,6 @@ class SponsorPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final size = MediaQuery.of(context).size;
-
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -20,7 +19,7 @@ class SponsorPage extends StatelessWidget {
           style: textTheme.titleLarge?.copyWith(
             color: scheme.onSurface,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
           ),
         ),
         centerTitle: true,
@@ -34,26 +33,8 @@ class SponsorPage extends StatelessWidget {
           child: ListView.separated(
             itemCount: kSponsors.length,
             separatorBuilder: (_, __) => const SizedBox(height: 24),
-            itemBuilder: (context, index) {
-              return Card(
-                elevation: 4,
-                shadowColor: scheme.shadow.withValues(alpha: 0.2),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                color: scheme.primaryContainer,
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Center(
-                    child: Image.asset(
-                      kSponsors[index],
-                      height: size.height * 0.2, // 20% of screen height
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-              );
-            },
+            itemBuilder: (context, index) =>
+                SponsorVideoCard(sponsor: kSponsors[index]),
           ),
         ),
       ),

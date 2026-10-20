@@ -2,11 +2,10 @@ import 'package:delego/Pages/Schedule_Page/schedule_cards.dart';
 import 'package:flutter/material.dart';
 import 'package:delego/models/schedule.dart';
 import 'package:delego/constants/separator.dart';
-import 'package:delego/constants/text_style.dart';
 
 class DetailPage extends StatelessWidget {
   final Schedule schedule;
-  DetailPage(this.schedule);
+  const DetailPage(this.schedule, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +15,8 @@ class DetailPage extends StatelessWidget {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Container(
-        constraints: BoxConstraints.expand(),
-        color: scheme.primary,
+        constraints: const BoxConstraints.expand(),
+        color: scheme.surface,
         child: Stack(
           children: <Widget>[
             _getBackground(),
@@ -32,12 +31,12 @@ class DetailPage extends StatelessWidget {
 
   Container _getBackground() {
     return Container(
+      constraints: const BoxConstraints.expand(height: 295.0),
       child: Image.network(
         schedule.imageUrl,
         fit: BoxFit.cover,
         height: 300.0,
       ),
-      constraints: const BoxConstraints.expand(height: 295.0),
     );
   }
 
@@ -48,10 +47,10 @@ class DetailPage extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            scheme.primary.withValues(alpha: 0.0),
-            scheme.primary.withValues(alpha: 0.95),
+            scheme.surface.withValues(alpha: 0.0),
+            scheme.surface.withValues(alpha: 0.95),
           ],
-          stops: [0.0, 0.9],
+          stops: const [0.0, 0.9],
           begin: FractionalOffset.topCenter,
           end: FractionalOffset.bottomCenter,
         ),
@@ -59,40 +58,39 @@ class DetailPage extends StatelessWidget {
     );
   }
 
-  Container _getContent(BuildContext context, ColorScheme scheme, TextTheme textTheme) {
-    final _overviewTitle = "Overview".toUpperCase();
-    return Container(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(0.0, 72.0, 0.0, 20.0),
-        children: <Widget>[
-          ScheduleSummary(
-            schedule,
-            horizontal: false,
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  _overviewTitle,
-                  style: textTheme.titleMedium?.copyWith(
-                    color: scheme.onPrimary,
-                    fontWeight: FontWeight.bold,
-                  ),
+  Widget _getContent(BuildContext context, ColorScheme scheme, TextTheme textTheme) {
+    final overviewTitle = "Overview".toUpperCase();
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(0.0, 72.0, 0.0, 20.0),
+      children: <Widget>[
+        ScheduleSummary(
+          schedule,
+          isFirst: true,
+          isLast: true,
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                overviewTitle,
+                style: textTheme.titleMedium?.copyWith(
+                  color: scheme.onSurface,
+                  fontWeight: FontWeight.w600,
                 ),
-                Separator(),
-                Text(
-                  schedule.description ?? '',
-                  style: textTheme.bodyLarge?.copyWith(
-                    color: scheme.onPrimary.withValues(alpha: 0.85),
-                  ),
+              ),
+              const Separator(),
+              Text(
+                schedule.description,
+                style: textTheme.bodyLarge?.copyWith(
+                  color: scheme.onSurface.withValues(alpha: 0.85),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

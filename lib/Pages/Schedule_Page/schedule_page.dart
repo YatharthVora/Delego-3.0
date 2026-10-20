@@ -159,13 +159,13 @@ class _SchedulePageState extends State<SchedulePage> {
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           iconTheme: IconThemeData(color: scheme.onPrimary),
-          backgroundColor: scheme.primary,
+          backgroundColor: const Color(0xFFFF2BB4),
           centerTitle: true,
           title: Text(
             "Schedule",
             style: textTheme.titleLarge?.copyWith(
               color: scheme.onPrimary,
-              fontFamily: 'Poppins',
+              fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -185,7 +185,8 @@ class _SchedulePageState extends State<SchedulePage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   GradientAppBar(day.displayDate),
-                  SchedulePageBody(schedules: filteredEvents),
+                  SchedulePageBody(
+                      schedules: filteredEvents, dateText: day.displayDate),
                 ],
               ),
             );
@@ -208,15 +209,15 @@ class GradientAppBar extends StatelessWidget {
     final double statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Container(
-      color: scheme.surface,
+      color: const Color(0xFFFF2BB4),
       padding: EdgeInsets.only(top: statusBarHeight),
       height: statusBarHeight + barHeight,
       child: Center(
         child: Text(
           title,
           style: textTheme.titleLarge?.copyWith(
-              color: scheme.primary,
-              fontFamily: 'Poppins',
+              color: scheme.onPrimary,
+              fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
               fontSize: 24.0
           ),
