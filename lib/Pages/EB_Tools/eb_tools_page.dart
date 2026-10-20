@@ -1,11 +1,22 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:async';
-import 'dart:convert';
 import 'package:provider/provider.dart';
-import 'package:delego/api/api_client.dart';
-import 'package:delego/constants/countries.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:delego/api/api_client.dart';
+import 'package:delego/api/floor_client.dart';
+import 'package:delego/constants/portfolios.dart';
+import 'package:delego/Pages/EB_Tools/floor_widgets.dart';
+import 'package:delego/Pages/EB_Tools/session_timer_tab.dart';
+import 'package:delego/Pages/EB_Tools/speaker_list_tab.dart';
+
+/// EB Tools: the chair and vice chair run their committee's floor from here (the GSL, the
+/// moderated caucus list and the timers), and the room's smartboard follows it live.
+///
+/// The committee picked on first entry is remembered on this phone (prefs
+/// `eb_committee_id`/`eb_committee_name`), so the EB goes straight to it next time.
 class EBToolsPage extends StatefulWidget {
   const EBToolsPage({super.key});
 
@@ -13,537 +24,441 @@ class EBToolsPage extends StatefulWidget {
   State<EBToolsPage> createState() => _EBToolsPageState();
 }
 
-class _EBToolsPageState extends State<EBToolsPage> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _EBToolsPageState extends State<EBToolsPage> with WidgetsBindingObserver {
+  static const _prefId = 'eb_committee_id';
+  static const _prefName = 'eb_committee_name';
 
-  // --- API / Committee State ---
   late final ApiClient _api;
   bool _initDone = false;
-  List<Map<String, dynamic>> _committees = [];
+  bool _prefsLoaded = false;
   int? _committeeId;
-  bool _loadingCommittees = true;
+  String? _committeeName;
 
-  // --- GSL State ---
-  final Map<int, List<String>> _gslMap = {};
-  List<String> get _currentGslList =>
-      _committeeId != null ? (_gslMap[_committeeId!] ??= []) : [];
-  final TextEditingController _countryController = TextEditingController();
-  final FocusNode _countryFocus = FocusNode();
-
-  // --- Timer State ---
-  Timer? _timer;
-  int _remainingSeconds = 0;
-  bool _isRunning = false;
-  bool _unmod = false;
-  int _unmodSeconds = 600;
+  /// The committee's portfolio matrix ([] when it has none); null until loaded.
+  List<Portfolio>? _matrix;
+  bool _matrixFailed = false;
+  FloorClient? _client;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_initDone) {
-      _api = context.read<ApiClient>();
-      _loadCommittees();
       _initDone = true;
+      _api = context.read<ApiClient>();
+      _loadSaved();
     }
   }
 
-  Future<void> _loadCommittees() async {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // The socket may have died while the phone was locked; catch up at once.
+    if (state == AppLifecycleState.resumed) {
+      _client?.reconnect();
+      final id = _committeeId;
+      if (_matrixFailed && id != null) _loadMatrix(id);
+    }
+  }
+
+  Future<void> _loadSaved() async {
+    final prefs = await SharedPreferences.getInstance();
+    final id = prefs.getInt(_prefId);
+    final name = prefs.getString(_prefName);
+    if (!mounted) return;
+    setState(() => _prefsLoaded = true);
+    if (id != null) _open(id, name ?? 'Committee');
+  }
+
+  void _open(int id, String name) {
+    _client?.dispose();
+    setState(() {
+      _committeeId = id;
+      _committeeName = name;
+      _client = FloorClient(_api, id)..start();
+      _matrix = null;
+      _matrixFailed = false;
+    });
+    _loadMatrix(id);
+  }
+
+  /// The committee's portfolio matrix, kept on the phone (prefs `eb_portfolios_<id>`) so a
+  /// cold-starting server or a dead Wi-Fi still has it. With neither, free entry for now.
+  Future<void> _loadMatrix(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'eb_portfolios_$id';
+    List<dynamic>? json;
     try {
-      final res = await _api.get('/committees');
+      final res = await _api
+          .get('/public/committees/$id/portfolios')
+          .timeout(FloorClient.requestTimeout);
       if (res.statusCode == 200) {
-        final list = (jsonDecode(res.body) as List)
-            .map((c) => {'id': c['id'], 'name': c['name']})
-            .toList();
-        if (mounted) {
-          setState(() {
-            _committees = list;
-            if (_committeeId == null && list.isNotEmpty) {
-              _committeeId = list.first['id'] as int;
-            }
-            _loadingCommittees = false;
-          });
-        }
+        json = jsonDecode(res.body) as List<dynamic>;
+        await prefs.setString(key, res.body);
       }
     } catch (_) {
-      if (mounted) setState(() => _loadingCommittees = false);
+      // fall back to the copy on the phone
     }
-  }
-
-  Future<void> _syncGSL() async {
-    if (_committeeId == null) return;
-    try {
-      await _api.postJson('/committees/$_committeeId/gsl', _currentGslList);
-    } catch (e) {
-      debugPrint("GSL Sync Error: $e");
+    if (json == null) {
+      try {
+        final cached = prefs.getString(key);
+        if (cached != null) json = jsonDecode(cached) as List<dynamic>;
+      } catch (_) {}
     }
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _countryController.dispose();
-    _countryFocus.dispose();
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  // --- GSL Functions ---
-  void _addCountry([String? picked]) {
-    final country = (picked ?? _countryController.text).trim();
-    if (country.isEmpty) return;
-    if (_committeeId == null) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(content: Text('Please select a committee first.')));
-      return;
-    }
-
-    final exists =
-        _currentGslList.any((c) => c.toLowerCase() == country.toLowerCase());
-    if (exists) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text('$country is already on the list.')));
-    } else {
-      setState(() => _currentGslList.add(country));
-      _syncGSL();
-    }
-    _countryController.clear();
-    _countryFocus.requestFocus(); // keep typing the next one
-  }
-
-  void _removeCountry(int index) {
+    if (!mounted || id != _committeeId) return;
     setState(() {
-      _currentGslList.removeAt(index);
-    });
-    _syncGSL();
-  }
-
-  // --- Timer Functions ---
-  void _startTimer() {
-    if (_remainingSeconds > 0 && !_isRunning) {
-      setState(() => _isRunning = true);
-      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (_remainingSeconds > 0) {
-          setState(() => _remainingSeconds--);
-        } else {
-          _stopTimer();
-        }
-      });
-    }
-  }
-
-  void _stopTimer() {
-    setState(() => _isRunning = false);
-    _timer?.cancel();
-  }
-
-  void _setTimer(int seconds) {
-    _stopTimer();
-    setState(() {
-      _remainingSeconds = seconds;
+      _matrix = json == null ? null : matrixPortfolios(json);
+      _matrixFailed = json == null;
     });
   }
 
-  String _formatTime(int seconds) {
-    int m = seconds ~/ 60;
-    int s = seconds % 60;
-    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  Future<void> _pick(int id, String name) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_prefId, id);
+    await prefs.setString(_prefName, name);
+    if (mounted) _open(id, name);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("EB Tools"),
-        backgroundColor: scheme.primary,
-        foregroundColor: scheme.onPrimary,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: scheme.onPrimary,
-          unselectedLabelColor: scheme.onPrimary.withOpacity(0.5),
-          indicatorColor: scheme.onPrimary,
-          tabs: const [
-            Tab(text: "GSL Manager", icon: Icon(Icons.format_list_numbered)),
-            Tab(text: "Session Timer", icon: Icon(Icons.timer)),
-          ],
+  Future<void> _changeCommittee() async {
+    final picked = await Navigator.push<(int, String)>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          appBar: AppBar(title: const Text('Change committee')),
+          body: _CommitteePicker(
+            api: _api,
+            selectedId: _committeeId,
+            onPicked: (id, name) => Navigator.pop(context, (id, name)),
+          ),
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildGSLTab(scheme),
-          _buildTimerTab(scheme),
+    );
+    if (picked != null && picked.$1 != _committeeId) {
+      await _pick(picked.$1, picked.$2);
+    }
+  }
+
+  void _showBoardLink() {
+    final url = '${_api.baseUrl}/static/live_gsl.html?committee=$_committeeId';
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Smartboard link'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+                'Open this on the room\'s smartboard to show $_committeeName\'s lists and timer.'),
+            const SizedBox(height: 12),
+            SelectableText(url,
+                style: const TextStyle(fontWeight: FontWeight.w700)),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
+          FilledButton.icon(
+            icon: const Icon(Icons.copy, size: 18),
+            label: const Text('Copy'),
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: url));
+              Navigator.pop(ctx);
+              showFloorMessage(context, 'Link copied');
+            },
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildGSLTab(ColorScheme scheme) {
-    return Column(
-      children: [
-        // Committee Selector
-        if (_loadingCommittees)
-          const LinearProgressIndicator()
-        else if (_committees.isNotEmpty)
-          SizedBox(
-            height: 60,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: _committees.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (_, i) {
-                final c = _committees[i];
-                final cid = c['id'] as int;
-                return ChoiceChip(
-                  label: Text('${c['name']}'),
-                  selected: cid == _committeeId,
-                  onSelected: (_) {
-                    setState(() => _committeeId = cid);
-                    _syncGSL(); // push whatever we have currently, or maybe fetch? For now just push.
-                  },
-                );
-              },
-            ),
-          ),
-        const Divider(height: 1),
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _client?.dispose();
+    super.dispose();
+  }
 
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: RawAutocomplete<String>(
-                  textEditingController: _countryController,
-                  focusNode: _countryFocus,
-                  optionsBuilder: (value) {
-                    final q = value.text.trim().toLowerCase();
-                    if (q.isEmpty) return const Iterable<String>.empty();
-                    final starts = kMunCountries
-                        .where((c) => c.toLowerCase().startsWith(q));
-                    final contains = kMunCountries.where((c) =>
-                        !c.toLowerCase().startsWith(q) &&
-                        c.toLowerCase().contains(q));
-                    return [...starts, ...contains].take(8);
-                  },
-                  // Picking a suggestion adds it straight to the GSL.
-                  onSelected: (country) => _addCountry(country),
-                  fieldViewBuilder: (context, controller, focusNode, _) {
-                    return TextField(
-                      controller: controller,
-                      focusNode: focusNode,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
-                        labelText: "Add Country (type first letters)",
-                        border: OutlineInputBorder(),
-                      ),
-                      onSubmitted: (_) => _addCountry(),
-                    );
-                  },
-                  optionsViewBuilder: (context, onSelected, options) {
-                    return Align(
-                      alignment: Alignment.topLeft,
-                      child: Material(
-                        elevation: 6,
-                        borderRadius: BorderRadius.circular(12),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: 280,
-                            maxWidth: MediaQuery.of(context).size.width - 100,
-                          ),
-                          child: ListView.builder(
-                            padding: EdgeInsets.zero,
-                            shrinkWrap: true,
-                            itemCount: options.length,
-                            itemBuilder: (context, i) {
-                              final option = options.elementAt(i);
-                              return ListTile(
-                                dense: true,
-                                leading: const Icon(Icons.flag_outlined),
-                                title: Text(option),
-                                onTap: () => onSelected(option),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: _addCountry,
-                style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(16)),
-                child: const Icon(Icons.add),
-              )
+  @override
+  Widget build(BuildContext context) {
+    final client = _client;
+    if (!_prefsLoaded) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('EB Tools')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (client == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('EB Tools')),
+        body: _CommitteePicker(api: _api, onPicked: _pick),
+      );
+    }
+
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(_committeeName ?? 'EB Tools'),
+          actions: [
+            PopupMenuButton<String>(
+              tooltip: 'Menu',
+              onSelected: (v) {
+                if (v == 'change') _changeCommittee();
+                if (v == 'board') _showBoardLink();
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 'board', child: Text('Smartboard link')),
+                PopupMenuItem(value: 'change', child: Text('Change committee')),
+              ],
+            ),
+          ],
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'GSL'),
+              Tab(text: 'Mod caucus'),
+              Tab(text: 'Timer'),
             ],
           ),
         ),
-        Expanded(
-          child: _currentGslList.isEmpty
-              ? const Center(child: Text("GSL is empty"))
-              : ReorderableListView.builder(
-                  itemCount: _currentGslList.length,
-                  onReorder: (oldIndex, newIndex) {
-                    setState(() {
-                      if (oldIndex < newIndex) {
-                        newIndex -= 1;
-                      }
-                      final String item = _currentGslList.removeAt(oldIndex);
-                      _currentGslList.insert(newIndex, item);
-                    });
-                    _syncGSL();
-                  },
-                  itemBuilder: (context, index) {
-                    return Card(
-                      key: ValueKey('${_currentGslList[index]}_$index'),
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: scheme.primaryContainer,
-                          child: Text('${index + 1}', style: TextStyle(color: scheme.onPrimaryContainer)),
-                        ),
-                        title: Text(_currentGslList[index], style: const TextStyle(fontWeight: FontWeight.bold)),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _removeCountry(index),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-        ),
-      ],
-    );
-  }
-
-  static const _mono = TextStyle(
-    fontFamily: 'RobotoMono',
-    fontFeatures: [FontFeature.tabularFigures()],
-  );
-
-  void _selectMode({required bool unmod}) {
-    _unmod = unmod;
-    _setTimer(unmod ? _unmodSeconds : 0);
-  }
-
-  Widget _buildTimerTab(ColorScheme scheme) {
-    final low = _remainingSeconds <= 10 && _remainingSeconds > 0;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+        body: Column(
+          children: [
+            _StatusStrip(client: client),
+            Expanded(
+              child: TabBarView(
                 children: [
-                  if (_unmod)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        'UNMODERATED CAUCUS',
-                        style: TextStyle(
-                          color: scheme.primary,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 2,
-                        ),
-                      ),
-                    ),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(16),
-                    onTap: _isRunning ? null : _showCustomTimerDialog,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          _formatTime(_remainingSeconds),
-                          style: _mono.copyWith(
-                            fontSize: 80,
-                            fontWeight: FontWeight.w700,
-                            color: low ? scheme.error : scheme.onSurface,
-                          ),
-                        ),
-                      ),
-                    ),
+                  SpeakerListTab(
+                    client: client,
+                    listName: 'gsl',
+                    matrix: _matrix,
+                    matrixUnavailable: _matrixFailed,
                   ),
-                  if (!_isRunning)
-                    TextButton.icon(
-                      onPressed: _showCustomTimerDialog,
-                      icon: const Icon(Icons.edit, size: 18),
-                      label: const Text('Edit time'),
-                    ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      FloatingActionButton(
-                        heroTag: "timer_play",
-                        onPressed: _isRunning ? _stopTimer : _startTimer,
-                        backgroundColor:
-                            _isRunning ? scheme.error : scheme.primary,
-                        child: Icon(_isRunning ? Icons.pause : Icons.play_arrow,
-                            color:
-                                _isRunning ? scheme.onError : scheme.onPrimary),
-                      ),
-                      const SizedBox(width: 24),
-                      FloatingActionButton(
-                        heroTag: "timer_reset",
-                        onPressed: () => _setTimer(0),
-                        backgroundColor: scheme.secondary,
-                        child: Icon(Icons.stop, color: scheme.onSecondary),
-                      ),
-                    ],
+                  SpeakerListTab(
+                    client: client,
+                    listName: 'mod',
+                    matrix: _matrix,
+                    matrixUnavailable: _matrixFailed,
                   ),
-                  const SizedBox(height: 40),
-                  const Text("Quick Presets",
-                      style:
-                          TextStyle(fontWeight: FontWeight.w600, fontSize: 18)),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    alignment: WrapAlignment.center,
-                    children: [
-                      _buildPresetButton("1:00", 60, scheme),
-                      _buildPresetButton("1:30", 90, scheme),
-                      _buildPresetButton("10:00", 600, scheme),
-                      _buildPresetButton("15:00", 900, scheme),
-                      ChoiceChip(
-                        avatar: const Icon(Icons.groups, size: 18),
-                        label: Text('UNMOD ${_formatTime(_unmodSeconds)}',
-                            style:
-                                const TextStyle(fontWeight: FontWeight.w700)),
-                        selected: _unmod,
-                        onSelected: (_) => _selectMode(unmod: !_unmod),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  OutlinedButton.icon(
-                    onPressed: _showCustomTimerDialog,
-                    icon: const Icon(Icons.edit_calendar),
-                    label: Text(_unmod ? "Edit UNMOD duration" : "Custom Timer"),
-                  ),
+                  SessionTimerTab(client: client),
                 ],
               ),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
+}
 
-  /// Lets the EB type any duration (minutes + seconds) instead of a preset.
-  /// In UNMOD mode this also updates the UNMOD default duration.
-  Future<void> _showCustomTimerDialog() async {
-    final initial = _remainingSeconds > 0
-        ? _remainingSeconds
-        : (_unmod ? _unmodSeconds : 120);
-    final minCtrl = TextEditingController(text: '${initial ~/ 60}');
-    final secCtrl = TextEditingController(text: '${initial % 60}');
+/// The connection state, and what the smartboard is showing (tap to switch it).
+class _StatusStrip extends StatelessWidget {
+  const _StatusStrip({required this.client});
 
-    final seconds = await showDialog<int>(
-      context: context,
-      builder: (ctx) {
-        String? error;
-        return StatefulBuilder(
-          builder: (ctx, setLocal) => AlertDialog(
-            scrollable: true,
-            title: Text(_unmod ? 'Set UNMOD Duration' : 'Set Timer'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: minCtrl,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        decoration: const InputDecoration(labelText: 'Minutes'),
-                      ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: Text(':', style: TextStyle(fontSize: 24)),
-                    ),
-                    Expanded(
-                      child: TextField(
-                        controller: secCtrl,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        decoration: const InputDecoration(labelText: 'Seconds'),
-                      ),
-                    ),
-                  ],
+  final FloorClient client;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: 1.3,
+      child: ListenableBuilder(
+        listenable: client,
+        builder: (context, _) {
+          final s = client.state;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (client.closedForGood)
+                _Banner(
+                  color: scheme.errorContainer,
+                  onColor: scheme.onErrorContainer,
+                  icon: Icons.error_outline,
+                  text:
+                      'This committee no longer exists. Pick another from the menu.',
+                )
+              else if (!client.connected)
+                _Banner(
+                  color: scheme.surfaceContainerHighest,
+                  onColor: scheme.onSurface,
+                  icon: Icons.cloud_off,
+                  text:
+                      'Reconnecting… Editing is paused until the live link is back.',
+                  action: TextButton(
+                      onPressed: client.reconnect, child: const Text('Retry')),
                 ),
-                if (error != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: Text(error!,
-                        style:
-                            TextStyle(color: Theme.of(ctx).colorScheme.error)),
+              if (s != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
+                  child: Row(
+                    children: [
+                      Tooltip(
+                        message: 'What the smartboard shows',
+                        child: Icon(Icons.tv,
+                            size: 18, color: scheme.onSurfaceVariant),
+                      ),
+                      // The label only where there is room (narrow phones, large text).
+                      if (MediaQuery.sizeOf(context).width >= 400) ...[
+                        const SizedBox(width: 8),
+                        Text('On screen',
+                            style: TextStyle(color: scheme.onSurfaceVariant)),
+                      ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: SegmentedButton<String>(
+                          showSelectedIcon: false,
+                          style: const ButtonStyle(
+                              visualDensity: VisualDensity.compact),
+                          segments: [
+                            for (final e in kFloorViewLabels.entries)
+                              ButtonSegment(value: e.key, label: Text(e.value)),
+                          ],
+                          selected: {s.display},
+                          onSelectionChanged: client.connected
+                              ? (v) => sendOp(context, client,
+                                  {'op': 'set_display', 'view': v.first})
+                              : null,
+                        ),
+                      ),
+                    ],
                   ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  final m = int.tryParse(minCtrl.text) ?? 0;
-                  final s = int.tryParse(secCtrl.text) ?? 0;
-                  final total = m * 60 + s;
-                  if (total <= 0) {
-                    setLocal(() => error = 'Enter a time greater than zero.');
-                    return;
-                  }
-                  if (total > 99 * 60 + 59) {
-                    setLocal(() => error = 'The maximum is 99:59.');
-                    return;
-                  }
-                  Navigator.pop(ctx, total);
-                },
-                child: const Text('Set'),
-              ),
+                ),
             ],
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
+  }
+}
 
-    minCtrl.dispose();
-    secCtrl.dispose();
-    if (seconds != null) {
-      if (_unmod) setState(() => _unmodSeconds = seconds);
-      _setTimer(seconds);
+class _Banner extends StatelessWidget {
+  const _Banner({
+    required this.color,
+    required this.onColor,
+    required this.icon,
+    required this.text,
+    this.action,
+  });
+
+  final Color color;
+  final Color onColor;
+  final IconData icon;
+  final String text;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: color,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, color: onColor, size: 20),
+          const SizedBox(width: 12),
+          Expanded(child: Text(text, style: TextStyle(color: onColor))),
+          if (action != null) action!,
+        ],
+      ),
+    );
+  }
+}
+
+/// The conference's committees (public list, so an EB without chat access sees them too).
+class _CommitteePicker extends StatefulWidget {
+  const _CommitteePicker(
+      {required this.api, required this.onPicked, this.selectedId});
+
+  final ApiClient api;
+  final int? selectedId;
+  final void Function(int id, String name) onPicked;
+
+  @override
+  State<_CommitteePicker> createState() => _CommitteePickerState();
+}
+
+class _CommitteePickerState extends State<_CommitteePicker> {
+  List<(int, String)>? _committees;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => _error = null);
+    try {
+      final res = await widget.api.get('/public/committees');
+      if (res.statusCode != 200) throw Exception(res.statusCode);
+      final list = [
+        for (final c in jsonDecode(res.body) as List)
+          ((c as Map<String, dynamic>)['id'] as int, c['name'] as String),
+      ];
+      if (mounted) setState(() => _committees = list);
+    } catch (_) {
+      if (mounted) {
+        setState(() =>
+            _error = 'Could not load the committees. Check your connection.');
+      }
     }
   }
 
-  Widget _buildPresetButton(String label, int seconds, ColorScheme scheme) {
-    return ActionChip(
-      label: Text(label, style: _mono),
-      backgroundColor: scheme.surfaceContainerHighest,
-      onPressed: () {
-        _unmod = false;
-        _setTimer(seconds);
-      },
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final committees = _committees;
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(_error!, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            FilledButton(onPressed: _load, child: const Text('Try again')),
+          ],
+        ),
+      );
+    }
+    if (committees == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Text('Which committee are you chairing?',
+            style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 4),
+        Text(
+          'This phone remembers it. Your co-chair picks the same one on their phone, and you '
+          'both edit the same lists.',
+          style: TextStyle(color: scheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 16),
+        for (final (id, name) in committees)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: ListTile(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              tileColor: id == widget.selectedId
+                  ? scheme.secondaryContainer
+                  : scheme.surfaceContainerHigh,
+              leading: const Icon(Icons.gavel),
+              title: Text(name,
+                  style: const TextStyle(fontWeight: FontWeight.w700)),
+              trailing: id == widget.selectedId
+                  ? const Icon(Icons.check)
+                  : const Icon(Icons.chevron_right),
+              onTap: () => widget.onPicked(id, name),
+            ),
+          ),
+      ],
     );
   }
 }
