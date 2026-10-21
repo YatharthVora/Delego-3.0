@@ -629,7 +629,7 @@ class _DelegateLookupSheetState extends State<_DelegateLookupSheet> {
     });
     try {
       final res = await widget.api
-          .get('/food/delegates/search?q=${Uri.encodeQueryComponent(q)}');
+          .get('/food/delegates?q=${Uri.encodeQueryComponent(q)}');
       if (!mounted) return;
       if (res.statusCode == 200) {
         final decoded = jsonDecode(res.body);
@@ -770,12 +770,17 @@ class _DelegateLookupSheetState extends State<_DelegateLookupSheet> {
                   separatorBuilder: (_, __) => const Divider(height: 1),
                   itemBuilder: (ctx, i) {
                     final d = _results[i];
-                    final id = (d['id'] ?? '').toString();
+                    final id = (d['delegate_id'] ?? d['id'] ?? '').toString();
+                    final fullName = (d['name'] ?? '').toString().trim();
                     final first = (d['firstname'] ?? '').toString();
                     final last = (d['lastname'] ?? '').toString();
-                    final name = '$first $last'.trim();
-                    final email = (d['email'] ?? '').toString();
+                    final name = fullName.isNotEmpty
+                        ? fullName
+                        : '$first $last'.trim();
+                    final email =
+                        (d['email_hint'] ?? d['email'] ?? '').toString();
                     final contact = (d['contact'] ?? '').toString();
+                    final committee = (d['committee'] ?? '').toString();
                     final pref = _dietBadge(d['food_preference']?.toString());
 
                     return ListTile(
@@ -790,6 +795,7 @@ class _DelegateLookupSheetState extends State<_DelegateLookupSheet> {
                       subtitle: Text(
                         [
                           if (email.isNotEmpty) email,
+                          if (committee.isNotEmpty) committee,
                           if (contact.isNotEmpty) contact,
                           'Diet: $pref',
                         ].join(' · '),
