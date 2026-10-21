@@ -41,7 +41,7 @@ const _lime = [Color(0xFFBFFF00), Color(0xFFBFFF00)]; // orange text
 const _pink = [Color(0xFFEE1C9C), Color(0xFFEE1C9C)]; // yellow text
 const _blue = [Color(0xFF005CFF), Color(0xFF005CFF)]; // lime text
 const _green = [Color(0xFF159555), Color(0xFF159555)]; // cyan text
-const _violet = [Color(0xFFEE1C9C), Color(0xFFEE1C9C)]; // yellow text
+const _violet = [Color(0xFF7A1BFF), Color(0xFF2342FF)]; // yellow text (the Scan tile)
 
 NowText describeNow(NowStatus s, DateTime now) {
   String where(TimedEvent e) => e.event.location;

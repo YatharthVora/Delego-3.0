@@ -155,7 +155,7 @@ class _HomePageState extends State<HomePage> {
       rows
         ..add(const SizedBox(height: 14))
         ..add(NeonCard(
-          colors: const [Color(0xFFEE1C9C), Color(0xFFEE1C9C)],
+          colors: const [Color(0xFF7A1BFF), Color(0xFF2342FF)],
           label: 'Scan a delegate QR',
           labelColor: Neon.yellow,
           iconAsset: 'assets/icons/qr.png',

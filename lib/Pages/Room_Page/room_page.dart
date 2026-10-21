@@ -52,8 +52,8 @@ class _RoomPageState extends State<RoomPage> {
   bool _isLoading = true;
   String? _error;
 
-  static const String _cacheKey = 'allotedRoomsData_v3';
-  static const String _timestampKey = 'allotedRoomsTimestamp_v3';
+  static const String _cacheKey = 'allotedRoomsData_v4';
+  static const String _timestampKey = 'allotedRoomsTimestamp_v4';
   static const int _cacheDurationMs = 120 * 60 * 1000;
 
   @override
@@ -110,6 +110,14 @@ class _RoomPageState extends State<RoomPage> {
     try {
       final List<dynamic> jsonList = jsonDecode(jsonString);
       var parsedRooms = jsonList.map((json) => Room.fromJson(json)).toList();
+      if (!parsedRooms.any((r) => r.committeeName.toUpperCase() == 'DISEC')) {
+        parsedRooms.add(Room(
+          id: 'disec_9',
+          committeeName: 'DISEC',
+          roomCode: 'TBA',
+          floor: 'TBA',
+        ));
+      }
       const order = ['UNSC', 'CCC', 'PSC', 'WTO', 'UNODC', 'UNICEF', 'ECOSOC', 'IPC', 'DISEC'];
       parsedRooms.sort((a, b) {
         int indexA = order.indexOf(a.committeeName.toUpperCase());

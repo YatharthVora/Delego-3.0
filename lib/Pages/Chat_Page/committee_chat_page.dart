@@ -104,6 +104,12 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
       final list = (jsonDecode(res.body) as List)
           .map((c) => _Committee((c['id'] as num).toInt(), '${c['name']}'))
           .toList();
+      if (!list.any((c) => c.name.toUpperCase() == 'DISEC')) {
+        final nextId = list.isEmpty
+            ? 9
+            : (list.map((c) => c.id).reduce((a, b) => a > b ? a : b) + 1);
+        list.add(_Committee(nextId, 'DISEC'));
+      }
       if (!mounted) return;
       setState(() {
         _committees = list;
