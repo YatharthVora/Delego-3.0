@@ -61,12 +61,10 @@ class _SchedulePageState extends State<SchedulePage> {
 
     final cachedData = prefs.getString(_cacheKey);
     final cacheTimestamp = prefs.getInt(_timestampKey);
-    bool cacheValid = false;
 
     if (cachedData != null && cacheTimestamp != null) {
       if (now - cacheTimestamp < _cacheDurationMs) {
         _parseAndSetSchedule(cachedData);
-        cacheValid = true;
         return;
       }
     }
