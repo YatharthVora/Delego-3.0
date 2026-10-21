@@ -23,18 +23,18 @@ class FloorColourway {
       );
 
   static const pink = FloorColourway(
-    [Color(0xFFEE1C9C), Color(0xFFC63087), Color(0xFFA9407C), Color(0xFF62575D)],
-    [0.05, 0.38, 0.57, 0.83],
+    [Color(0xFFFF2BB4), Color(0xFFD6148C)],
+    [0.0, 1.0],
     Color(0xFFFFFD2A),
   );
   static const blue = FloorColourway(
-    [Color(0xFF005CFF), Color(0xFF206AED), Color(0xFF454DA6), Color(0xFF62575D)],
-    [0.05, 0.38, 0.57, 0.83],
+    [Color(0xFF005CFF), Color(0xFF0043C2)],
+    [0.0, 1.0],
     Color(0xFFA9FF48),
   );
   static const green = FloorColourway(
-    [Color(0xFF159555), Color(0xFF20BA6D), Color(0xFF62575D)],
-    [0.02, 0.51, 0.95],
+    [Color(0xFF20BA6D), Color(0xFF159555)],
+    [0.0, 1.0],
     Color(0xFF27FFFF),
   );
 
@@ -47,7 +47,7 @@ class FloorColourway {
 
 const kFloorViewLabels = {
   'gsl': 'GSL',
-  'mod': 'Mod caucus',
+  'mod': 'Mod',
   'unmod': 'Unmod',
 };
 

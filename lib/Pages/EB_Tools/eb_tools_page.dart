@@ -220,7 +220,7 @@ class _EBToolsPageState extends State<EBToolsPage> with WidgetsBindingObserver {
           bottom: const TabBar(
             tabs: [
               Tab(text: 'GSL'),
-              Tab(text: 'Mod caucus'),
+              Tab(text: 'Mod'),
               Tab(text: 'Timer'),
             ],
           ),
