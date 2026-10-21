@@ -433,12 +433,6 @@ class _CommitteePickerState extends State<_CommitteePicker> {
       children: [
         Text('Which committee are you chairing?',
             style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 4),
-        Text(
-          'This phone remembers it. Your co-chair picks the same one on their phone, and you '
-          'both edit the same lists.',
-          style: TextStyle(color: scheme.onSurfaceVariant),
-        ),
         const SizedBox(height: 16),
         for (final (id, name) in committees)
           Padding(

@@ -199,27 +199,26 @@ class _SchedulePageState extends State<SchedulePage> {
 
 class GradientAppBar extends StatelessWidget {
   final String title;
-  final double barHeight = 66.0;
+  final double barHeight = 42.0;
   GradientAppBar(this.title);
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final double statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Container(
+      width: double.infinity,
       color: const Color(0xFFFF2BB4),
-      padding: EdgeInsets.only(top: statusBarHeight),
-      height: statusBarHeight + barHeight,
+      height: barHeight,
       child: Center(
         child: Text(
           title,
-          style: textTheme.titleLarge?.copyWith(
-              color: scheme.onPrimary,
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w600,
-              fontSize: 24.0
+          style: textTheme.titleMedium?.copyWith(
+            color: scheme.onPrimary,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w600,
+            fontSize: 17.0,
           ),
         ),
       ),
