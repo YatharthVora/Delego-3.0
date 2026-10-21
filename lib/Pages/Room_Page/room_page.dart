@@ -52,8 +52,8 @@ class _RoomPageState extends State<RoomPage> {
   bool _isLoading = true;
   String? _error;
 
-  static const String _cacheKey = 'allotedRoomsData_v2';
-  static const String _timestampKey = 'allotedRoomsTimestamp_v2';
+  static const String _cacheKey = 'allotedRoomsData_v3';
+  static const String _timestampKey = 'allotedRoomsTimestamp_v3';
   static const int _cacheDurationMs = 120 * 60 * 1000;
 
   @override
@@ -110,7 +110,7 @@ class _RoomPageState extends State<RoomPage> {
     try {
       final List<dynamic> jsonList = jsonDecode(jsonString);
       var parsedRooms = jsonList.map((json) => Room.fromJson(json)).toList();
-      const order = ['UNSC', 'CCC', 'PSC', 'WTO', 'UNODC', 'UNICEF', 'ECOSOC', 'IPC'];
+      const order = ['UNSC', 'CCC', 'PSC', 'WTO', 'UNODC', 'UNICEF', 'ECOSOC', 'IPC', 'DISEC'];
       parsedRooms.sort((a, b) {
         int indexA = order.indexOf(a.committeeName.toUpperCase());
         int indexB = order.indexOf(b.committeeName.toUpperCase());
@@ -162,6 +162,11 @@ class _RoomPageState extends State<RoomPage> {
       colors: [Color(0xFFFFF21A), Color(0xFFD4A800)],
       fg: Color(0xFF111111),
       accent: Neon.pink,
+    ),
+    (
+      colors: [Color(0xFF1E3A8A), Color(0xFF0F172A)],
+      fg: Colors.white,
+      accent: Neon.cyan,
     ),
   ];
 
