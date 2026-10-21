@@ -38,7 +38,7 @@ const kSponsors = <Sponsor>[
   Sponsor(
     name: 'Coway',
     logo: 'assets/icons/coway.png',
-    url: 'https://www.cowayindia.in',
+    url: 'https://cowayindia.in',
     videoAsset: 'assets/videos/sponsor_video.mp4',
     scale: 1.38,
     tier: 'TITLE SPONSOR',
@@ -47,7 +47,7 @@ const kSponsors = <Sponsor>[
   Sponsor(
     name: 'Unrush',
     logo: 'assets/icons/unrush.png',
-    url: 'https://mumbaimun.com',
+    url: 'https://shopunrush.com',
     scale: 1.18,
     backgroundColorHex: 0xFF000000,
   ),
@@ -61,14 +61,14 @@ const kSponsors = <Sponsor>[
   Sponsor(
     name: "Gamer's Street",
     logo: 'assets/icons/gamers_street.png',
-    url: 'https://mumbaimun.com',
+    url: 'https://gamersstreet.info',
     scale: 1.0,
     backgroundColorHex: 0xFF000000,
   ),
   Sponsor(
     name: 'Alibaug Stays',
     logo: 'assets/icons/alibaug_stays.png',
-    url: 'https://mumbaimun.com',
+    url: 'https://alibaugstays.com',
     scale: 1.0,
     backgroundColorHex: 0xFF7B0C2E,
   ),
