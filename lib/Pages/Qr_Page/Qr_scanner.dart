@@ -294,6 +294,11 @@ class _QrScannerState extends State<QrScanner> {
     _lastId = id;
     _lastAt = now;
 
+    await _serveDelegate(id);
+  }
+
+  Future<void> _serveDelegate(String id) async {
+    if (_busy || _diet == null) return;
     setState(() => _busy = true);
     final result = await _submit(id);
     if (!mounted) return;
@@ -310,6 +315,33 @@ class _QrScannerState extends State<QrScanner> {
     // Auto-dismiss so the queue keeps moving; tap also dismisses.
     await Future.delayed(const Duration(seconds: 2));
     _dismiss();
+  }
+
+  Future<void> _openNameLookup() async {
+    if (_diet == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select Veg or Jain above before looking up a delegate.'),
+        ),
+      );
+      return;
+    }
+
+    final api = context.read<ApiClient>();
+    final selectedId = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (ctx) => _DelegateLookupSheet(
+        api: api,
+        mealLabel: _mealLabel,
+        dietLabel: kDiets.firstWhere((d) => d.value == _diet).label,
+      ),
+    );
+
+    if (selectedId != null && selectedId.isNotEmpty && mounted) {
+      await _serveDelegate(selectedId);
+    }
   }
 
   void _dismiss() {
@@ -435,6 +467,11 @@ class _QrScannerState extends State<QrScanner> {
         centerTitle: true,
         actions: [
           IconButton(
+            tooltip: 'Search delegate by name / email',
+            icon: const Icon(Icons.person_search_rounded),
+            onPressed: _openNameLookup,
+          ),
+          IconButton(
             tooltip: 'Unsynced scans and history',
             icon: Badge(
               isLabelVisible: queue.pendingCount > 0,
@@ -471,6 +508,17 @@ class _QrScannerState extends State<QrScanner> {
                 ),
               ),
               _countsPanel(scheme, text),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _openNameLookup,
+                    icon: const Icon(Icons.person_search_rounded, size: 18),
+                    label: const Text('No phone? Search delegate by name / email'),
+                  ),
+                ),
+              ),
               Expanded(
                 child: MobileScanner(
                   controller: controller,
@@ -524,6 +572,239 @@ class _QrScannerState extends State<QrScanner> {
       floatingActionButton: FloatingActionButton(
         onPressed: controller.toggleTorch,
         child: const Icon(Icons.flash_on),
+      ),
+    );
+  }
+}
+
+class _DelegateLookupSheet extends StatefulWidget {
+  const _DelegateLookupSheet({
+    required this.api,
+    required this.mealLabel,
+    required this.dietLabel,
+  });
+
+  final ApiClient api;
+  final String mealLabel;
+  final String dietLabel;
+
+  @override
+  State<_DelegateLookupSheet> createState() => _DelegateLookupSheetState();
+}
+
+class _DelegateLookupSheetState extends State<_DelegateLookupSheet> {
+  final TextEditingController _queryController = TextEditingController();
+  Timer? _debounce;
+  bool _loading = false;
+  String? _error;
+  List<Map<String, dynamic>> _results = const [];
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _queryController.dispose();
+    super.dispose();
+  }
+
+  void _onQueryChanged(String value) {
+    _debounce?.cancel();
+    if (value.trim().length < 2) {
+      setState(() {
+        _results = const [];
+        _error = null;
+        _loading = false;
+      });
+      return;
+    }
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      _search(value.trim());
+    });
+  }
+
+  Future<void> _search(String q) async {
+    if (q.isEmpty) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final res = await widget.api
+          .get('/food/delegates/search?q=${Uri.encodeQueryComponent(q)}');
+      if (!mounted) return;
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded is List) {
+          setState(() {
+            _results = decoded
+                .whereType<Map>()
+                .map((m) => Map<String, dynamic>.from(m))
+                .toList();
+            _loading = false;
+          });
+          return;
+        }
+      }
+      setState(() {
+        _error = 'Search failed (${res.statusCode}).';
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'Could not reach the server. Name lookup requires internet.';
+        _loading = false;
+      });
+    }
+  }
+
+  static String _dietBadge(String? raw) {
+    switch ((raw ?? '').trim().toLowerCase()) {
+      case 'veg':
+        return 'VEG';
+      case 'jain':
+        return 'JAIN';
+      default:
+        return 'UNSET';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.65,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Lookup Delegate',
+                        style: text.titleLarge
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        'Serving ${widget.mealLabel} · ${widget.dietLabel} plate',
+                        style: text.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _queryController,
+              autofocus: true,
+              onChanged: _onQueryChanged,
+              onSubmitted: _search,
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                hintText: 'Search by name, email, or phone number…',
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: _queryController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded),
+                        onPressed: () {
+                          _queryController.clear();
+                          _onQueryChanged('');
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (_loading)
+              const Expanded(
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (_error != null)
+              Expanded(
+                child: Center(
+                  child: Text(
+                    _error!,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: scheme.error),
+                  ),
+                ),
+              )
+            else if (_results.isEmpty)
+              Expanded(
+                child: Center(
+                  child: Text(
+                    _queryController.text.trim().length < 2
+                        ? 'Type at least 2 characters to search delegates.'
+                        : 'No matching delegates found.',
+                    style: text.bodyMedium?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              )
+            else
+              Expanded(
+                child: ListView.separated(
+                  itemCount: _results.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (ctx, i) {
+                    final d = _results[i];
+                    final id = (d['id'] ?? '').toString();
+                    final first = (d['firstname'] ?? '').toString();
+                    final last = (d['lastname'] ?? '').toString();
+                    final name = '$first $last'.trim();
+                    final email = (d['email'] ?? '').toString();
+                    final contact = (d['contact'] ?? '').toString();
+                    final pref = _dietBadge(d['food_preference']?.toString());
+
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 4,
+                      ),
+                      title: Text(
+                        name.isEmpty ? email : name,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(
+                        [
+                          if (email.isNotEmpty) email,
+                          if (contact.isNotEmpty) contact,
+                          'Diet: $pref',
+                        ].join(' · '),
+                      ),
+                      trailing: FilledButton(
+                        onPressed:
+                            id.isEmpty ? null : () => Navigator.pop(context, id),
+                        child: const Text('Serve'),
+                      ),
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

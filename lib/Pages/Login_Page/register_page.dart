@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:delego/constants/backend.dart';
 import 'package:delego/Pages/Login_Page/verify_email_page.dart';
+import 'package:delego/Pages/Policy_Page/policy_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -23,12 +24,11 @@ class _RegisterPageState extends State<RegisterPage> {
   final contactController = TextEditingController();
   final dobController = TextEditingController();
 
-  // Backend values: 'veg', 'non_veg', 'jain'
+  // Backend values: 'veg', 'jain'
   String? _selectedFoodPreference;
 
   static const Map<String, String> _foodLabels = {
     'veg': 'Veg',
-    'non_veg': 'Non-Veg',
     'jain': 'Jain',
   };
 
@@ -87,11 +87,12 @@ class _RegisterPageState extends State<RegisterPage> {
         firstName.isEmpty ||
         lastName.isEmpty ||
         contact.isEmpty ||
-        dob.isEmpty ||
         foodPref == null) {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill in all fields.")),
+        const SnackBar(
+          content: Text("Please fill in all required fields."),
+        ),
       );
       return;
     }
@@ -130,7 +131,7 @@ class _RegisterPageState extends State<RegisterPage> {
       'lastname': lastName,
       'email': email,
       'contact': contact,
-      'dateofbirth': dob,
+      if (dob.isNotEmpty) 'dateofbirth': dob,
       'food_preference': foodPref,
       'password': password,
     };
@@ -159,7 +160,9 @@ class _RegisterPageState extends State<RegisterPage> {
         await prefs.setString('diet', dietLabel);
         final emailKey = email.toLowerCase();
         await prefs.setString('pending_contact_$emailKey', contact);
-        await prefs.setString('pending_dob_$emailKey', dob);
+        if (dob.isNotEmpty) {
+          await prefs.setString('pending_dob_$emailKey', dob);
+        }
         await prefs.setString('pending_food_pref_$emailKey', foodPref);
 
         if (!mounted) return;
@@ -380,18 +383,46 @@ class _RegisterPageState extends State<RegisterPage> {
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9+\-\s]')),
                   ],
                 ),
+                const SizedBox(height: 6),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Text(
+                      'Use the email and phone number you registered with so we can match your delegation and send your verification code.',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 12),
                 buildTextField(
                   dobController,
-                  'Date of Birth (dd-mm-yyyy)',
+                  'Date of Birth — Optional (dd-mm-yyyy)',
                   false,
                   readOnly: true,
                   onTap: _pickDateOfBirth,
-                  suffixIcon: Icon(
-                    Icons.calendar_today_rounded,
-                    size: 20,
-                    color: scheme.onSurfaceVariant,
-                  ),
+                  suffixIcon: dobController.text.isNotEmpty
+                      ? IconButton(
+                          tooltip: 'Clear date of birth',
+                          icon: Icon(
+                            Icons.clear_rounded,
+                            size: 20,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              dobController.clear();
+                            });
+                          },
+                        )
+                      : Icon(
+                          Icons.calendar_today_rounded,
+                          size: 20,
+                          color: scheme.onSurfaceVariant,
+                        ),
                 ),
                 const SizedBox(height: 12),
                 _buildFoodPreferenceSelector(scheme, textTheme),
@@ -403,7 +434,48 @@ class _RegisterPageState extends State<RegisterPage> {
                   'Confirm Password',
                   true,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
+
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      'By signing up, you agree to our ',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const PrivacyPolicyPage(),
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Text(
+                          'Privacy Policy',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: scheme.tertiary,
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '.',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
 
                 ElevatedButton(
                   onPressed: signUserUp,
@@ -455,4 +527,3 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 }
-

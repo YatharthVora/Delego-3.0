@@ -191,7 +191,7 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 8),
         // Runs edge to edge (past the page padding) so the logos slide off-screen.
         SizedBox(
-          height: 58,
+          height: 68,
           child: OverflowBox(
             minWidth: MediaQuery.of(context).size.width,
             maxWidth: MediaQuery.of(context).size.width,

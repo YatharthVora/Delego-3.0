@@ -37,6 +37,16 @@ class _MyDrawerState extends State<MyDrawer> {
   void openPolicy(String policyName) {
     Navigator.pop(context);
 
+    if (policyName == 'Privacy Policy') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const PrivacyPolicyPage(),
+        ),
+      );
+      return;
+    }
+
     final pdfAsset = (policyName == 'POSH Policy')
         ? 'assets/pdfs/POSH.pdf'
         : 'assets/pdfs/ConferencePolicy.pdf';
@@ -184,6 +194,10 @@ class _MyDrawerState extends State<MyDrawer> {
                       color: scheme.surface,
                       onSelected: openPolicy,
                       itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'Privacy Policy',
+                          child: Text('Privacy Policy'),
+                        ),
                         const PopupMenuItem(
                           value: 'POSH Policy',
                           child: Text('POSH Policy'),
