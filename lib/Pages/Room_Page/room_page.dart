@@ -54,7 +54,6 @@ class _RoomPageState extends State<RoomPage> {
 
   static const String _cacheKey = 'allotedRoomsData_v4';
   static const String _timestampKey = 'allotedRoomsTimestamp_v4';
-  static const int _cacheDurationMs = 120 * 60 * 1000;
 
   @override
   void initState() {
@@ -63,32 +62,37 @@ class _RoomPageState extends State<RoomPage> {
   }
 
   Future<void> _fetchRooms() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
     final prefs = await SharedPreferences.getInstance();
     final cachedData = prefs.getString(_cacheKey);
-    final cacheTimestamp = prefs.getString(_timestampKey);
     final now = DateTime.now().millisecondsSinceEpoch;
 
-    if (cachedData != null && cacheTimestamp != null) {
-      final lastFetched = int.tryParse(cacheTimestamp) ?? 0;
-      if (now - lastFetched < _cacheDurationMs) {
-        _rooms = _parseRooms(cachedData);
-        setState(() { _isLoading = false; });
-        return;
+    if (cachedData != null) {
+      final cachedRooms = _parseRooms(cachedData);
+      if (cachedRooms.isNotEmpty && mounted) {
+        setState(() {
+          _rooms = cachedRooms;
+          _isLoading = false;
+          _error = null;
+        });
       }
+    } else if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
     }
+
     try {
       final url = Uri.parse('${Backend.baseUrl}/rooms');
-      final response = await http.get(url);
+      final response = await http.get(url).timeout(const Duration(seconds: 8));
       if (response.statusCode == 200) {
         final responseBody = response.body;
-        _rooms = _parseRooms(responseBody);
-        await prefs.setString(_cacheKey, responseBody);
-        await prefs.setString(_timestampKey, now.toString());
+        final freshRooms = _parseRooms(responseBody);
+        if (freshRooms.isNotEmpty) {
+          _rooms = freshRooms;
+          await prefs.setString(_cacheKey, responseBody);
+          await prefs.setString(_timestampKey, now.toString());
+        }
       } else {
         final responseData = json.decode(response.body);
         final errorMessage = responseData['message'] ?? 'Server error: Status Code ${response.statusCode}';
@@ -97,13 +101,13 @@ class _RoomPageState extends State<RoomPage> {
     } catch (e) {
       if (_rooms.isEmpty) {
         _error = 'Data not available: ${e.toString().contains('Exception:') ? e.toString().replaceFirst('Exception: ', '') : 'Please check your connection.'}';
-      } else {
-        _error = 'Could not update data. Displaying cached information. Error: ${e.toString().contains('Exception:') ? e.toString().replaceFirst('Exception: ', '') : 'Network failed.'}';
       }
     }
-    setState(() {
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   List<Room> _parseRooms(String jsonString) {

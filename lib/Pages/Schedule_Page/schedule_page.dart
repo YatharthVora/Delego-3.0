@@ -17,7 +17,6 @@ class SchedulePage extends StatefulWidget {
 class _SchedulePageState extends State<SchedulePage> {
   static const String _cacheKey = 'fullScheduleData';
   static const String _timestampKey = 'fullScheduleTimestamp';
-  static const int _cacheDurationMs = 90 * 60 * 1000;
 
   List<ConferenceDay> _days = [];
   List<Schedule> _allEvents = [];
@@ -51,31 +50,31 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<void> _fetchFullSchedule() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now().millisecondsSinceEpoch;
-
     final cachedData = prefs.getString(_cacheKey);
-    final cacheTimestamp = prefs.getInt(_timestampKey);
 
-    if (cachedData != null && cacheTimestamp != null) {
-      if (now - cacheTimestamp < _cacheDurationMs) {
+    if (cachedData != null) {
+      try {
         _parseAndSetSchedule(cachedData);
-        return;
-      }
+        _error = null;
+      } catch (_) {}
+    } else if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
     }
 
     try {
       final url = Uri.parse('${Backend.baseUrl}/schedule');
-      final response = await http.get(url);
+      final response = await http.get(url).timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
         final responseBody = response.body;
-        _parseAndSetSchedule(responseBody);
+        if (mounted) {
+          _parseAndSetSchedule(responseBody);
+        }
         await prefs.setString(_cacheKey, responseBody);
         await prefs.setInt(_timestampKey, now);
       } else {
@@ -83,9 +82,8 @@ class _SchedulePageState extends State<SchedulePage> {
         throw Exception(responseData['detail'] ?? 'Server error: Status ${response.statusCode}');
       }
     } catch (e) {
-      if (cachedData != null && _days.isEmpty) {
+      if (cachedData != null && _days.isEmpty && mounted) {
         _parseAndSetSchedule(cachedData);
-        _error = 'Could not update data. Displaying cached schedule.';
       } else if (_days.isEmpty) {
         _error = 'Data not available: ${e.toString().contains('Exception:') ? e.toString().replaceFirst('Exception: ', '') : 'Please check your connection.'}';
       }
