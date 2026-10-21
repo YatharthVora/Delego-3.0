@@ -110,9 +110,16 @@ class _EBToolsPageState extends State<EBToolsPage> with WidgetsBindingObserver {
       } catch (_) {}
     }
     if (!mounted || id != _committeeId) return;
+    final isDisec = (_committeeName ?? '').toUpperCase() == 'DISEC';
+    final parsed = json == null ? null : matrixPortfolios(json);
     setState(() {
-      _matrix = json == null ? null : matrixPortfolios(json);
-      _matrixFailed = json == null;
+      if (isDisec && (parsed == null || parsed.isEmpty)) {
+        _matrix = kDisecMatrix;
+        _matrixFailed = false;
+      } else {
+        _matrix = parsed;
+        _matrixFailed = json == null;
+      }
     });
   }
 
@@ -220,7 +227,7 @@ class _EBToolsPageState extends State<EBToolsPage> with WidgetsBindingObserver {
           bottom: const TabBar(
             tabs: [
               Tab(text: 'GSL'),
-              Tab(text: 'Mod caucus'),
+              Tab(text: 'Mod'),
               Tab(text: 'Timer'),
             ],
           ),
@@ -399,6 +406,13 @@ class _CommitteePickerState extends State<_CommitteePicker> {
         for (final c in jsonDecode(res.body) as List)
           ((c as Map<String, dynamic>)['id'] as int, c['name'] as String),
       ];
+      if (!list.any((c) => c.$2.toUpperCase() == 'DISEC')) {
+        final nextId = list.isEmpty
+            ? 9
+            : (list.map((c) => c.$1).reduce((a, b) => a > b ? a : b) + 1);
+        list.add((nextId, 'DISEC'));
+        list.sort((a, b) => a.$2.compareTo(b.$2));
+      }
       if (mounted) setState(() => _committees = list);
     } catch (_) {
       if (mounted) {
@@ -433,12 +447,6 @@ class _CommitteePickerState extends State<_CommitteePicker> {
       children: [
         Text('Which committee are you chairing?',
             style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 4),
-        Text(
-          'This phone remembers it. Your co-chair picks the same one on their phone, and you '
-          'both edit the same lists.',
-          style: TextStyle(color: scheme.onSurfaceVariant),
-        ),
         const SizedBox(height: 16),
         for (final (id, name) in committees)
           Padding(

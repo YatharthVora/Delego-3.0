@@ -61,12 +61,10 @@ class _SchedulePageState extends State<SchedulePage> {
 
     final cachedData = prefs.getString(_cacheKey);
     final cacheTimestamp = prefs.getInt(_timestampKey);
-    bool cacheValid = false;
 
     if (cachedData != null && cacheTimestamp != null) {
       if (now - cacheTimestamp < _cacheDurationMs) {
         _parseAndSetSchedule(cachedData);
-        cacheValid = true;
         return;
       }
     }
@@ -159,7 +157,7 @@ class _SchedulePageState extends State<SchedulePage> {
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           iconTheme: IconThemeData(color: scheme.onPrimary),
-          backgroundColor: const Color(0xFFFF2BB4),
+          backgroundColor: const Color(0xFFEE1C9C),
           centerTitle: true,
           title: Text(
             "Schedule",
@@ -199,27 +197,26 @@ class _SchedulePageState extends State<SchedulePage> {
 
 class GradientAppBar extends StatelessWidget {
   final String title;
-  final double barHeight = 66.0;
+  final double barHeight = 42.0;
   GradientAppBar(this.title);
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final double statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Container(
-      color: const Color(0xFFFF2BB4),
-      padding: EdgeInsets.only(top: statusBarHeight),
-      height: statusBarHeight + barHeight,
+      width: double.infinity,
+      color: const Color(0xFFEE1C9C),
+      height: barHeight,
       child: Center(
         child: Text(
           title,
-          style: textTheme.titleLarge?.copyWith(
-              color: scheme.onPrimary,
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w600,
-              fontSize: 24.0
+          style: textTheme.titleMedium?.copyWith(
+            color: scheme.onPrimary,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w600,
+            fontSize: 17.0,
           ),
         ),
       ),

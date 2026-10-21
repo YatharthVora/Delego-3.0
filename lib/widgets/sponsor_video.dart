@@ -57,8 +57,10 @@ class _SponsorVideoCardState extends State<SponsorVideoCard> {
   }
 
   Future<void> _open() async {
+    final rawUrl = widget.sponsor.url;
+    if (rawUrl == null || rawUrl.trim().isEmpty) return;
     final messenger = ScaffoldMessenger.of(context);
-    final uri = Uri.tryParse(widget.sponsor.url);
+    final uri = Uri.tryParse(rawUrl.trim());
     var ok = false;
     if (uri != null) {
       try {
@@ -76,23 +78,29 @@ class _SponsorVideoCardState extends State<SponsorVideoCard> {
     final scheme = Theme.of(context).colorScheme;
     final c = _controller;
     final s = widget.sponsor;
+    final isTitle = s.scale > 1.25;
+    final isSecond = !isTitle && s.scale > 1.1;
+
+    final double mediaHeight = isTitle ? 210 : (isSecond ? 175 : 145);
+    final double logoPadding = isTitle ? 18 : (isSecond ? 22 : 28);
 
     final Widget media;
     if (c != null && c.value.isInitialized) {
-      media = AspectRatio(
-        aspectRatio: c.value.aspectRatio,
-        child: VideoPlayer(c),
+      media = SizedBox(
+        height: mediaHeight,
+        child: AspectRatio(
+          aspectRatio: c.value.aspectRatio,
+          child: VideoPlayer(c),
+        ),
       );
     } else {
       // No video yet (or still loading): show the logo as the ad image.
-      media = AspectRatio(
-        aspectRatio: 16 / 9,
-        child: Container(
-          color: Colors.white,
-          padding: const EdgeInsets.all(24),
-          alignment: Alignment.center,
-          child: Image.asset(s.logo, fit: BoxFit.contain),
-        ),
+      media = Container(
+        height: mediaHeight,
+        color: Color(s.backgroundColorHex),
+        padding: EdgeInsets.all(logoPadding),
+        alignment: Alignment.center,
+        child: Image.asset(s.logo, fit: BoxFit.contain),
       );
     }
 
@@ -103,10 +111,14 @@ class _SponsorVideoCardState extends State<SponsorVideoCard> {
       child: ExcludeSemantics(
         child: Card(
           clipBehavior: Clip.antiAlias,
-          elevation: 4,
+          elevation: isTitle ? 6 : 4,
           margin: EdgeInsets.zero,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: isTitle
+                ? const BorderSide(color: Neon.pink, width: 2)
+                : BorderSide.none,
+          ),
           child: InkWell(
             onTap: _open,
             child: Column(
@@ -119,20 +131,52 @@ class _SponsorVideoCardState extends State<SponsorVideoCard> {
                   child: Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          s.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: Neon.font,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 18,
-                            color: scheme.onSurface,
-                          ),
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                s.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: Neon.font,
+                                  fontWeight: isTitle
+                                      ? FontWeight.w700
+                                      : FontWeight.w600,
+                                  fontSize: isTitle ? 21 : (isSecond ? 19 : 17),
+                                  color: scheme.onSurface,
+                                ),
+                              ),
+                            ),
+                            if (s.tier != null) ...[
+                              const SizedBox(width: 10),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Neon.pink,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  s.tier!,
+                                  style: const TextStyle(
+                                    fontFamily: Neon.font,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
-                      Icon(Icons.open_in_new_rounded,
-                          size: 18, color: scheme.primary),
+                      if (s.url != null && s.url!.isNotEmpty)
+                        Icon(Icons.open_in_new_rounded,
+                            size: 18, color: scheme.primary),
                     ],
                   ),
                 ),

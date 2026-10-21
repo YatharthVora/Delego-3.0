@@ -24,7 +24,7 @@ class NowText {
     this.title,
     this.subtitle, {
     this.live = false,
-    this.colors = const [Color(0xFF2F55FF), Color(0xFF1226A8)],
+    this.colors = const [Color(0xFF005CFF), Color(0xFF005CFF)],
     this.accent = Neon.lime,
   });
 
@@ -37,11 +37,11 @@ class NowText {
 }
 
 // Same pairings as the home tiles.
-const _lime = [Color(0xFFD9FF1F), Color(0xFF8BC400)]; // orange text
-const _pink = [Color(0xFFFF2BB4), Color(0xFFB51E9A)]; // yellow text
-const _blue = [Color(0xFF2F55FF), Color(0xFF1226A8)]; // lime text
-const _green = [Color(0xFF22D38F), Color(0xFF1B8F63)]; // cyan text
-const _violet = [Neon.violet, Neon.blue]; // yellow text (the Scan tile)
+const _lime = [Color(0xFFBFFF00), Color(0xFFBFFF00)]; // orange text
+const _pink = [Color(0xFFEE1C9C), Color(0xFFEE1C9C)]; // yellow text
+const _blue = [Color(0xFF005CFF), Color(0xFF005CFF)]; // lime text
+const _green = [Color(0xFF159555), Color(0xFF159555)]; // cyan text
+const _violet = [Color(0xFF7A1BFF), Color(0xFF2342FF)]; // yellow text (the Scan tile)
 
 NowText describeNow(NowStatus s, DateTime now) {
   String where(TimedEvent e) => e.event.location;

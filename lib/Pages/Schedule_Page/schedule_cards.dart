@@ -29,42 +29,58 @@ IconData scheduleIconFor(String name) {
   return Icons.event_rounded;
 }
 
-/// One node of the roadmap: time | node on the line | title + venue.
+/// Checks if [schedule] on [dateText] is currently happening or already completed.
+enum ScheduleLevelState { upcoming, live, completed }
+
+ScheduleLevelState scheduleStateFor(Schedule schedule, String dateText) {
+  final date = parseDisplayDate(dateText);
+  final r = parseTimeRange(schedule.time);
+  if (date == null || r == null) return ScheduleLevelState.upcoming;
+  final now = DateTime.now();
+  final s = DateTime(date.year, date.month, date.day, r.sh, r.sm);
+  var e = DateTime(date.year, date.month, date.day, r.eh, r.em);
+  if (!e.isAfter(s)) e = e.add(const Duration(days: 1));
+  if (now.isAfter(e)) return ScheduleLevelState.completed;
+  if (!now.isBefore(s) && now.isBefore(e)) return ScheduleLevelState.live;
+  return ScheduleLevelState.upcoming;
+}
+
+/// Game-level node + floating event card positioned along the winding roadmap.
 class ScheduleSummary extends StatelessWidget {
   final Schedule schedule;
+  final int index;
   final bool isFirst;
   final bool isLast;
   final String dateText;
+  final bool nodeOnLeft;
 
   const ScheduleSummary(
     this.schedule, {
+    this.index = 0,
     this.isFirst = false,
     this.isLast = false,
     this.dateText = '',
+    this.nodeOnLeft = true,
     super.key,
   });
 
-  bool get _isLive {
-    final date = parseDisplayDate(dateText);
-    final r = parseTimeRange(schedule.time);
-    if (date == null || r == null) return false;
-    final now = DateTime.now();
-    final s = DateTime(date.year, date.month, date.day, r.sh, r.sm);
-    var e = DateTime(date.year, date.month, date.day, r.eh, r.em);
-    if (!e.isAfter(s)) e = e.add(const Duration(days: 1));
-    return !now.isBefore(s) && now.isBefore(e);
+  void _openDetails(BuildContext context) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => DetailPage(schedule),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+            FadeTransition(opacity: animation, child: child),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final nonPink = [kSwatches[0], kSwatches[2], kSwatches[3]];
-    var h = 0;
-    for (final c in schedule.name.codeUnits) {
-      h = (h * 31 + c) & 0x7fffffff;
-    }
-    final swatch = nonPink[h % nonPink.length];
-    final live = _isLive;
-    final onSurface = Theme.of(context).colorScheme.onSurface;
+    final swatch = kSwatches[index % kSwatches.length];
+    final state = scheduleStateFor(schedule, dateText);
+    final live = state == ScheduleLevelState.live;
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Split "9:00 - 10:30 AM" into start / end.
     final parts = schedule.time.split(RegExp(r'\s*[-–—]\s*'));
@@ -76,161 +92,296 @@ class ScheduleSummary extends StatelessWidget {
       if (m != null) start = '$start ${m.group(1)!.toUpperCase()}';
     }
 
-    const lineW = 3.0;
-    final lineColor = onSurface.withValues(alpha: 0.18);
+    final badge = _LevelTile(
+      index: index,
+      swatch: swatch,
+      icon: scheduleIconFor(schedule.name),
+      state: state,
+      onTap: () => _openDetails(context),
+    );
 
-    return InkWell(
-      onTap: () {
-        Navigator.of(context).push(
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => DetailPage(schedule),
-            transitionsBuilder: (context, animation, secondaryAnimation,
-                    child) =>
-                FadeTransition(opacity: animation, child: child),
+    final card = Expanded(
+      child: GestureDetector(
+        onTap: () => _openDetails(context),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF151426) : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: live
+                  ? Neon.pink
+                  : swatch.colors.first.withValues(alpha: 0.65),
+              width: live ? 2.2 : 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: (live ? Neon.pink : swatch.colors.last)
+                    .withValues(alpha: live ? 0.35 : 0.18),
+                blurRadius: 14,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
-        );
-      },
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            SizedBox(
-              width: 78,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 12, top: 14, right: 6),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      start,
-                      textAlign: TextAlign.right,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(colors: swatch.colors),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      end.isNotEmpty ? '$start – $end' : start,
                       style: TextStyle(
                         fontFamily: Neon.font,
                         fontWeight: FontWeight.w700,
-                        fontSize: 14,
-                        color: onSurface,
-                      ),
-                    ),
-                    if (end.isNotEmpty)
-                      Text(
-                        end,
-                        textAlign: TextAlign.right,
-                        style: TextStyle(
-                          fontFamily: Neon.font,
-                          fontWeight: FontWeight.w400,
-                          fontSize: 11,
-                          color: onSurface.withValues(alpha: 0.6),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(
-              width: 56,
-              child: Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  Positioned(
-                    top: isFirst ? 36 : 0,
-                    bottom: isLast ? null : 0,
-                    height: isLast ? 36 : null,
-                    child: Container(width: lineW, color: lineColor),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: swatch.colors,
-                        ),
-                        border: Border.all(
-                          color: live ? Neon.pink : Colors.white,
-                          width: live ? 3 : 2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: (live ? Neon.pink : swatch.colors[1])
-                                .withValues(alpha: live ? 0.6 : 0.35),
-                            blurRadius: live ? 14 : 8,
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        scheduleIconFor(schedule.name),
-                        size: 22,
+                        fontSize: 11,
                         color: swatch.nameColor,
                       ),
                     ),
                   ),
+                  if (live)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Neon.pink,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: const Text(
+                        'LIVE NOW',
+                        style: TextStyle(
+                          fontFamily: Neon.font,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10,
+                          letterSpacing: 1,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 7),
+              Text(
+                schedule.name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: Neon.font,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15.5,
+                  height: 1.2,
+                  color: scheme.onSurface,
+                ),
+              ),
+              if (schedule.location.trim().isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.place_rounded,
+                      size: 13,
+                      color: swatch.colors.first,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        schedule.location,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: Neon.font,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 12.5,
+                          color: scheme.onSurface.withValues(alpha: 0.72),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: nodeOnLeft
+          ? [
+              badge,
+              const SizedBox(width: 14),
+              card,
+            ]
+          : [
+              card,
+              const SizedBox(width: 14),
+              badge,
+            ],
+    );
+  }
+}
+
+/// Chunky 3D game-level tile with 3 stars arched above it (matching the game roadmap style).
+class _LevelTile extends StatelessWidget {
+  final int index;
+  final NeonSwatch swatch;
+  final IconData icon;
+  final ScheduleLevelState state;
+  final VoidCallback onTap;
+
+  const _LevelTile({
+    required this.index,
+    required this.swatch,
+    required this.icon,
+    required this.state,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final live = state == ScheduleLevelState.live;
+    final starColor = Neon.yellow;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: 80,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Arched 3-star game level crown above the tile
+            SizedBox(
+              height: 22,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Transform.rotate(
+                    angle: -0.22,
+                    child: Icon(Icons.star_rounded,
+                        size: 17,
+                        color: starColor,
+                        shadows: const [
+                          Shadow(color: Colors.black54, blurRadius: 4)
+                        ]),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Icon(Icons.star_rounded,
+                        size: 21,
+                        color: starColor,
+                        shadows: const [
+                          Shadow(color: Colors.black54, blurRadius: 4)
+                        ]),
+                  ),
+                  Transform.rotate(
+                    angle: 0.22,
+                    child: Icon(Icons.star_rounded,
+                        size: 17,
+                        color: starColor,
+                        shadows: const [
+                          Shadow(color: Colors.black54, blurRadius: 4)
+                        ]),
+                  ),
                 ],
               ),
             ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 12, bottom: 18, right: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(height: 2),
+            // 3D rounded-square game level button
+            Container(
+              width: 68,
+              height: 68,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: swatch.colors,
+                ),
+                border: Border.all(
+                  color: live ? Neon.yellow : Colors.white,
+                  width: live ? 3.5 : 2.5,
+                ),
+                boxShadow: [
+                  // 3D bottom lip like a game level button
+                  BoxShadow(
+                    color: swatch.colors.last.withValues(alpha: 0.9),
+                    offset: const Offset(0, 5),
+                    blurRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: (live ? Neon.pink : swatch.colors.first)
+                        .withValues(alpha: live ? 0.65 : 0.4),
+                    blurRadius: live ? 18 : 10,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(17),
+                child: Stack(
+                  alignment: Alignment.center,
                   children: [
-                    if (live)
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 4),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Neon.pink,
-                          borderRadius: BorderRadius.circular(8),
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: GridPainter(
+                          color: Colors.black.withValues(alpha: 0.12),
+                          step: 10,
                         ),
-                        child: const Text(
-                          'HAPPENING NOW',
-                          style: TextStyle(
-                            fontFamily: Neon.font,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 10,
-                            letterSpacing: 1,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    Text(
-                      schedule.name,
-                      style: TextStyle(
-                        fontFamily: Neon.font,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        height: 1.2,
-                        color: onSurface,
                       ),
                     ),
-                    if (schedule.location.trim().isNotEmpty) ...[
-                      const SizedBox(height: 3),
-                      Row(
-                        children: [
-                          Icon(Icons.place_rounded,
-                              size: 13,
-                              color: onSurface.withValues(alpha: 0.6)),
-                          const SizedBox(width: 3),
-                          Expanded(
-                            child: Text(
-                              schedule.location,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontFamily: Neon.font,
-                                fontWeight: FontWeight.w400,
-                                fontSize: 13,
-                                color: onSurface.withValues(alpha: 0.7),
-                              ),
-                            ),
+                    // Top glossy highlight
+                    Positioned(
+                      top: 3,
+                      left: 6,
+                      right: 6,
+                      height: 16,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.white.withValues(alpha: 0.38),
+                              Colors.white.withValues(alpha: 0.0),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ],
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          icon,
+                          size: 28,
+                          color: swatch.nameColor,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${index + 1}'.padLeft(2, '0'),
+                          style: TextStyle(
+                            fontFamily: Neon.font,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 11,
+                            height: 1.0,
+                            color: swatch.nameColor.withValues(alpha: 0.85),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),

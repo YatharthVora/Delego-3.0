@@ -49,7 +49,7 @@ android {
     defaultConfig {
         applicationId "com.munsocietympstme.delego" // Your application's ID
         minSdkVersion flutter.minSdkVersion.toInteger()
-        targetSdkVersion 35
+        targetSdkVersion 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }

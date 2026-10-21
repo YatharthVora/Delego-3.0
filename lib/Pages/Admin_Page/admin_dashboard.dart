@@ -19,7 +19,7 @@ class AdminDashboard extends StatefulWidget {
 
 class _AdminDashboardState extends State<AdminDashboard> {
   final _email = TextEditingController();
-  String _role = 'oc';
+  String _role = 'delegate';
   bool _busy = false;
 
   @override

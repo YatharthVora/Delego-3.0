@@ -45,12 +45,13 @@ final List<_Guide> _guides = [
     Agenda('Agenda 1'), // e.g. Agenda('Agenda 1', asset: 'assets/pdfs/CCC_1.pdf')
     Agenda('Agenda 2'), // e.g. Agenda('Agenda 2', url: 'https://...')
   ]),
-  _Guide('WTO', '$_dir/wto.webp', const [Agenda('WTO')]),
-  _Guide('PSC', '$_dir/psc.webp', const [Agenda('PSC')]),
+  _Guide('WTO', '$_dir/wto.webp', const [Agenda('WTO', asset: 'assets/pdfs/WTO.pdf')]),
+  _Guide('PSC', '$_dir/psc.webp', const [Agenda('PSC', asset: 'assets/pdfs/PSC.pdf')]),
   _Guide('UNODC', '$_dir/unodc.webp', [Agenda('UNODC', page: () => UnodcPdfviewer())]),
   _Guide('UNICEF', '$_dir/unicef.webp', const [Agenda('UNICEF')]),
-  _Guide('ECOSOC', '$_dir/ecosoc.webp', const [Agenda('ECOSOC')]),
+  _Guide('ECOSOC', '$_dir/ecosoc.webp', const [Agenda('ECOSOC', asset: 'assets/pdfs/ECOSOC.pdf')]),
   _Guide('IPC', '$_dir/ipc.webp', [Agenda('IPC', page: () => IpcPdfviewer())]),
+  _Guide('DISEC', '$_dir/disec.webp', const [Agenda('DISEC')]),
 ];
 
 void _soon(BuildContext context, String title) {
@@ -71,8 +72,16 @@ class _GenericPdfViewer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: Text(agenda.title)),
+      appBar: AppBar(
+        backgroundColor: scheme.primary,
+        centerTitle: true,
+        title: Text(
+          agenda.title,
+          style: TextStyle(color: scheme.onPrimary),
+        ),
+      ),
       body: agenda.asset != null
           ? SfPdfViewer.asset(agenda.asset!)
           : SfPdfViewer.network(agenda.url!),
