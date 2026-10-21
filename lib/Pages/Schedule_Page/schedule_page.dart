@@ -159,7 +159,7 @@ class _SchedulePageState extends State<SchedulePage> {
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           iconTheme: IconThemeData(color: scheme.onPrimary),
-          backgroundColor: const Color(0xFFFF2BB4),
+          backgroundColor: const Color(0xFFEE1C9C),
           centerTitle: true,
           title: Text(
             "Schedule",
@@ -209,7 +209,7 @@ class GradientAppBar extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      color: const Color(0xFFFF2BB4),
+      color: const Color(0xFFEE1C9C),
       height: barHeight,
       child: Center(
         child: Text(

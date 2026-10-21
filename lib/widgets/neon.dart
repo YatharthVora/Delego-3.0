@@ -7,12 +7,12 @@ class Neon {
   static const black = Color(0xFF0A0A0A); // matte black, dark-mode surface
   static const navy = Color(0xFF080824);
   static const navy2 = Color(0xFF12123A);
-  static const blue = Color(0xFF2342FF);
-  static const lime = Color(0xFFB6FF1A);
-  static const pink = Color(0xFFF01DB0);
+  static const blue = Color(0xFF005CFF);
+  static const lime = Color(0xFFBFFF00);
+  static const pink = Color(0xFFEE1C9C);
   static const yellow = Color(0xFFFFF21A);
   static const orange = Color(0xFFFF4A22);
-  static const green = Color(0xFF22C98A);
+  static const green = Color(0xFF159555);
   static const cyan = Color(0xFF2AF5E0);
   static const violet = Color(0xFF7A1BFF);
 
@@ -206,7 +206,7 @@ class HeroBanner extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFFF2BB4), Color(0xFFB0239B), Color(0xFF4A3358)],
+            colors: [Color(0xFFEE1C9C), Color(0xFFEE1C9C)],
           ),
           boxShadow: [
             BoxShadow(
@@ -406,28 +406,28 @@ class NeonSwatch {
 const kSwatches = <NeonSwatch>[
   // lime / orange
   NeonSwatch(
-    colors: [Color(0xFFD9FF1F), Color(0xFF8BC400)],
+    colors: [Color(0xFFBFFF00), Color(0xFFBFFF00)],
     accent: Neon.orange,
     eye: Color(0xFFE5400F),
     nameColor: Color(0xFF1A1A1A),
   ),
   // pink / yellow
   NeonSwatch(
-    colors: [Color(0xFFFF2BB4), Color(0xFFB51E9A)],
+    colors: [Color(0xFFEE1C9C), Color(0xFFEE1C9C)],
     accent: Neon.yellow,
     eye: Color(0xFFB51E9A),
     nameColor: Colors.white,
   ),
   // blue / lime
   NeonSwatch(
-    colors: [Color(0xFF2F55FF), Color(0xFF1226A8)],
+    colors: [Color(0xFF005CFF), Color(0xFF005CFF)],
     accent: Neon.lime,
     eye: Color(0xFF1F3FE0),
     nameColor: Colors.white,
   ),
   // green / cyan
   NeonSwatch(
-    colors: [Color(0xFF22D38F), Color(0xFF1B8F63)],
+    colors: [Color(0xFF159555), Color(0xFF159555)],
     accent: Neon.cyan,
     eye: Color(0xFF14805A),
     nameColor: Colors.white,

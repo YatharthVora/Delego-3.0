@@ -67,7 +67,7 @@ class _SponsorMarqueeState extends State<SponsorMarquee>
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: sponsor.scale > 1.2
-                ? const Color(0xFFFF2BB4)
+                ? const Color(0xFFEE1C9C)
                 : Colors.white.withValues(alpha: 0.18),
             width: sponsor.scale > 1.2 ? 1.8 : 1.0,
           ),

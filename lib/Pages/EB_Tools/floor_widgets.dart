@@ -23,17 +23,17 @@ class FloorColourway {
       );
 
   static const pink = FloorColourway(
-    [Color(0xFFFF2BB4), Color(0xFFD6148C)],
+    [Color(0xFFEE1C9C), Color(0xFFEE1C9C)],
     [0.0, 1.0],
     Color(0xFFFFFD2A),
   );
   static const blue = FloorColourway(
-    [Color(0xFF005CFF), Color(0xFF0043C2)],
+    [Color(0xFF005CFF), Color(0xFF005CFF)],
     [0.0, 1.0],
-    Color(0xFFA9FF48),
+    Color(0xFFBFFF00),
   );
   static const green = FloorColourway(
-    [Color(0xFF20BA6D), Color(0xFF159555)],
+    [Color(0xFF159555), Color(0xFF159555)],
     [0.0, 1.0],
     Color(0xFF27FFFF),
   );

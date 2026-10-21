@@ -80,7 +80,7 @@ class _MyDrawerState extends State<MyDrawer> {
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFFFF2BB4), Color(0xFF7A1BFF)],
+                  colors: [Color(0xFFEE1C9C), Color(0xFFEE1C9C)],
                 ),
               ),
               child: Column(

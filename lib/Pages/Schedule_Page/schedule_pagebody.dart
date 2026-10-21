@@ -174,16 +174,7 @@ class _WindingRoadPainter extends CustomPainter {
       ..strokeWidth = 34
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
-      ..shader = const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFFFF2BB4),
-          Color(0xFF2F55FF),
-          Color(0xFF22D38F),
-          Color(0xFFD9FF1F),
-        ],
-      ).createShader(Offset.zero & size);
+      ..color = const Color(0xFFEE1C9C);
     canvas.drawPath(path, curbPaint);
 
     // 3. Inner road surface

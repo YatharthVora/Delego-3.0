@@ -124,49 +124,24 @@ class _RoomPageState extends State<RoomPage> {
 
   static const List<({List<Color> colors, Color fg, Color accent})> _palettes = [
     (
-      colors: [Color(0xFFD9FF1F), Color(0xFF8BC400)],
+      colors: [Color(0xFFBFFF00), Color(0xFFBFFF00)],
       fg: Color(0xFF111111),
       accent: Neon.orange,
     ),
     (
-      colors: [Color(0xFF2F55FF), Color(0xFF1226A8)],
+      colors: [Color(0xFF005CFF), Color(0xFF005CFF)],
       fg: Colors.white,
       accent: Neon.lime,
     ),
     (
-      colors: [Color(0xFF22D38F), Color(0xFF1B8F63)],
-      fg: Colors.white,
-      accent: Neon.yellow,
-    ),
-    (
-      colors: [Color(0xFFFF2BB4), Color(0xFFB51E9A)],
-      fg: Colors.white,
-      accent: Neon.yellow,
-    ),
-    (
-      colors: [Color(0xFF7A1BFF), Color(0xFF3E0CA8)],
+      colors: [Color(0xFF159555), Color(0xFF159555)],
       fg: Colors.white,
       accent: Neon.cyan,
     ),
     (
-      colors: [Color(0xFFFF4A22), Color(0xFFB82305)],
+      colors: [Color(0xFFEE1C9C), Color(0xFFEE1C9C)],
       fg: Colors.white,
       accent: Neon.yellow,
-    ),
-    (
-      colors: [Color(0xFF2AF5E0), Color(0xFF0E9F90)],
-      fg: Color(0xFF080824),
-      accent: Neon.navy,
-    ),
-    (
-      colors: [Color(0xFFFFF21A), Color(0xFFD4A800)],
-      fg: Color(0xFF111111),
-      accent: Neon.pink,
-    ),
-    (
-      colors: [Color(0xFF1E3A8A), Color(0xFF0F172A)],
-      fg: Colors.white,
-      accent: Neon.cyan,
     ),
   ];
 
@@ -343,7 +318,7 @@ class _RoomPageState extends State<RoomPage> {
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFF2BB4),
+        backgroundColor: const Color(0xFFEE1C9C),
         foregroundColor: scheme.onPrimary,
         iconTheme: IconThemeData(color: scheme.onPrimary),
         centerTitle: true,
