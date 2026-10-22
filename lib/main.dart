@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,8 +13,11 @@ import 'Theme/theme_controller.dart';
 
 // MUNDRA access layer
 import 'api/api_client.dart';
+import 'api/app_update_check.dart';
 import 'api/scan_queue.dart';
 import 'auth/capabilities.dart';
+import 'models/app_update.dart';
+import 'widgets/update_prompt.dart';
 import 'package:delego/constants/backend.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -58,6 +63,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   bool showLaunchScreen = true;
   bool? isLoggedIn;
 
+  // "Please update" prompt, driven by the server's /public/app_config.
+  final _updates = AppUpdateCheck();
+  Future<UpdatePrompt?>? _pendingUpdate;
+  bool _updatePromptOpen = false;
+
   @override
   void initState() {
     super.initState();
@@ -68,6 +78,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // 401: token expired (12h) or invalid -> back to login.
     widget.api.onUnauthorized = _handleUnauthorized;
 
+    // Ask during the splash; shown once the splash is gone.
+    _pendingUpdate = _updates.check();
     _initializeApp();
   }
 
@@ -77,12 +89,45 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  // Re-read permissions whenever the app comes back to the foreground.
+  // Re-read permissions (and whether an update is needed) whenever the app
+  // comes back to the foreground.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && isLoggedIn == true) {
+    if (state != AppLifecycleState.resumed) return;
+    if (isLoggedIn == true) {
       widget.caps.refresh().catchError((_) {});
     }
+    if (!showLaunchScreen) {
+      _pendingUpdate = _updates.check();
+      _showUpdatePrompt();
+    }
+  }
+
+  Future<void> _showUpdatePrompt() async {
+    final pending = _pendingUpdate;
+    _pendingUpdate = null;
+    if (pending == null || _updatePromptOpen) return;
+    final prompt = await pending;
+    if (prompt == null || !mounted || _updatePromptOpen) return;
+
+    // After the next frame, so the dialog sits on top of Login/Home.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final context = navigatorKey.currentContext;
+      if (context == null || _updatePromptOpen) return;
+      _updatePromptOpen = true;
+      // Once per version, whichever way it's closed (or if the app is killed
+      // with it open).
+      unawaited(_updates.markSeen(prompt));
+      await showUpdatePrompt(context, prompt);
+      _updatePromptOpen = false;
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
+  void _hideLaunchScreen() {
+    if (!mounted || !showLaunchScreen) return;
+    setState(() => showLaunchScreen = false);
+    _showUpdatePrompt();
   }
 
   void _handleUnauthorized() {
@@ -124,10 +169,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     });
 
     // Keep splash for 3 seconds
-    Future.delayed(const Duration(seconds: 3), () {
-      if (!mounted) return;
-      setState(() => showLaunchScreen = false);
-    });
+    Future.delayed(const Duration(seconds: 3), _hideLaunchScreen);
   }
 
   @override
@@ -158,10 +200,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     );
   }
 
-  void _onLaunchComplete() {
-    if (!mounted) return;
-    setState(() => showLaunchScreen = false);
-  }
+  void _onLaunchComplete() => _hideLaunchScreen();
 }
 
 // ---------------------------------------------------------------------------

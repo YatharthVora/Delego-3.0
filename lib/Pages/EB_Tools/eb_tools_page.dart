@@ -270,6 +270,11 @@ class _StatusStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    // Copied from the theme's label style so the segments keep the brand font.
+    final segmentText = Theme.of(context)
+        .textTheme
+        .labelLarge
+        ?.copyWith(fontSize: 18, fontWeight: FontWeight.w700);
     return MediaQuery.withClampedTextScaling(
       maxScaleFactor: 1.3,
       child: ListenableBuilder(
@@ -305,23 +310,41 @@ class _StatusStrip extends StatelessWidget {
                       Tooltip(
                         message: 'What the smartboard shows',
                         child: Icon(Icons.tv,
-                            size: 18, color: scheme.onSurfaceVariant),
+                            size: 24, color: scheme.onSurfaceVariant),
                       ),
                       // The label only where there is room (narrow phones, large text).
                       if (MediaQuery.sizeOf(context).width >= 400) ...[
                         const SizedBox(width: 8),
                         Text('On screen',
-                            style: TextStyle(color: scheme.onSurfaceVariant)),
+                            style: TextStyle(
+                                color: scheme.onSurfaceVariant,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700)),
                       ],
                       const SizedBox(width: 12),
                       Expanded(
                         child: SegmentedButton<String>(
                           showSelectedIcon: false,
-                          style: const ButtonStyle(
-                              visualDensity: VisualDensity.compact),
+                          // 48 high: 1.5x the compact 32. Standard density so desktop's
+                          // compact default doesn't shrink it again.
+                          style: ButtonStyle(
+                            visualDensity: VisualDensity.standard,
+                            minimumSize: const WidgetStatePropertyAll(
+                                Size.fromHeight(48)),
+                            textStyle: WidgetStatePropertyAll(segmentText),
+                          ),
                           segments: [
                             for (final e in kFloorViewLabels.entries)
-                              ButtonSegment(value: e.key, label: Text(e.value)),
+                              ButtonSegment(
+                                value: e.key,
+                                // Shrinks rather than clips on a narrow phone with large
+                                // text. One line: the capsule takes its height from the
+                                // label's, and a wrapping label would make it taller.
+                                label: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(e.value,
+                                        maxLines: 1, softWrap: false)),
+                              ),
                           ],
                           selected: {s.display},
                           onSelectionChanged: client.connected
