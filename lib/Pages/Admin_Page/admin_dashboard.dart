@@ -28,8 +28,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
     super.dispose();
   }
 
-  String _label(String role) =>
-      kRoles.firstWhere((r) => r.value == role, orElse: () => (value: role, label: role)).label;
+  String _label(String role) => kRoles
+      .firstWhere((r) => r.value == role,
+          orElse: () => (value: role, label: role))
+      .label;
 
   void _say(String text, {bool error = false}) {
     final scheme = Theme.of(context).colorScheme;
@@ -85,49 +87,77 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
     return Scaffold(
       appBar: AppBar(centerTitle: false, title: const Text('USER ROLES')),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-        children: [
-          Text(
-            'Give someone a role. They need to have registered first. '
-            'You cannot change your own role, and the last admin cannot be demoted.',
-            style: TextStyle(color: scheme.onSurface.withValues(alpha: 0.7)),
-          ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _email,
-            keyboardType: TextInputType.emailAddress,
-            autocorrect: false,
-            textInputAction: TextInputAction.done,
-            decoration: const InputDecoration(labelText: 'User email'),
-          ),
-          const SizedBox(height: 14),
-          DropdownButtonFormField<String>(
-            initialValue: _role,
-            decoration: const InputDecoration(labelText: 'Role'),
-            items: [
-              for (final r in kRoles)
-                DropdownMenuItem(value: r.value, child: Text(r.label)),
-            ],
-            onChanged: (v) => setState(() => _role = v ?? _role),
-          ),
-          const SizedBox(height: 22),
-          SizedBox(
-            height: 54,
-            child: FilledButton(
-              onPressed: _busy ? null : _apply,
-              child: _busy
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2.5),
-                    )
-                  : Text('UPDATE ROLE',
-                      style: Neon.label(scheme.onPrimary, size: 14, spacing: 1)),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final horizontalPadding =
+              (constraints.maxWidth * 0.05).clamp(16.0, 20.0);
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640),
+              child: ListView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  8,
+                  horizontalPadding,
+                  32 + MediaQuery.viewInsetsOf(context).bottom,
+                ),
+                children: [
+                  Text(
+                    'Give someone a role. They need to have registered first. '
+                    'You cannot change your own role, and the last admin cannot be demoted.',
+                    style: TextStyle(
+                        color: scheme.onSurface.withValues(alpha: 0.7)),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: _email,
+                    keyboardType: TextInputType.emailAddress,
+                    autocorrect: false,
+                    textInputAction: TextInputAction.done,
+                    decoration: const InputDecoration(labelText: 'User email'),
+                  ),
+                  const SizedBox(height: 14),
+                  DropdownButtonFormField<String>(
+                    initialValue: _role,
+                    isExpanded: true,
+                    decoration: const InputDecoration(labelText: 'Role'),
+                    items: [
+                      for (final r in kRoles)
+                        DropdownMenuItem(
+                          value: r.value,
+                          child: Text(
+                            r.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                    ],
+                    onChanged: (v) => setState(() => _role = v ?? _role),
+                  ),
+                  const SizedBox(height: 22),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(54),
+                    ),
+                    onPressed: _busy ? null : _apply,
+                    child: _busy
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2.5),
+                          )
+                        : Text('UPDATE ROLE',
+                            style: Neon.label(scheme.onPrimary,
+                                size: 14, spacing: 1)),
+                  ),
+                  const HospitalitySection(),
+                ],
+              ),
             ),
-          ),
-          const HospitalitySection(),
-        ],
+          );
+        },
       ),
     );
   }
