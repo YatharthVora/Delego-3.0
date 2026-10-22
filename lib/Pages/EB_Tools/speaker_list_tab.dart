@@ -55,9 +55,14 @@ class _SpeakerListTabState extends State<SpeakerListTab>
   final _focus = FocusNode();
   TabController? _tabs;
 
-  // Reorders show at once; the server's next state replaces this.
+  // Reorders show at once; once every move has had its reply, the server's state (which
+  // the smartboard shows too) replaces this.
   List<FloorEntry>? _localOrder;
-  int? _localOrderVersion;
+
+  /// Moves go to the server one at a time, in the order they were made, so two quick
+  /// drags can't arrive swapped and leave the list (and the board) in another order.
+  Future<void> _moves = Future<void>.value();
+  int _movesPending = 0;
 
   /// Controls whose op is in flight, so a double tap can't send it twice (two Nexts, a
   /// Pause that turns into a Resume, a second remove landing on the row that moved up).
@@ -88,6 +93,13 @@ class _SpeakerListTabState extends State<SpeakerListTab>
       _tabs?.removeListener(_onTab);
       _tabs = tabs?..addListener(_onTab);
     }
+  }
+
+  @override
+  void didUpdateWidget(SpeakerListTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Another committee: an order from the last one must not show over it.
+    if (oldWidget.client != widget.client) _localOrder = null;
   }
 
   // The tabs are kept alive, so a hidden tab's search field would keep the keyboard:
@@ -254,14 +266,28 @@ class _SpeakerListTabState extends State<SpeakerListTab>
     order.insert(newIndex, entry);
     setState(() {
       _localOrder = order;
-      _localOrderVersion = _client.state?.version;
+      _movesPending++;
     });
-    sendOp(context, _client, {
-      'op': 'move',
-      'list': _list,
-      'entry_id': entry.id,
-      'to_index': newIndex,
-    });
+    // catchError keeps the chain alive: a failed future would skip every later move.
+    _moves = _moves
+        .then((_) => _sendMove(entry, newIndex))
+        .catchError((Object _) {});
+  }
+
+  Future<void> _sendMove(FloorEntry entry, int toIndex) async {
+    try {
+      if (!mounted) return;
+      // A failure shows the reason; the list then falls back to the server's order.
+      await sendOp(context, _client, {
+        'op': 'move',
+        'list': _list,
+        'entry_id': entry.id,
+        'to_index': toIndex,
+      });
+    } finally {
+      _movesPending--;
+      if (_movesPending == 0 && mounted) setState(() => _localOrder = null);
+    }
   }
 
   Future<void> _clear() async {
@@ -338,7 +364,6 @@ class _SpeakerListTabState extends State<SpeakerListTab>
       builder: (context, _) {
         final s = _client.state;
         if (s == null) return const Center(child: CircularProgressIndicator());
-        if (_localOrderVersion != s.version) _localOrder = null;
         final entries = _localOrder ?? s.list(_list).entries;
         final enabled = _client.connected;
         // Large accessibility text is honoured up to 1.3x here, beyond which the panel
@@ -388,9 +413,6 @@ class _SpeakerListTabState extends State<SpeakerListTab>
                 textInputAction: TextInputAction.done,
                 decoration: InputDecoration(
                   labelText: 'Add a portfolio',
-                  hintText: _hasMatrix
-                      ? 'Tap to see the matrix, or type a few letters'
-                      : 'Type a few letters: "fra", "usa", "kor"…',
                   helperText: widget.matrixUnavailable
                       ? "Couldn't load the committee's matrix: showing all countries"
                       : null,
@@ -492,7 +514,8 @@ class _SpeakerListTabState extends State<SpeakerListTab>
     return ReorderableListView.builder(
       padding: const EdgeInsets.only(bottom: 8),
       itemCount: entries.length,
-      buildDefaultDragHandles: enabled,
+      // Our own: the two-bar handle drags at once, a long press anywhere on the row too.
+      buildDefaultDragHandles: false,
       onReorderItem: (a, b) => _reorder(entries, a, b),
       itemBuilder: (context, i) {
         final e = entries[i];
@@ -500,45 +523,75 @@ class _SpeakerListTabState extends State<SpeakerListTab>
         return Padding(
           key: ValueKey(e.id),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-          child: Material(
-            color: isCurrent
-                ? scheme.secondaryContainer
-                : scheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(12),
-            child: ListTile(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              leading: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: 28,
-                    child: Text(
-                      '${i + 1}',
-                      textAlign: TextAlign.right,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontFeatures: [FontFeature.tabularFigures()],
+          child: ReorderableDelayedDragStartListener(
+            index: i,
+            enabled: enabled,
+            child: Material(
+              color: isCurrent
+                  ? scheme.secondaryContainer
+                  : scheme.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(12),
+              child: ListTile(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                contentPadding:
+                    const EdgeInsetsDirectional.only(start: 16, end: 4),
+                leading: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 28,
+                      child: Text(
+                        '${i + 1}',
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  PortfolioFlag(code: e.code, tag: e.tag),
-                ],
-              ),
-              title: Text(
-                e.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w700),
-              ),
-              subtitle:
-                  isCurrent ? Text(timing ? 'Speaking' : 'Up next') : null,
-              trailing: IconButton(
-                tooltip: 'Remove',
-                icon: const Icon(Icons.close),
-                onPressed:
-                    enabled && !_isBusy('remove') ? () => _remove(e, i) : null,
+                    const SizedBox(width: 12),
+                    PortfolioFlag(code: e.code, tag: e.tag),
+                  ],
+                ),
+                title: Text(
+                  e.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle:
+                    isCurrent ? Text(timing ? 'Speaking' : 'Up next') : null,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      tooltip: 'Remove',
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.close),
+                      onPressed: enabled && !_isBusy('remove')
+                          ? () => _remove(e, i)
+                          : null,
+                    ),
+                    // No tooltip: a tooltip's long press would fight the drag.
+                    ReorderableDragStartListener(
+                      index: i,
+                      enabled: enabled,
+                      child: Semantics(
+                        label: 'Drag to reorder',
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Icon(
+                            Icons.drag_handle,
+                            color: enabled
+                                ? null
+                                : scheme.onSurface.withValues(alpha: 0.38),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
