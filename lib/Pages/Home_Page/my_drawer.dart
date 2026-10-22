@@ -12,14 +12,9 @@ import 'package:delego/auth/permission_gate.dart';
 import 'package:delego/widgets/neon.dart';
 
 class MyDrawer extends StatefulWidget {
-  final void Function()? onProfileTap;
   final void Function()? onSignoutTap;
 
-  const MyDrawer({
-    Key? key,
-    required this.onProfileTap,
-    required this.onSignoutTap,
-  }) : super(key: key);
+  const MyDrawer({super.key, required this.onSignoutTap});
 
   @override
   State<MyDrawer> createState() => _MyDrawerState();
@@ -111,11 +106,6 @@ class _MyDrawerState extends State<MyDrawer> {
                     icon: Icons.home,
                     text: 'HOME',
                     onTap: () => Navigator.pop(context),
-                  ),
-                  MyListTile(
-                    icon: Icons.person,
-                    text: 'SETTINGS',
-                    onTap: widget.onProfileTap,
                   ),
                   MyListTile(
                     icon: Icons.handshake,

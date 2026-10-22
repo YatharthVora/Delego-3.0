@@ -19,7 +19,8 @@ class Neon {
   static const font = 'Inter';
 
   /// Wide, tracked, heavy label used on cards and section tags.
-  static TextStyle label(Color color, {double size = 16, double spacing = 0.6}) =>
+  static TextStyle label(Color color,
+          {double size = 16, double spacing = 0.6}) =>
       TextStyle(
         fontFamily: font,
         fontWeight: FontWeight.w700,
@@ -55,7 +56,8 @@ class GridPainter extends CustomPainter {
 
 /// Scattered outlined rings (the "o o o" dot motif).
 class RingsPainter extends CustomPainter {
-  RingsPainter({required this.color, this.count = 26, this.seed = 1, this.radius = 3.4});
+  RingsPainter(
+      {required this.color, this.count = 26, this.seed = 1, this.radius = 3.4});
   final Color color;
   final int count;
   final int seed;
@@ -134,51 +136,75 @@ class NeonCard extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(24),
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: CustomPaint(
-                      painter: GridPainter(color: Colors.black.withValues(alpha: 0.10)),
-                    ),
-                  ),
-                  if (iconAsset != null)
-                    Positioned(
-                      right: 14,
-                      bottom: 14,
-                      child: Image.asset(
-                        iconAsset!,
-                        width: wide ? 54 : 72,
-                        height: wide ? 54 : 72,
-                        color: Colors.black.withValues(alpha: 0.55),
-                        colorBlendMode: BlendMode.srcIn,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final iconSize = math.min(
+                    wide ? 54.0 : 72.0,
+                    math.max(36.0, constraints.maxWidth * 0.22),
+                  );
+                  final labelSize = math.min(
+                    wide ? 18.0 : 17.0,
+                    math.max(14.0, constraints.maxWidth * 0.1),
+                  );
+                  final displayLabel = label.toUpperCase();
+                  final hasManualLineBreak = displayLabel.contains('\n');
+                  return Stack(
+                    children: [
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: GridPainter(
+                              color: Colors.black.withValues(alpha: 0.10)),
+                        ),
                       ),
-                    ),
-                  // Rings stay strictly behind the icon (bottom-right) so they
-                  // never overlap the label text.
-                  Positioned(
-                    right: 8,
-                    bottom: 8,
-                    width: wide ? 76 : 86,
-                    height: wide ? 68 : 82,
-                    child: CustomPaint(
-                      painter: RingsPainter(
-                        color: labelColor.withValues(alpha: 0.55),
-                        count: wide ? 6 : 8,
-                        seed: seed,
+                      if (iconAsset != null)
+                        Positioned(
+                          right: 14,
+                          bottom: 14,
+                          child: Image.asset(
+                            iconAsset!,
+                            width: iconSize,
+                            height: iconSize,
+                            color: Colors.black.withValues(alpha: 0.55),
+                            colorBlendMode: BlendMode.srcIn,
+                          ),
+                        ),
+                      Positioned(
+                        right: 8,
+                        bottom: 8,
+                        width: iconSize + 22,
+                        height: iconSize + 14,
+                        child: CustomPaint(
+                          painter: RingsPainter(
+                            color: labelColor.withValues(alpha: 0.55),
+                            count: wide ? 6 : 8,
+                            seed: seed,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                    child: Align(
-                      alignment: wide ? Alignment.centerLeft : Alignment.topLeft,
-                      child: Text(
-                        label.toUpperCase(),
-                        style: Neon.label(labelColor, size: wide ? 18 : 17),
+                      Positioned.fill(
+                        left: 16,
+                        top: wide ? 8 : 16,
+                        right: wide ? iconSize + 26 : 16,
+                        bottom: wide ? 8 : 16,
+                        child: Align(
+                          alignment:
+                              wide ? Alignment.centerLeft : Alignment.topLeft,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment:
+                                wide ? Alignment.centerLeft : Alignment.topLeft,
+                            child: Text(
+                              displayLabel,
+                              maxLines: hasManualLineBreak ? 2 : 1,
+                              softWrap: false,
+                              style: Neon.label(labelColor, size: labelSize),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ],
+                    ],
+                  );
+                },
               ),
             ),
           ),
@@ -218,82 +244,104 @@ class HeroBanner extends StatelessWidget {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(28),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: GridPainter(
-                      color: Colors.black.withValues(alpha: 0.12), step: 10),
-                ),
-              ),
-              // Zoomed crop of the banner: show only its rightmost part.
-              Positioned(
-                right: 0,
-                top: 0,
-                bottom: 0,
-                width: 270,
-                child: ShaderMask(
-                  blendMode: BlendMode.dstIn,
-                  shaderCallback: (rect) => const LinearGradient(
-                    colors: [Colors.transparent, Colors.black],
-                    stops: [0, 0.3],
-                  ).createShader(rect),
-                  child: ClipRect(
-                    child: Align(
-                      alignment: Alignment.bottomRight,
-                      child: Image.asset(
-                        'assets/images/banner_2026.webp',
-                        height: height * 1.12,
-                        fit: BoxFit.fitHeight,
-                        alignment: Alignment.bottomRight,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final imageWidth = math.min(270.0, constraints.maxWidth * 0.72);
+              final textWidth = constraints.maxWidth * 0.78;
+              return Stack(
+                children: [
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: GridPainter(
+                          color: Colors.black.withValues(alpha: 0.12),
+                          step: 10),
+                    ),
+                  ),
+                  // Zoomed crop of the banner: show only its rightmost part.
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: imageWidth,
+                    child: ShaderMask(
+                      blendMode: BlendMode.dstIn,
+                      shaderCallback: (rect) => const LinearGradient(
+                        colors: [Colors.transparent, Colors.black],
+                        stops: [0, 0.3],
+                      ).createShader(rect),
+                      child: ClipRect(
+                        child: Align(
+                          alignment: Alignment.bottomRight,
+                          child: Image.asset(
+                            'assets/images/banner_2026.webp',
+                            height: height * 1.12,
+                            fit: BoxFit.fitHeight,
+                            alignment: Alignment.bottomRight,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(22, 0, 22, 22),
-                child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text('MUMBAI MUN',
-                            maxLines: 1,
-                            style: Neon.label(Neon.yellow, size: 28, spacing: 2)),
-                      ),
-                      const SizedBox(height: 2),
-                      const Text(
-                        '2026',
-                        style: TextStyle(
-                          fontFamily: Neon.font,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 40,
-                          height: 1,
-                          letterSpacing: -0.5,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'AN AXIOM APART',
-                        style: Neon.label(Colors.white, size: 14.5, spacing: 2.5)
-                            .copyWith(
-                          fontWeight: FontWeight.w600,
-                          shadows: const [
-                            Shadow(color: Color(0x66000000), blurRadius: 4),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(22, 0, 22, 22),
+                    child: Align(
+                      alignment: Alignment.bottomLeft,
+                      child: SizedBox(
+                        width: textWidth,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text('MUMBAI MUN',
+                                  maxLines: 1,
+                                  style: Neon.label(Neon.yellow,
+                                      size: 28, spacing: 2)),
+                            ),
+                            const SizedBox(height: 2),
+                            const FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '2026',
+                                style: TextStyle(
+                                  fontFamily: Neon.font,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 40,
+                                  height: 1,
+                                  letterSpacing: -0.5,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'AN AXIOM APART',
+                                style: Neon.label(Colors.white,
+                                        size: 14.5, spacing: 2.5)
+                                    .copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  shadows: const [
+                                    Shadow(
+                                        color: Color(0x66000000),
+                                        blurRadius: 4),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            ],
+                ],
+              );
+            },
           ),
         ),
       ),
