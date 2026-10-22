@@ -37,6 +37,10 @@ class FakeFloor extends FloorClient {
   };
   int v = 1;
   int n = 0;
+
+  /// How long each move takes to reach the "server", in turn (then 50 ms).
+  final List<Duration> moveDelays = [];
+  final List<Map<String, dynamic>> moves = [];
   FloorState make() => FloorState.fromJson({
         'version': v,
         'updated_by': null,
@@ -50,7 +54,16 @@ class FakeFloor extends FloorClient {
   @override
   Future<FloorOpResult> send(Map<String, dynamic> op) async {
     ops.add(op['op'] as String);
-    await Future<void>.delayed(const Duration(milliseconds: 50));
+    await Future<void>.delayed(op['op'] == 'move' && moveDelays.isNotEmpty
+        ? moveDelays.removeAt(0)
+        : const Duration(milliseconds: 50));
+    if (op['op'] == 'move') {
+      // As the server does it (floor.apply_op): take it out, insert at to_index.
+      moves.add(op);
+      final i = gsl.indexWhere((e) => e['id'] == op['entry_id']);
+      final entry = gsl.removeAt(i);
+      gsl.insert((op['to_index'] as int).clamp(0, gsl.length).toInt(), entry);
+    }
     final now = DateTime.now().millisecondsSinceEpoch;
     if (op['op'] == 'start_speaker' && gsl.isNotEmpty) {
       timer = {
@@ -354,6 +367,170 @@ void main() {
     expect(c.ops.where((o) => o == 'pause').length, 1);
     expect(c.ops.where((o) => o == 'start_speaker').length, 1);
     c.dispose();
+  });
+
+  testWidgets('the search box has no placeholder', (t) async {
+    await t.pumpWidget(app(FakeFloor()));
+    await t.tap(find.byType(TextField));
+    await t.pumpAndSettle();
+    expect(t.widget<TextField>(find.byType(TextField)).decoration?.hintText,
+        isNull);
+  });
+
+  group('reordering', () {
+    // A phone, so every row is on screen.
+    FakeFloor withSpeakers(WidgetTester t, List<String> names) {
+      t.view.physicalSize = const Size(402, 874) * 3;
+      t.view.devicePixelRatio = 3;
+      addTearDown(t.view.reset);
+      final c = FakeFloor();
+      for (final name in names) {
+        c.gsl.add({'id': name, 'name': name, 'code': null});
+      }
+      c.state = c.make();
+      return c;
+    }
+
+    List<String> shown(WidgetTester t) => [
+          for (final tile in t.widgetList<ListTile>(find.descendant(
+              of: find.byType(ReorderableListView),
+              matching: find.byType(ListTile))))
+            (tile.title! as Text).data!,
+        ];
+
+    double rowHeight(WidgetTester t) =>
+        t.getSize(find.byType(ListTile).first).height + 6; // + the row padding
+
+    /// Drag from [from] by [dy], a step at a time, as a finger does.
+    Future<void> drag(WidgetTester t, Finder from, double dy,
+        {Duration hold = Duration.zero}) async {
+      final g = await t.startGesture(t.getCenter(from));
+      if (hold > Duration.zero) await t.pump(hold);
+      for (var i = 0; i < 10; i++) {
+        await g.moveBy(Offset(0, dy / 10));
+        await t.pump(const Duration(milliseconds: 16));
+      }
+      await g.up();
+      for (var i = 0; i < 30; i++) {
+        await t.pump(const Duration(milliseconds: 16)); // the drop animation
+      }
+    }
+
+    testWidgets('every row has a two-bar handle', (t) async {
+      final c = withSpeakers(t, ['India', 'Brazil', 'Chile']);
+      await t.pumpWidget(app(c));
+      expect(find.byIcon(Icons.drag_handle), findsNWidgets(3));
+      expect(t.takeException(), isNull);
+    });
+
+    testWidgets('dragging the handle moves the speaker on the server',
+        (t) async {
+      final c = withSpeakers(t, ['India', 'Brazil', 'Chile']);
+      await t.pumpWidget(app(c));
+      await drag(t, find.byIcon(Icons.drag_handle).first, rowHeight(t) * 0.9);
+      await t.pumpAndSettle();
+      expect(c.moves.single['entry_id'], 'India');
+      expect(c.moves.single['to_index'], 1);
+      // The server's order (what the smartboard shows) and the phone agree.
+      expect(c.gsl.map((e) => e['name']), ['Brazil', 'India', 'Chile']);
+      expect(shown(t), ['Brazil', 'India', 'Chile']);
+    });
+
+    testWidgets('a long press on the row still drags', (t) async {
+      final c = withSpeakers(t, ['India', 'Brazil', 'Chile']);
+      await t.pumpWidget(app(c));
+      await drag(t, find.text('Chile'), -rowHeight(t) * 2.5,
+          hold: const Duration(milliseconds: 700));
+      await t.pumpAndSettle();
+      expect(c.gsl.map((e) => e['name']), ['Chile', 'India', 'Brazil']);
+    });
+
+    testWidgets('two quick moves reach the server in the order they were made',
+        (t) async {
+      final c = withSpeakers(t, ['A', 'B', 'C', 'D']);
+      // The first move is slow to arrive, the second fast: sent side by side, the
+      // second would land first and the server would end up in another order.
+      c.moveDelays.addAll(
+          [const Duration(seconds: 2), const Duration(milliseconds: 10)]);
+      await t.pumpWidget(app(c));
+      final h = rowHeight(t);
+      await drag(t, find.byIcon(Icons.drag_handle).first, h * 0.9); // B A C D
+      expect(shown(t), ['B', 'A', 'C', 'D'], reason: 'shown at once');
+      await drag(t, find.byIcon(Icons.drag_handle).last, -h * 3.5); // D B A C
+      expect(shown(t), ['D', 'B', 'A', 'C']);
+      expect(c.moves, hasLength(0), reason: 'the first is still on its way');
+      await t.pump(const Duration(seconds: 3));
+      await t.pumpAndSettle();
+      expect(c.moves.map((m) => m['entry_id']), ['A', 'D']);
+      expect(c.gsl.map((e) => e['name']), ['D', 'B', 'A', 'C']);
+      expect(shown(t), ['D', 'B', 'A', 'C']);
+    });
+
+    testWidgets('while reconnecting the handle does nothing', (t) async {
+      final c = withSpeakers(t, ['India', 'Brazil']);
+      c.connected = false;
+      await t.pumpWidget(app(c));
+      await drag(t, find.byIcon(Icons.drag_handle).first, rowHeight(t) * 1.5);
+      await t.pumpAndSettle();
+      expect(c.moves, isEmpty);
+      expect(shown(t), ['India', 'Brazil']);
+    });
+  });
+
+  group('the On screen switch', () {
+    Future<void> open(WidgetTester t, Size size, {double text = 1}) async {
+      t.view.physicalSize = size * 3;
+      t.view.devicePixelRatio = 3;
+      addTearDown(t.view.reset);
+      SharedPreferences.setMockInitialValues({});
+      await t.runAsync(() async {
+        await t.pumpWidget(MediaQuery(
+          data: MediaQueryData(size: size, textScaler: TextScaler.linear(text)),
+          child: pageApp(),
+        ));
+        await t.tap(find.text('open'));
+        for (var i = 0; i < 10; i++) {
+          await t.pump(const Duration(milliseconds: 100));
+          await Future<void>.delayed(const Duration(milliseconds: 20));
+        }
+        await t.tap(find.text('UNSC'));
+        for (var i = 0; i < 10; i++) {
+          await t.pump(const Duration(milliseconds: 100));
+          await Future<void>.delayed(const Duration(milliseconds: 20));
+        }
+      });
+    }
+
+    for (final (name, size, text) in [
+      ('iPhone 17', const Size(402, 874), 1.0),
+      ('iPhone 17, large text', const Size(402, 874), 2.0),
+      ('iPhone SE', const Size(375, 667), 1.0),
+      ('Pro Max', const Size(440, 956), 1.0),
+    ]) {
+      testWidgets('$name: 48 high, bold, nothing overflows', (t) async {
+        await open(t, size, text: text);
+        final capsule = find.byType(SegmentedButton<String>);
+        expect(capsule, findsOneWidget);
+        expect(t.getSize(capsule).height, 48);
+        expect(find.text('On screen'),
+            size.width >= 400 ? findsOneWidget : findsNothing);
+        if (size.width >= 400) {
+          final label = t.widget<Text>(find.text('On screen'));
+          expect(label.style?.fontWeight, FontWeight.w700);
+          expect(label.style?.fontSize, 18);
+        }
+        for (final segment in ['GSL', 'Mod', 'Unmod']) {
+          final style = DefaultTextStyle.of(t.element(
+                  find.descendant(of: capsule, matching: find.text(segment))))
+              .style;
+          expect(style.fontWeight, FontWeight.w700, reason: segment);
+          expect(style.fontSize, 18, reason: segment);
+          expect(style.fontFamily,
+              getDarkTheme().textTheme.labelLarge?.fontFamily);
+        }
+        expect(t.takeException(), isNull);
+      });
+    }
   });
 
   group('phones', () {
