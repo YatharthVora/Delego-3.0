@@ -126,8 +126,7 @@ class PrivacyPolicyPage extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
-          ),
-          const SizedBox(height: 4),
+            const SizedBox(height: 4),
           Text(
             'Last updated: 22 October 2026 · MUN Society, MPSTME (NMIMS Mumbai)',
             style: textTheme.bodySmall?.copyWith(
@@ -191,6 +190,7 @@ class PrivacyPolicyPage extends StatelessWidget {
             label: const Text('View Web Version'),
           ),
         ],
+        ),
       ),
     );
   }
