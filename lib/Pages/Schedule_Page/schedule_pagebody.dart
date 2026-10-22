@@ -14,11 +14,12 @@ class SchedulePageBody extends StatelessWidget {
     super.key,
   });
 
-  static const double _rowHeight = 144.0;
+  static const double _baseRowHeight = 144.0;
   static const double _topPad = 24.0;
   static const double _bottomPad = 40.0;
   static const double _hPad = 18.0;
-  static const double _badgeCenterOffset = 40.0; // half of 80px _LevelTile width
+  static const double _badgeCenterOffset =
+      40.0; // half of 80px _LevelTile width
 
   @override
   Widget build(BuildContext context) {
@@ -39,9 +40,6 @@ class SchedulePageBody extends StatelessWidget {
       );
     }
 
-    final totalHeight =
-        _topPad + _bottomPad + schedules.length * _rowHeight;
-
     return Expanded(
       child: Container(
         color: scheme.surface,
@@ -50,6 +48,15 @@ class SchedulePageBody extends StatelessWidget {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final width = constraints.maxWidth;
+              final cardWidth = width - 2 * _hPad - 80 - 14;
+              final widthScale =
+                  (190 / cardWidth.clamp(1.0, double.infinity)).clamp(1.0, 2.0);
+              final textScale =
+                  MediaQuery.textScalerOf(context).scale(1.0).clamp(1.0, 2.0);
+              final rowHeight = _baseRowHeight *
+                  (widthScale > textScale ? widthScale : textScale);
+              final totalHeight =
+                  _topPad + _bottomPad + schedules.length * rowHeight;
               final leftX = _hPad + _badgeCenterOffset;
               final rightX = width - _hPad - _badgeCenterOffset;
 
@@ -58,7 +65,7 @@ class SchedulePageBody extends StatelessWidget {
                 for (var i = 0; i < schedules.length; i++)
                   Offset(
                     i.isEven ? leftX : rightX,
-                    _topPad + i * _rowHeight + _rowHeight * 0.54,
+                    _topPad + i * rowHeight + rowHeight * 0.54,
                   ),
               ];
 
@@ -99,10 +106,10 @@ class SchedulePageBody extends StatelessWidget {
                     // Level nodes + cards along the road
                     for (var i = 0; i < schedules.length; i++)
                       Positioned(
-                        top: _topPad + i * _rowHeight,
+                        top: _topPad + i * rowHeight,
                         left: _hPad,
                         right: _hPad,
-                        height: _rowHeight,
+                        height: rowHeight,
                         child: ScheduleSummary(
                           schedules[i],
                           index: i,

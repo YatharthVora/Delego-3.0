@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:delego/widgets/neon.dart';
 import 'package:flutter/material.dart';
 import 'package:delego/constants/backend.dart';
@@ -12,7 +14,8 @@ import 'dart:async'; // For Future/async operations
 final http.Client httpClient = http.Client();
 
 // 2. Real SharedPreferences Instance Getter
-Future<SharedPreferences> getSharedPreferencesInstance() => SharedPreferences.getInstance();
+Future<SharedPreferences> getSharedPreferencesInstance() =>
+    SharedPreferences.getInstance();
 
 // Mock implementations removed
 
@@ -95,12 +98,14 @@ class _RoomPageState extends State<RoomPage> {
         }
       } else {
         final responseData = json.decode(response.body);
-        final errorMessage = responseData['message'] ?? 'Server error: Status Code ${response.statusCode}';
+        final errorMessage = responseData['message'] ??
+            'Server error: Status Code ${response.statusCode}';
         throw Exception(errorMessage);
       }
     } catch (e) {
       if (_rooms.isEmpty) {
-        _error = 'Data not available: ${e.toString().contains('Exception:') ? e.toString().replaceFirst('Exception: ', '') : 'Please check your connection.'}';
+        _error =
+            'Data not available: ${e.toString().contains('Exception:') ? e.toString().replaceFirst('Exception: ', '') : 'Please check your connection.'}';
       }
     }
     if (mounted) {
@@ -122,7 +127,17 @@ class _RoomPageState extends State<RoomPage> {
           floor: 'TBA',
         ));
       }
-      const order = ['UNSC', 'CCC', 'PSC', 'WTO', 'UNODC', 'UNICEF', 'ECOSOC', 'IPC', 'DISEC'];
+      const order = [
+        'UNSC',
+        'CCC',
+        'PSC',
+        'WTO',
+        'UNODC',
+        'UNICEF',
+        'ECOSOC',
+        'IPC',
+        'DISEC'
+      ];
       parsedRooms.sort((a, b) {
         int indexA = order.indexOf(a.committeeName.toUpperCase());
         int indexB = order.indexOf(b.committeeName.toUpperCase());
@@ -131,10 +146,13 @@ class _RoomPageState extends State<RoomPage> {
         return indexA.compareTo(indexB);
       });
       return parsedRooms;
-    } catch (_) { return []; }
+    } catch (_) {
+      return [];
+    }
   }
 
-  static const List<({List<Color> colors, Color fg, Color accent})> _palettes = [
+  static const List<({List<Color> colors, Color fg, Color accent})> _palettes =
+      [
     (
       colors: [Color(0xFFBFFF00), Color(0xFFBFFF00)],
       fg: Color(0xFF111111),
@@ -199,58 +217,79 @@ class _RoomPageState extends State<RoomPage> {
                     seed: index + 3),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      room.committeeName,
-                      style: TextStyle(
-                        fontFamily: Neon.font,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 22,
-                        color: fg,
-                      ),
+            MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.noScaling),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final contentWidth = constraints.maxWidth - 28;
+                  final contentHeight = constraints.maxHeight - 28;
+                  final scale = math.min(
+                    (contentWidth / 190).clamp(0.4, 1.0),
+                    (contentHeight / (floor.isEmpty ? 96 : 120))
+                        .clamp(0.4, 1.0),
+                  );
+                  return Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            room.committeeName,
+                            maxLines: 1,
+                            softWrap: false,
+                            style: TextStyle(
+                              fontFamily: Neon.font,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 22 * scale,
+                              color: fg,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          'ROOM',
+                          style: Neon.label(fg.withValues(alpha: 0.75),
+                              size: 10 * scale, spacing: 2 * scale),
+                        ),
+                        SizedBox(height: 2 * scale),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            room.roomCode,
+                            maxLines: 1,
+                            softWrap: false,
+                            style: TextStyle(
+                              fontFamily: Neon.font,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 34 * scale,
+                              height: 1.05,
+                              color: fg,
+                            ),
+                          ),
+                        ),
+                        if (floor.isNotEmpty) ...[
+                          SizedBox(height: 4 * scale),
+                          Text(
+                            floor,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: Neon.font,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 12.5 * scale,
+                              color: fg.withValues(alpha: 0.85),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                  ),
-                  const Spacer(),
-                  Text('ROOM',
-                      style: Neon.label(fg.withValues(alpha: 0.75),
-                          size: 10, spacing: 2)),
-                  const SizedBox(height: 2),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      room.roomCode,
-                      style: TextStyle(
-                        fontFamily: Neon.font,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 34,
-                        height: 1.05,
-                        color: fg,
-                      ),
-                    ),
-                  ),
-                  if (floor.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      floor,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: Neon.font,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 12.5,
-                        color: fg.withValues(alpha: 0.85),
-                      ),
-                    ),
-                  ],
-                ],
+                  );
+                },
               ),
             ),
           ],
@@ -297,7 +336,7 @@ class _RoomPageState extends State<RoomPage> {
         final rows = (_rooms.length / 2).ceil().clamp(1, 100);
         final tileW = (c.maxWidth - pad * 2 - gap) / 2;
         final fitH = (c.maxHeight - pad * 2 - gap * (rows - 1)) / rows;
-        final tileH = fitH.clamp(130.0, 260.0);
+        final tileH = fitH.clamp(110.0, 220.0);
         return GridView.builder(
           padding: const EdgeInsets.all(pad),
           physics: const ClampingScrollPhysics(),
@@ -308,8 +347,7 @@ class _RoomPageState extends State<RoomPage> {
             childAspectRatio: tileW / tileH,
           ),
           itemCount: _rooms.length,
-          itemBuilder: (context, index) =>
-              _buildRoomCard(_rooms[index], index),
+          itemBuilder: (context, index) => _buildRoomCard(_rooms[index], index),
         );
       });
     }
@@ -347,8 +385,3 @@ class _RoomPageState extends State<RoomPage> {
     );
   }
 }
-
-
-
-
-

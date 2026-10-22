@@ -114,14 +114,17 @@ class PrivacyPolicyPage extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-        children: [
-          Text(
-            'Delego — Mumbai MUN 2026 Privacy Policy',
-            style: textTheme.titleLarge?.copyWith(
-              color: scheme.onSurface,
-              fontWeight: FontWeight.w700,
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+          children: [
+            Text(
+              'Delego — Mumbai MUN 2026 Privacy Policy',
+              style: textTheme.titleLarge?.copyWith(
+                color: scheme.onSurface,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           const SizedBox(height: 4),

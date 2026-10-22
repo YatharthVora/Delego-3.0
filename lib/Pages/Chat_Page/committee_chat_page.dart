@@ -39,7 +39,11 @@ class _Msg {
 /// - accept (Accept)      -> Green / Cyan (kSwatches[3])
 /// - reject (Reject)      -> Pink / Yellow (kSwatches[1])
 final _kinds = <String, ({String label, NeonSwatch swatch, IconData icon})>{
-  'free': (label: 'BREAK REQUEST', swatch: kSwatches[2], icon: Icons.free_breakfast),
+  'free': (
+    label: 'BREAK REQUEST',
+    swatch: kSwatches[2],
+    icon: Icons.free_breakfast
+  ),
   'late': (label: 'RUNNING LATE', swatch: kSwatches[0], icon: Icons.timer),
   'accept': (label: 'ACCEPTED', swatch: kSwatches[3], icon: Icons.check_circle),
   'reject': (label: 'REJECTED', swatch: kSwatches[1], icon: Icons.cancel),
@@ -98,7 +102,8 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
       _error = null;
     });
     try {
-      _myEmail = (await SharedPreferences.getInstance()).getString('email') ?? '';
+      _myEmail =
+          (await SharedPreferences.getInstance()).getString('email') ?? '';
       final res = await _api.get('/committees');
       if (res.statusCode != 200) throw 'Server returned ${res.statusCode}';
       final list = (jsonDecode(res.body) as List)
@@ -176,7 +181,8 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
 
     // https -> wss, http -> ws. The token goes in the first frame, not the URL.
     final base = _api.baseUrl.replaceFirst('http', 'ws');
-    final channel = WebSocketChannel.connect(Uri.parse('$base/ws/committees/$id/chat'));
+    final channel =
+        WebSocketChannel.connect(Uri.parse('$base/ws/committees/$id/chat'));
     _channel = channel;
     channel.sink.add(jsonEncode({'token': token}));
 
@@ -280,7 +286,8 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
     return Align(
       alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
         margin: const EdgeInsets.symmetric(vertical: 5),
         padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
         decoration: BoxDecoration(
@@ -304,7 +311,8 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
             ),
             const SizedBox(height: 6),
             Text(m.body,
-                style: TextStyle(color: fg, fontSize: 16, fontWeight: FontWeight.w600)),
+                style: TextStyle(
+                    color: fg, fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
             Text(
               '${mine ? 'You' : m.senderName} · ${_time(m.at)}',
@@ -327,7 +335,11 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
         ),
         onPressed: _sending ? null : () => _send(type),
         icon: Icon(icon, size: 20),
-        label: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        label: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(label,
+              maxLines: 1, style: const TextStyle(fontWeight: FontWeight.w600)),
+        ),
       ),
     );
   }
@@ -357,8 +369,14 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
               ),
               onPressed: _sending ? null : () => _sendLate(5),
               icon: const Icon(Icons.timer, size: 20),
-              label: const Text('Running late',
-                  style: TextStyle(fontWeight: FontWeight.w600)),
+              label: const FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'Running late',
+                  maxLines: 1,
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 2),
@@ -401,7 +419,9 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Tooltip(
-              message: _connected ? 'Live' : (_closedForGood ? 'Disconnected' : 'Reconnecting…'),
+              message: _connected
+                  ? 'Live'
+                  : (_closedForGood ? 'Disconnected' : 'Reconnecting…'),
               child: Icon(
                 _connected ? Icons.cloud_done : Icons.cloud_off,
                 color: _connected ? const Color(0xFF1B9E5A) : scheme.error,
@@ -421,7 +441,8 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
                       children: [
                         Text(_error!, textAlign: TextAlign.center),
                         const SizedBox(height: 16),
-                        FilledButton(onPressed: _start, child: const Text('Retry')),
+                        FilledButton(
+                            onPressed: _start, child: const Text('Retry')),
                       ],
                     ),
                   ),
@@ -432,7 +453,8 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
                       height: 52,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         itemCount: _committees.length,
                         separatorBuilder: (_, __) => const SizedBox(width: 8),
                         itemBuilder: (_, i) {
@@ -460,14 +482,17 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
                       child: _messages.isEmpty
                           ? Center(
                               child: Text('No messages yet.',
-                                  style: TextStyle(color: scheme.onSurface.withValues(alpha: 0.6))),
+                                  style: TextStyle(
+                                      color: scheme.onSurface
+                                          .withValues(alpha: 0.6))),
                             )
                           : ListView.builder(
-                              reverse: true, // newest at the bottom, stays pinned there
+                              reverse:
+                                  true, // newest at the bottom, stays pinned there
                               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                               itemCount: _messages.length,
-                              itemBuilder: (_, i) =>
-                                  _bubble(_messages[_messages.length - 1 - i], scheme),
+                              itemBuilder: (_, i) => _bubble(
+                                  _messages[_messages.length - 1 - i], scheme),
                             ),
                     ),
                     if (canRequest || canRespond)
@@ -477,23 +502,28 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
                           padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
                           decoration: BoxDecoration(
                             color: scheme.surfaceContainerHigh,
-                            border: Border(top: BorderSide(color: scheme.outlineVariant)),
+                            border: Border(
+                                top: BorderSide(color: scheme.outlineVariant)),
                           ),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (canRequest)
                                 Row(children: [
-                                  _action('free', 'Request break', Icons.free_breakfast, kSwatches[2]),
+                                  _action('free', 'Request break',
+                                      Icons.free_breakfast, kSwatches[2]),
                                   const SizedBox(width: 10),
                                   _lateSplitButton(),
                                 ]),
-                              if (canRequest && canRespond) const SizedBox(height: 10),
+                              if (canRequest && canRespond)
+                                const SizedBox(height: 10),
                               if (canRespond)
                                 Row(children: [
-                                  _action('accept', 'Accept', Icons.check, kSwatches[3]),
+                                  _action('accept', 'Accept', Icons.check,
+                                      kSwatches[3]),
                                   const SizedBox(width: 10),
-                                  _action('reject', 'Reject (full)', Icons.close, kSwatches[1]),
+                                  _action('reject', 'Reject (full)',
+                                      Icons.close, kSwatches[1]),
                                 ]),
                             ],
                           ),

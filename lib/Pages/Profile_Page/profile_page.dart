@@ -204,72 +204,73 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundColor: Neon.pink,
         centerTitle: true,
         title: Text('Settings',
-            style: textTheme.titleLarge?.copyWith(
-                color: Colors.white, fontWeight: FontWeight.w700)),
+            style: textTheme.titleLarge
+                ?.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
       ),
-      body: ListView(
-        padding: const EdgeInsets.only(bottom: 28),
-        children: [
-          const SizedBox(height: 20),
-          const Icon(Icons.person, size: 72, color: Neon.pink),
-          _header('My Profile', textTheme),
-          MyTextBox(text: firstname ?? 'First Name', sectionName: 'First Name'),
-          MyTextBox(text: lastname ?? 'Last Name', sectionName: 'Last Name'),
-          MyTextBox(text: email ?? 'Email', sectionName: 'Email'),
-          MyTextBox(
-              text: contact ?? '-',
-              sectionName: 'Contact Number'),
-          MyTextBox(
-              text: dateofbirth ?? '-',
-              sectionName: 'Date of Birth'),
-          MyTextBox(text: diet ?? 'Not Set', sectionName: 'Food Preference'),
-          _header('Legal & Account', textTheme),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-            child: OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: scheme.onSurface,
-                side: BorderSide(color: Neon.pink.withValues(alpha: 0.45)),
-                minimumSize: const Size(double.infinity, 48),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              icon: const Icon(Icons.privacy_tip_outlined, color: Neon.pink),
-              label: const Text('Privacy Policy'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const PrivacyPolicyPage(),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.only(bottom: 28),
+          children: [
+            const SizedBox(height: 20),
+            const Icon(Icons.person, size: 72, color: Neon.pink),
+            _header('My Profile', textTheme),
+            MyTextBox(
+                text: firstname ?? 'First Name', sectionName: 'First Name'),
+            MyTextBox(text: lastname ?? 'Last Name', sectionName: 'Last Name'),
+            MyTextBox(text: email ?? 'Email', sectionName: 'Email'),
+            MyTextBox(text: contact ?? '-', sectionName: 'Contact Number'),
+            MyTextBox(text: dateofbirth ?? '-', sectionName: 'Date of Birth'),
+            MyTextBox(text: diet ?? 'Not Set', sectionName: 'Food Preference'),
+            _header('Legal & Account', textTheme),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: scheme.onSurface,
+                  side: BorderSide(color: Neon.pink.withValues(alpha: 0.45)),
+                  minimumSize: const Size(double.infinity, 48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: scheme.error,
-                foregroundColor: scheme.onError,
-                minimumSize: const Size(double.infinity, 48),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
                 ),
+                icon: const Icon(Icons.privacy_tip_outlined, color: Neon.pink),
+                label: const Text('Privacy Policy'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PrivacyPolicyPage(),
+                    ),
+                  );
+                },
               ),
-              icon: const Icon(Icons.delete_forever_rounded),
-              label: Text(
-                'Delete Account',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: scheme.onError,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              onPressed: deleteAccount,
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: scheme.error,
+                  foregroundColor: scheme.onError,
+                  minimumSize: const Size(double.infinity, 48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: const Icon(Icons.delete_forever_rounded),
+                label: Text(
+                  'Delete Account',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: scheme.onError,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                onPressed: deleteAccount,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
