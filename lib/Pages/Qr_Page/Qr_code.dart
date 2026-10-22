@@ -2,7 +2,6 @@ import 'package:delego/widgets/mun_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:delego/widgets/neon.dart';
 
 class QrCode extends StatefulWidget {
