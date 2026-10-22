@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
-import 'package:delego/Pages/Study Guides/PDF_viewers/IPC_pdfviewer.dart';
 import 'package:delego/Pages/Study Guides/PDF_viewers/UNODC_pdfviewer.dart';
-import 'package:delego/Pages/Study Guides/PDF_viewers/UNSC_pdfviewer.dart';
 import 'package:delego/widgets/neon.dart';
 
 /// One agenda (study guide) of a committee.
 ///
 /// Fill in EITHER [asset] (a PDF bundled in assets/pdfs/, e.g.
 /// 'assets/pdfs/CCC_Agenda1.pdf') OR [url] (a direct link to a PDF).
-/// Leave both null and the folder shows a 'SOON' tag.
+/// Leave both null and the committee is hidden from the Study Guides page.
 class Agenda {
   const Agenda(this.title, {this.asset, this.url, this.page});
   final String title;
@@ -38,9 +36,11 @@ const _dir = 'assets/images/committees';
 //  * 2+ agendas  -> tapping the folder opens a page with one folder per agenda.
 //  * To add a PDF: copy it into assets/pdfs/ (make sure that folder is declared
 //    in pubspec.yaml) and set asset: 'assets/pdfs/X.pdf', or set url: 'https://...'.
+//  * A committee with no PDF yet is hidden from everyone; it appears once one of
+//    its agendas has an asset or url.
 // ============================================================================
 final List<_Guide> _guides = [
-  _Guide('UNSC', '$_dir/unsc.webp', [Agenda('UNSC', page: () => UnscPdfviewer())]),
+  _Guide('UNSC', '$_dir/unsc.webp', const [Agenda('UNSC')]),
   _Guide('CCC', '$_dir/ccc.webp', const [
     Agenda('Agenda 1'), // e.g. Agenda('Agenda 1', asset: 'assets/pdfs/CCC_1.pdf')
     Agenda('Agenda 2'), // e.g. Agenda('Agenda 2', url: 'https://...')
@@ -50,9 +50,13 @@ final List<_Guide> _guides = [
   _Guide('UNODC', '$_dir/unodc.webp', [Agenda('UNODC', page: () => UnodcPdfviewer())]),
   _Guide('UNICEF', '$_dir/unicef.webp', const [Agenda('UNICEF')]),
   _Guide('ECOSOC', '$_dir/ecosoc.webp', const [Agenda('ECOSOC', asset: 'assets/pdfs/ECOSOC.pdf')]),
-  _Guide('IPC', '$_dir/ipc.webp', [Agenda('IPC', page: () => IpcPdfviewer())]),
+  _Guide('IPC', '$_dir/ipc.webp', const [Agenda('IPC')]),
   _Guide('DISEC', '$_dir/disec.webp', const [Agenda('DISEC')]),
 ];
+
+/// The committees whose guide has arrived; the rest stay listed above but hidden.
+final List<_Guide> _shownGuides =
+    _guides.where((g) => g.agendas.any((a) => a.available)).toList();
 
 void _soon(BuildContext context, String title) {
   ScaffoldMessenger.of(context)
@@ -112,9 +116,9 @@ class StudyGuidespage extends StatelessWidget {
         title: const Text('STUDY GUIDES'),
       ),
       body: _FolderGrid(
-        count: _guides.length,
+        count: _shownGuides.length,
         builder: (context, i) {
-          final g = _guides[i];
+          final g = _shownGuides[i];
           final multi = g.agendas.length > 1;
           final ready = g.agendas.any((a) => a.available);
           return FolderCard(
