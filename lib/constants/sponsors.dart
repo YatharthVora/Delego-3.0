@@ -52,6 +52,18 @@ const kSponsors = <Sponsor>[
     backgroundColorHex: 0xFF000000,
   ),
   Sponsor(
+    name: 'kohfae',
+    logo: 'assets/icons/kohfae.jpeg',
+    scale: 1.18,
+    backgroundColorHex: 0xFFFFFFFF,
+  ),
+  Sponsor(
+    name: 'Plum',
+    logo: 'assets/icons/plum.jpeg',
+    scale: 1.18,
+    backgroundColorHex: 0xFF000000,
+  ),
+  Sponsor(
     name: 'Gokyo',
     logo: 'assets/icons/gokyo.png',
     url: 'https://gokyo.in',
