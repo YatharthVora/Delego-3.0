@@ -167,7 +167,8 @@ class _HospitalitySectionState extends State<HospitalitySection> {
 
     final children = <Widget>[
       const Divider(height: 48),
-      Text('HOSPITALITY TEAM', style: Neon.label(scheme.onSurface, size: 16, spacing: 1.5)),
+      Text('HOSPITALITY TEAM',
+          style: Neon.label(scheme.onSurface, size: 16, spacing: 1.5)),
       const SizedBox(height: 8),
       Text(
         'People on this team scan delegate QR codes to serve food, and accept or '
@@ -180,7 +181,8 @@ class _HospitalitySectionState extends State<HospitalitySection> {
     if (_loading) {
       children.add(const Center(
           child: Padding(
-              padding: EdgeInsets.all(24), child: CircularProgressIndicator())));
+              padding: EdgeInsets.all(24),
+              child: CircularProgressIndicator())));
     } else if (_error != null) {
       children.addAll([
         Text(_error!, style: TextStyle(color: scheme.error)),
@@ -188,13 +190,17 @@ class _HospitalitySectionState extends State<HospitalitySection> {
         OutlinedButton(onPressed: _load, child: const Text('Try again')),
       ]);
     } else if (!_state!.hasTeam) {
-      children.add(SizedBox(
-        height: 54,
-        child: FilledButton.icon(
-          key: const Key('create-hospitality'),
-          onPressed: _busy ? null : _create,
-          icon: const Icon(Icons.groups),
-          label: Text('CREATE HOSPITALITY TEAM',
+      children.add(FilledButton.icon(
+        key: const Key('create-hospitality'),
+        style: FilledButton.styleFrom(
+          minimumSize: const Size.fromHeight(54),
+        ),
+        onPressed: _busy ? null : _create,
+        icon: const Icon(Icons.groups),
+        label: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text('CREATE HOSPITALITY TEAM',
+              maxLines: 1,
               style: Neon.label(scheme.onPrimary, size: 14, spacing: 1)),
         ),
       ));
@@ -210,14 +216,14 @@ class _HospitalitySectionState extends State<HospitalitySection> {
           decoration: const InputDecoration(labelText: 'Add by email'),
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 50,
-          child: FilledButton(
-            key: const Key('add-hospitality-member'),
-            onPressed: _busy ? null : _add,
-            child: Text('ADD TO TEAM',
-                style: Neon.label(scheme.onPrimary, size: 14, spacing: 1)),
+        FilledButton(
+          key: const Key('add-hospitality-member'),
+          style: FilledButton.styleFrom(
+            minimumSize: const Size.fromHeight(50),
           ),
+          onPressed: _busy ? null : _add,
+          child: Text('ADD TO TEAM',
+              style: Neon.label(scheme.onPrimary, size: 14, spacing: 1)),
         ),
         const SizedBox(height: 16),
         if (_state!.members.isEmpty)
@@ -227,8 +233,16 @@ class _HospitalitySectionState extends State<HospitalitySection> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.restaurant),
-              title: Text(m.label),
-              subtitle: Text(m.invited ? '${m.email} · not registered yet' : m.email),
+              title: Text(
+                m.label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(
+                m.invited ? '${m.email} · not registered yet' : m.email,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
               trailing: IconButton(
                 tooltip: 'Remove',
                 icon: const Icon(Icons.close),
@@ -238,6 +252,7 @@ class _HospitalitySectionState extends State<HospitalitySection> {
       ]);
     }
 
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: children);
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start, children: children);
   }
 }

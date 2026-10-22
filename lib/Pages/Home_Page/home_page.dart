@@ -93,7 +93,11 @@ class _HomePageState extends State<HomePage> {
 
   /// The tiles this user may see. Rooms and Schedule are open to everyone; the rest
   /// follow the permissions the server sent (see permissions.py in the backend).
-  List<Widget> _tiles(Capabilities caps) {
+  List<Widget> _tiles(
+    Capabilities caps, {
+    required double cardHeight,
+    required double scanCardHeight,
+  }) {
     final tiles = <Widget>[
       if (caps.can(Perm.guidesView))
         NeonCard(
@@ -101,6 +105,7 @@ class _HomePageState extends State<HomePage> {
           label: 'Study\nGuides',
           labelColor: Neon.orange,
           iconAsset: 'assets/icons/book.png',
+          height: cardHeight,
           seed: 3,
           onTap: () => goToPage(PermissionGate(
             anyOf: const [Perm.guidesView],
@@ -110,10 +115,11 @@ class _HomePageState extends State<HomePage> {
       if (caps.can(Perm.badgeView))
         NeonCard(
           colors: const [Color(0xFFEE1C9C), Color(0xFFEE1C9C)],
-          label: 'My QR\nBadge',
+          label: 'Food QR\nCode',
           labelColor: Neon.yellow,
           iconAsset: 'assets/icons/qr.png',
-          seed: 5,
+          height: cardHeight,
+          seed: 20,
           onTap: () => goToPage(const PermissionGate(
             anyOf: [Perm.badgeView],
             child: QrCode(),
@@ -124,6 +130,7 @@ class _HomePageState extends State<HomePage> {
         label: 'Rooms',
         labelColor: Neon.lime,
         iconAsset: 'assets/icons/loc.png',
+        height: cardHeight,
         seed: 11,
         onTap: () => goToPage(RoomPage()),
       ),
@@ -132,6 +139,7 @@ class _HomePageState extends State<HomePage> {
         label: 'Schedule',
         labelColor: Neon.cyan,
         iconAsset: 'assets/icons/calendar.png',
+        height: cardHeight,
         seed: 13,
         onTap: () => goToPage(SchedulePage()),
       ),
@@ -156,10 +164,10 @@ class _HomePageState extends State<HomePage> {
         ..add(const SizedBox(height: 14))
         ..add(NeonCard(
           colors: const [Color(0xFF7A1BFF), Color(0xFF2342FF)],
-          label: 'Scan a delegate QR',
+          label: 'QR Scanner',
           labelColor: Neon.yellow,
           iconAsset: 'assets/icons/qr.png',
-          height: 92,
+          height: scanCardHeight,
           wide: true,
           seed: 17,
           onTap: () => goToPage(const QrScanner()),
@@ -174,6 +182,12 @@ class _HomePageState extends State<HomePage> {
     final caps = context.watch<Capabilities>();
     final dark = Theme.of(context).brightness == Brightness.dark;
     final onBg = dark ? Colors.white : Neon.navy;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final horizontalPadding = (screenWidth * 0.05).clamp(12.0, 20.0);
+    final contentWidth = screenWidth - horizontalPadding * 2;
+    final cardWidth = (contentWidth - 14) / 2;
+    final cardHeight = (cardWidth * 0.9).clamp(120.0, 150.0);
+    final scanCardHeight = (contentWidth * 0.26).clamp(76.0, 92.0);
 
     final isDelegate = caps.role == 'delegate' &&
         !caps.can(Perm.foodScan) &&
@@ -203,11 +217,16 @@ class _HomePageState extends State<HomePage> {
 
     final Widget content = SafeArea(
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+        padding:
+            EdgeInsets.fromLTRB(horizontalPadding, 4, horizontalPadding, 24),
         children: [
           MunLogoLink(
             borderRadius: const BorderRadius.all(Radius.circular(28)),
-            child: HeroBanner(height: isDelegate ? 182 : 210),
+            child: HeroBanner(
+              height: isDelegate
+                  ? (contentWidth * 0.516).clamp(150.0, 182.0)
+                  : (contentWidth * 0.595).clamp(170.0, 210.0),
+            ),
           ),
           NowStrip(onTap: () => goToPage(SchedulePage())),
           if (isDelegate) ...[
@@ -219,7 +238,7 @@ class _HomePageState extends State<HomePage> {
               style: TextStyle(
                 fontFamily: Neon.font,
                 fontWeight: FontWeight.w600,
-                fontSize: 20,
+                fontSize: (screenWidth * 0.051).clamp(17.0, 20.0),
                 color: onBg,
               )),
           const SizedBox(height: 14),
@@ -248,7 +267,11 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-          ..._tiles(caps),
+          ..._tiles(
+            caps,
+            cardHeight: cardHeight,
+            scanCardHeight: scanCardHeight,
+          ),
           if (!isDelegate) ...[
             const SizedBox(height: 28),
             sponsors,
@@ -265,11 +288,11 @@ class _HomePageState extends State<HomePage> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           toolbarHeight: _barHeight,
-          title: const Text(
+          title: Text(
             'Delego',
             style: TextStyle(
               fontFamily: Neon.font,
-              fontSize: 27,
+              fontSize: (screenWidth * 0.069).clamp(22.0, 27.0),
               fontWeight: FontWeight.w700,
               letterSpacing: 0.2,
             ),
@@ -281,10 +304,16 @@ class _HomePageState extends State<HomePage> {
               onPressed: () => Scaffold.of(ctx).openDrawer(),
             ),
           ),
+          actions: [
+            IconButton(
+              tooltip: 'Settings',
+              icon: const Icon(Icons.settings_rounded),
+              onPressed: () =>
+                  goToPage(ProfilePage(controller: widget.controller)),
+            ),
+          ],
         ),
         drawer: MyDrawer(
-          onProfileTap: () =>
-              goToPage(ProfilePage(controller: widget.controller)),
           onSignoutTap: signOut,
         ),
         body: content,

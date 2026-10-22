@@ -70,8 +70,7 @@ class _QrScannerState extends State<QrScanner> {
     // A saved scan the server turned down: tell the operator once.
     _rejectSub = _queue.rejections.listen((msg) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(msg)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     });
     _loadCounts();
     // The counts come from the server and cover every phone scanning, so refresh
@@ -101,9 +100,8 @@ class _QrScannerState extends State<QrScanner> {
     if (!mounted) return;
     final meal = _meal;
     try {
-      final res = await context
-          .read<ApiClient>()
-          .get('/food/plate_count?meal=$meal');
+      final res =
+          await context.read<ApiClient>().get('/food/plate_count?meal=$meal');
       if (res.statusCode != 200) return;
       if (!_countsLoaded) debugPrint('PLATES $meal: ${res.body}');
 
@@ -208,11 +206,15 @@ class _QrScannerState extends State<QrScanner> {
             ),
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                value,
-                style: text.headlineMedium
-                    ?.copyWith(fontWeight: FontWeight.bold, color: fg),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  style: text.headlineMedium
+                      ?.copyWith(fontWeight: FontWeight.bold, color: fg),
+                ),
               ),
               Text(label, style: text.labelLarge?.copyWith(color: fg)),
             ],
@@ -223,9 +225,8 @@ class _QrScannerState extends State<QrScanner> {
   }
 
   Widget _countsPanel(ColorScheme scheme, TextTheme text) {
-    final selectedLabel = _diet == null
-        ? null
-        : kDiets.firstWhere((d) => d.value == _diet).label;
+    final selectedLabel =
+        _diet == null ? null : kDiets.firstWhere((d) => d.value == _diet).label;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
@@ -321,7 +322,8 @@ class _QrScannerState extends State<QrScanner> {
     if (_diet == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select Veg or Jain above before looking up a delegate.'),
+          content: Text(
+              'Please select Veg or Jain above before looking up a delegate.'),
         ),
       );
       return;
@@ -361,11 +363,12 @@ class _QrScannerState extends State<QrScanner> {
     return switch (o.kind) {
       ScanKind.served =>
         _ScanResult(_Outcome.served, o.message, name: o.name, diet: o.diet),
-      ScanKind.duplicate => _ScanResult(_Outcome.duplicate, o.message,
-          name: o.name, diet: o.diet),
-      ScanKind.queued => _ScanResult(_Outcome.queued, o.message,
-          name: null, diet: _diet),
-      ScanKind.rejected || ScanKind.denied =>
+      ScanKind.duplicate =>
+        _ScanResult(_Outcome.duplicate, o.message, name: o.name, diet: o.diet),
+      ScanKind.queued =>
+        _ScanResult(_Outcome.queued, o.message, name: null, diet: _diet),
+      ScanKind.rejected ||
+      ScanKind.denied =>
         _ScanResult(_Outcome.error, o.message),
     };
   }
@@ -389,7 +392,8 @@ class _QrScannerState extends State<QrScanner> {
     String? text;
     Color color = Colors.blue.shade700;
     if (q.blockedReason != null && n > 0) {
-      text = '${q.blockedReason} $n ${n == 1 ? 'scan is' : 'scans are'} kept saved.';
+      text =
+          '${q.blockedReason} $n ${n == 1 ? 'scan is' : 'scans are'} kept saved.';
       color = scheme.error;
     } else if (q.syncing && n > 0) {
       text = 'Syncing $n ${n == 1 ? 'scan' : 'scans'}';
@@ -484,90 +488,146 @@ class _QrScannerState extends State<QrScanner> {
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          Column(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final controlsMaxHeight =
+              (constraints.maxHeight * 0.62).clamp(0.0, constraints.maxHeight);
+          return Stack(
             children: [
-              _banner(queue, scheme),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: SegmentedButton<String>(
-                  segments: [
-                    for (final m in kMeals)
-                      ButtonSegment(value: m.value, label: Text(m.label)),
-                  ],
-                  selected: {_meal},
-                  onSelectionChanged: (s) {
-                    setState(() {
-                      _meal = s.first;
-                      _countsLoaded = false; // don't show the old meal's numbers
-                      _counts = {};
-                    });
-                    _loadCounts();
-                  },
-                ),
-              ),
-              _countsPanel(scheme, text),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: _openNameLookup,
-                    icon: const Icon(Icons.person_search_rounded, size: 18),
-                    label: const Text('No phone? Search delegate by name / email'),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: MobileScanner(
-                  controller: controller,
-                  onDetect: _onDetect,
-                ),
-              ),
-            ],
-          ),
-          if (_result != null)
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: _dismiss,
-                child: Container(
-                  color: _colorFor(_result!.outcome),
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(_iconFor(_result!.outcome),
-                          size: 96, color: Colors.white),
-                      const SizedBox(height: 16),
-                      Text(
-                        _result!.message,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
+              Column(
+                children: [
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: controlsMaxHeight),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _banner(queue, scheme),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                            child: SegmentedButton<String>(
+                              showSelectedIcon: false,
+                              segments: [
+                                for (final m in kMeals)
+                                  ButtonSegment(
+                                    value: m.value,
+                                    label: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        m.label,
+                                        maxLines: 1,
+                                        softWrap: false,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                              selected: {_meal},
+                              onSelectionChanged: (s) {
+                                setState(() {
+                                  _meal = s.first;
+                                  _countsLoaded = false;
+                                  _counts = {};
+                                });
+                                _loadCounts();
+                              },
+                            ),
+                          ),
+                          _countsPanel(scheme, text),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: _openNameLookup,
+                                icon: const Icon(Icons.person_search_rounded,
+                                    size: 18),
+                                label: const FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    'No phone? Search delegate by name / email',
+                                    maxLines: 1,
+                                    softWrap: false,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      if (_result!.name != null) ...[
-                        const SizedBox(height: 12),
-                        Text(_result!.name!,
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 22)),
-                      ],
-                      if (_result!.diet != null) ...[
-                        const SizedBox(height: 4),
-                        Text(_result!.diet!.toUpperCase(),
-                            style: const TextStyle(
-                                color: Colors.white70, fontSize: 18)),
-                      ],
-                    ],
+                    ),
+                  ),
+                  Expanded(
+                    child: MobileScanner(
+                      controller: controller,
+                      onDetect: _onDetect,
+                    ),
+                  ),
+                ],
+              ),
+              if (_result != null)
+                Positioned.fill(
+                  child: GestureDetector(
+                    onTap: _dismiss,
+                    child: LayoutBuilder(
+                      builder: (context, resultConstraints) {
+                        final iconSize = (resultConstraints.maxHeight * 0.16)
+                            .clamp(48.0, 96.0);
+                        return Container(
+                          color: _colorFor(_result!.outcome),
+                          padding: const EdgeInsets.all(16),
+                          child: SingleChildScrollView(
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight: resultConstraints.maxHeight - 32,
+                              ),
+                              child: Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(_iconFor(_result!.outcome),
+                                        size: iconSize, color: Colors.white),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      _result!.message,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    if (_result!.name != null) ...[
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        _result!.name!,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                            color: Colors.white, fontSize: 22),
+                                      ),
+                                    ],
+                                    if (_result!.diet != null) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _result!.diet!.toUpperCase(),
+                                        style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 18),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
-            ),
-        ],
+            ],
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: controller.toggleTorch,
@@ -672,146 +732,159 @@ class _DelegateLookupSheetState extends State<_DelegateLookupSheet> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+    final media = MediaQuery.of(context);
+    final bottomInset = media.viewInsets.bottom;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.65,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableHeight = (constraints.maxHeight - bottomInset - 32)
+            .clamp(0.0, double.infinity);
+        final sheetHeight =
+            availableHeight.clamp(0.0, media.size.height * 0.65);
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: bottomInset + 16,
+          ),
+          child: SizedBox(
+            height: sheetHeight,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Lookup Delegate',
-                        style: text.titleLarge
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Lookup Delegate',
+                            style: text.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          Text(
+                            'Serving ${widget.mealLabel} · ${widget.dietLabel} plate',
+                            style: text.bodySmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        'Serving ${widget.mealLabel} · ${widget.dietLabel} plate',
-                        style: text.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
                 ),
-                IconButton(
-                  icon: const Icon(Icons.close_rounded),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _queryController,
-              autofocus: true,
-              onChanged: _onQueryChanged,
-              onSubmitted: _search,
-              textInputAction: TextInputAction.search,
-              decoration: InputDecoration(
-                hintText: 'Search by name, email, or phone number…',
-                prefixIcon: const Icon(Icons.search_rounded),
-                suffixIcon: _queryController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded),
-                        onPressed: () {
-                          _queryController.clear();
-                          _onQueryChanged('');
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            if (_loading)
-              const Expanded(
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else if (_error != null)
-              Expanded(
-                child: Center(
-                  child: Text(
-                    _error!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: scheme.error),
-                  ),
-                ),
-              )
-            else if (_results.isEmpty)
-              Expanded(
-                child: Center(
-                  child: Text(
-                    _queryController.text.trim().length < 2
-                        ? 'Type at least 2 characters to search delegates.'
-                        : 'No matching delegates found.',
-                    style: text.bodyMedium?.copyWith(
-                      color: scheme.onSurfaceVariant,
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _queryController,
+                  autofocus: true,
+                  onChanged: _onQueryChanged,
+                  onSubmitted: _search,
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    hintText: 'Search by name, email, or phone number…',
+                    prefixIcon: const Icon(Icons.search_rounded),
+                    suffixIcon: _queryController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded),
+                            onPressed: () {
+                              _queryController.clear();
+                              _onQueryChanged('');
+                            },
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                 ),
-              )
-            else
-              Expanded(
-                child: ListView.separated(
-                  itemCount: _results.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
-                  itemBuilder: (ctx, i) {
-                    final d = _results[i];
-                    final id = (d['delegate_id'] ?? d['id'] ?? '').toString();
-                    final fullName = (d['name'] ?? '').toString().trim();
-                    final first = (d['firstname'] ?? '').toString();
-                    final last = (d['lastname'] ?? '').toString();
-                    final name = fullName.isNotEmpty
-                        ? fullName
-                        : '$first $last'.trim();
-                    final email =
-                        (d['email_hint'] ?? d['email'] ?? '').toString();
-                    final contact = (d['contact'] ?? '').toString();
-                    final committee = (d['committee'] ?? '').toString();
-                    final pref = _dietBadge(d['food_preference']?.toString());
+                const SizedBox(height: 12),
+                if (_loading)
+                  const Expanded(
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (_error != null)
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        _error!,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: scheme.error),
+                      ),
+                    ),
+                  )
+                else if (_results.isEmpty)
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        _queryController.text.trim().length < 2
+                            ? 'Type at least 2 characters to search delegates.'
+                            : 'No matching delegates found.',
+                        style: text.bodyMedium?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: _results.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      itemBuilder: (ctx, i) {
+                        final d = _results[i];
+                        final id =
+                            (d['delegate_id'] ?? d['id'] ?? '').toString();
+                        final fullName = (d['name'] ?? '').toString().trim();
+                        final first = (d['firstname'] ?? '').toString();
+                        final last = (d['lastname'] ?? '').toString();
+                        final name = fullName.isNotEmpty
+                            ? fullName
+                            : '$first $last'.trim();
+                        final email =
+                            (d['email_hint'] ?? d['email'] ?? '').toString();
+                        final contact = (d['contact'] ?? '').toString();
+                        final committee = (d['committee'] ?? '').toString();
+                        final pref =
+                            _dietBadge(d['food_preference']?.toString());
 
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 4,
-                      ),
-                      title: Text(
-                        name.isEmpty ? email : name,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text(
-                        [
-                          if (email.isNotEmpty) email,
-                          if (committee.isNotEmpty) committee,
-                          if (contact.isNotEmpty) contact,
-                          'Diet: $pref',
-                        ].join(' · '),
-                      ),
-                      trailing: FilledButton(
-                        onPressed:
-                            id.isEmpty ? null : () => Navigator.pop(context, id),
-                        child: const Text('Serve'),
-                      ),
-                    );
-                  },
-                ),
-              ),
-          ],
-        ),
-      ),
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 4,
+                          ),
+                          title: Text(
+                            name.isEmpty ? email : name,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: Text(
+                            [
+                              if (email.isNotEmpty) email,
+                              if (committee.isNotEmpty) committee,
+                              if (contact.isNotEmpty) contact,
+                              'Diet: $pref',
+                            ].join(' · '),
+                          ),
+                          trailing: FilledButton(
+                            onPressed: id.isEmpty
+                                ? null
+                                : () => Navigator.pop(context, id),
+                            child: const Text('Serve'),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
