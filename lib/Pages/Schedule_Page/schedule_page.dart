@@ -17,7 +17,6 @@ class SchedulePage extends StatefulWidget {
 class _SchedulePageState extends State<SchedulePage> {
   static const String _cacheKey = 'fullScheduleData';
   static const String _timestampKey = 'fullScheduleTimestamp';
-  static const int _cacheDurationMs = 90 * 60 * 1000;
 
   List<ConferenceDay> _days = [];
   List<Schedule> _allEvents = [];
@@ -51,33 +50,31 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<void> _fetchFullSchedule() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now().millisecondsSinceEpoch;
-
     final cachedData = prefs.getString(_cacheKey);
-    final cacheTimestamp = prefs.getInt(_timestampKey);
-    bool cacheValid = false;
 
-    if (cachedData != null && cacheTimestamp != null) {
-      if (now - cacheTimestamp < _cacheDurationMs) {
+    if (cachedData != null) {
+      try {
         _parseAndSetSchedule(cachedData);
-        cacheValid = true;
-        return;
-      }
+        _error = null;
+      } catch (_) {}
+    } else if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
     }
 
     try {
       final url = Uri.parse('${Backend.baseUrl}/schedule');
-      final response = await http.get(url);
+      final response = await http.get(url).timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
         final responseBody = response.body;
-        _parseAndSetSchedule(responseBody);
+        if (mounted) {
+          _parseAndSetSchedule(responseBody);
+        }
         await prefs.setString(_cacheKey, responseBody);
         await prefs.setInt(_timestampKey, now);
       } else {
@@ -85,9 +82,8 @@ class _SchedulePageState extends State<SchedulePage> {
         throw Exception(responseData['detail'] ?? 'Server error: Status ${response.statusCode}');
       }
     } catch (e) {
-      if (cachedData != null && _days.isEmpty) {
+      if (cachedData != null && _days.isEmpty && mounted) {
         _parseAndSetSchedule(cachedData);
-        _error = 'Could not update data. Displaying cached schedule.';
       } else if (_days.isEmpty) {
         _error = 'Data not available: ${e.toString().contains('Exception:') ? e.toString().replaceFirst('Exception: ', '') : 'Please check your connection.'}';
       }
@@ -159,7 +155,7 @@ class _SchedulePageState extends State<SchedulePage> {
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           iconTheme: IconThemeData(color: scheme.onPrimary),
-          backgroundColor: const Color(0xFFFF2BB4),
+          backgroundColor: const Color(0xFFEE1C9C),
           centerTitle: true,
           title: Text(
             "Schedule",
@@ -199,27 +195,26 @@ class _SchedulePageState extends State<SchedulePage> {
 
 class GradientAppBar extends StatelessWidget {
   final String title;
-  final double barHeight = 66.0;
+  final double barHeight = 42.0;
   GradientAppBar(this.title);
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final double statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Container(
-      color: const Color(0xFFFF2BB4),
-      padding: EdgeInsets.only(top: statusBarHeight),
-      height: statusBarHeight + barHeight,
+      width: double.infinity,
+      color: const Color(0xFFEE1C9C),
+      height: barHeight,
       child: Center(
         child: Text(
           title,
-          style: textTheme.titleLarge?.copyWith(
-              color: scheme.onPrimary,
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w600,
-              fontSize: 24.0
+          style: textTheme.titleMedium?.copyWith(
+            color: scheme.onPrimary,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w600,
+            fontSize: 17.0,
           ),
         ),
       ),

@@ -52,9 +52,8 @@ class _RoomPageState extends State<RoomPage> {
   bool _isLoading = true;
   String? _error;
 
-  static const String _cacheKey = 'allotedRoomsData_v2';
-  static const String _timestampKey = 'allotedRoomsTimestamp_v2';
-  static const int _cacheDurationMs = 120 * 60 * 1000;
+  static const String _cacheKey = 'allotedRoomsData_v4';
+  static const String _timestampKey = 'allotedRoomsTimestamp_v4';
 
   @override
   void initState() {
@@ -63,32 +62,37 @@ class _RoomPageState extends State<RoomPage> {
   }
 
   Future<void> _fetchRooms() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
     final prefs = await SharedPreferences.getInstance();
     final cachedData = prefs.getString(_cacheKey);
-    final cacheTimestamp = prefs.getString(_timestampKey);
     final now = DateTime.now().millisecondsSinceEpoch;
 
-    if (cachedData != null && cacheTimestamp != null) {
-      final lastFetched = int.tryParse(cacheTimestamp) ?? 0;
-      if (now - lastFetched < _cacheDurationMs) {
-        _rooms = _parseRooms(cachedData);
-        setState(() { _isLoading = false; });
-        return;
+    if (cachedData != null) {
+      final cachedRooms = _parseRooms(cachedData);
+      if (cachedRooms.isNotEmpty && mounted) {
+        setState(() {
+          _rooms = cachedRooms;
+          _isLoading = false;
+          _error = null;
+        });
       }
+    } else if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
     }
+
     try {
       final url = Uri.parse('${Backend.baseUrl}/rooms');
-      final response = await http.get(url);
+      final response = await http.get(url).timeout(const Duration(seconds: 8));
       if (response.statusCode == 200) {
         final responseBody = response.body;
-        _rooms = _parseRooms(responseBody);
-        await prefs.setString(_cacheKey, responseBody);
-        await prefs.setString(_timestampKey, now.toString());
+        final freshRooms = _parseRooms(responseBody);
+        if (freshRooms.isNotEmpty) {
+          _rooms = freshRooms;
+          await prefs.setString(_cacheKey, responseBody);
+          await prefs.setString(_timestampKey, now.toString());
+        }
       } else {
         final responseData = json.decode(response.body);
         final errorMessage = responseData['message'] ?? 'Server error: Status Code ${response.statusCode}';
@@ -97,20 +101,28 @@ class _RoomPageState extends State<RoomPage> {
     } catch (e) {
       if (_rooms.isEmpty) {
         _error = 'Data not available: ${e.toString().contains('Exception:') ? e.toString().replaceFirst('Exception: ', '') : 'Please check your connection.'}';
-      } else {
-        _error = 'Could not update data. Displaying cached information. Error: ${e.toString().contains('Exception:') ? e.toString().replaceFirst('Exception: ', '') : 'Network failed.'}';
       }
     }
-    setState(() {
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   List<Room> _parseRooms(String jsonString) {
     try {
       final List<dynamic> jsonList = jsonDecode(jsonString);
       var parsedRooms = jsonList.map((json) => Room.fromJson(json)).toList();
-      const order = ['UNSC', 'CCC', 'PSC', 'WTO', 'UNODC', 'UNICEF', 'ECOSOC', 'IPC'];
+      if (!parsedRooms.any((r) => r.committeeName.toUpperCase() == 'DISEC')) {
+        parsedRooms.add(Room(
+          id: 'disec_9',
+          committeeName: 'DISEC',
+          roomCode: 'TBA',
+          floor: 'TBA',
+        ));
+      }
+      const order = ['UNSC', 'CCC', 'PSC', 'WTO', 'UNODC', 'UNICEF', 'ECOSOC', 'IPC', 'DISEC'];
       parsedRooms.sort((a, b) {
         int indexA = order.indexOf(a.committeeName.toUpperCase());
         int indexB = order.indexOf(b.committeeName.toUpperCase());
@@ -124,44 +136,24 @@ class _RoomPageState extends State<RoomPage> {
 
   static const List<({List<Color> colors, Color fg, Color accent})> _palettes = [
     (
-      colors: [Color(0xFFD9FF1F), Color(0xFF8BC400)],
+      colors: [Color(0xFFBFFF00), Color(0xFFBFFF00)],
       fg: Color(0xFF111111),
       accent: Neon.orange,
     ),
     (
-      colors: [Color(0xFF2F55FF), Color(0xFF1226A8)],
+      colors: [Color(0xFF005CFF), Color(0xFF005CFF)],
       fg: Colors.white,
       accent: Neon.lime,
     ),
     (
-      colors: [Color(0xFF22D38F), Color(0xFF1B8F63)],
-      fg: Colors.white,
-      accent: Neon.yellow,
-    ),
-    (
-      colors: [Color(0xFFFF2BB4), Color(0xFFB51E9A)],
-      fg: Colors.white,
-      accent: Neon.yellow,
-    ),
-    (
-      colors: [Color(0xFF7A1BFF), Color(0xFF3E0CA8)],
+      colors: [Color(0xFF159555), Color(0xFF159555)],
       fg: Colors.white,
       accent: Neon.cyan,
     ),
     (
-      colors: [Color(0xFFFF4A22), Color(0xFFB82305)],
+      colors: [Color(0xFFEE1C9C), Color(0xFFEE1C9C)],
       fg: Colors.white,
       accent: Neon.yellow,
-    ),
-    (
-      colors: [Color(0xFF2AF5E0), Color(0xFF0E9F90)],
-      fg: Color(0xFF080824),
-      accent: Neon.navy,
-    ),
-    (
-      colors: [Color(0xFFFFF21A), Color(0xFFD4A800)],
-      fg: Color(0xFF111111),
-      accent: Neon.pink,
     ),
   ];
 
@@ -338,7 +330,7 @@ class _RoomPageState extends State<RoomPage> {
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFF2BB4),
+        backgroundColor: const Color(0xFFEE1C9C),
         foregroundColor: scheme.onPrimary,
         iconTheme: IconThemeData(color: scheme.onPrimary),
         centerTitle: true,

@@ -11,7 +11,7 @@ class SponsorMarquee extends StatefulWidget {
     super.key,
     this.onTap,
     this.speed = 36, // logical pixels per second
-    this.height = 64,
+    this.height = 68,
   });
 
   final VoidCallback? onTap;
@@ -49,21 +49,37 @@ class _SponsorMarqueeState extends State<SponsorMarquee>
     super.dispose();
   }
 
-  Widget _logo(String asset) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      alignment: Alignment.center,
-      child: Image.asset(
-        asset,
-        height: widget.height - 24,
-        fit: BoxFit.contain,
-        cacheHeight: 160,
-        excludeFromSemantics: true,
+  Widget _logo(Sponsor sponsor) {
+    final baseLogoHeight = widget.height - 26;
+    final logoHeight = (baseLogoHeight * sponsor.scale).clamp(24.0, widget.height - 10);
+    final horizontalPad = sponsor.scale > 1.2
+        ? 22.0
+        : (sponsor.scale > 1.05 ? 18.0 : 14.0);
+
+    return Center(
+      child: Container(
+        height: ( (widget.height - 12) * (sponsor.scale > 1.0 ? (0.92 + (sponsor.scale - 1.0) * 0.35) : 0.88) )
+            .clamp(38.0, widget.height - 2),
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        padding: EdgeInsets.symmetric(horizontal: horizontalPad, vertical: 6),
+        decoration: BoxDecoration(
+          color: Color(sponsor.backgroundColorHex),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: sponsor.scale > 1.2
+                ? const Color(0xFFEE1C9C)
+                : Colors.white.withValues(alpha: 0.18),
+            width: sponsor.scale > 1.2 ? 1.8 : 1.0,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Image.asset(
+          sponsor.logo,
+          height: logoHeight,
+          fit: BoxFit.contain,
+          cacheHeight: 200,
+          excludeFromSemantics: true,
+        ),
       ),
     );
   }
@@ -75,8 +91,9 @@ class _SponsorMarqueeState extends State<SponsorMarquee>
     final Widget body = still
         ? Wrap(
             alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
             runSpacing: 8,
-            children: [for (final s in kSponsors) _logo(s.logo)],
+            children: [for (final s in kSponsors) _logo(s)],
           )
         : SizedBox(
             height: widget.height,
@@ -100,7 +117,7 @@ class _SponsorMarqueeState extends State<SponsorMarquee>
                   scrollDirection: Axis.horizontal,
                   physics: const NeverScrollableScrollPhysics(),
                   // No itemCount: the list repeats the sponsors for as long as it runs.
-                  itemBuilder: (_, i) => _logo(kSponsors[i % kSponsors.length].logo),
+                  itemBuilder: (_, i) => _logo(kSponsors[i % kSponsors.length]),
                 ),
               ),
             ),

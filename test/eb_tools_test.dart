@@ -539,7 +539,7 @@ void main() {
         await t.pump(const Duration(milliseconds: 100));
         await Future<void>.delayed(const Duration(milliseconds: 20));
       }
-      expect(find.text('Mod caucus'), findsWidgets);
+      expect(find.text('Mod'), findsWidgets);
       await t.tap(find.byTooltip('Menu'));
       for (var i = 0; i < 10; i++) {
         await t.pump(const Duration(milliseconds: 100));

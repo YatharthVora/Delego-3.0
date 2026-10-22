@@ -33,12 +33,16 @@ class _Msg {
   final DateTime? at;
 }
 
-/// What each message type looks like. The server owns the type names.
-const _kinds = <String, ({String label, Color color, IconData icon})>{
-  'free': (label: 'BREAK REQUEST', color: Color(0xFF2F55FF), icon: Icons.free_breakfast),
-  'late': (label: 'RUNNING LATE', color: Color(0xFFFF7A1A), icon: Icons.timer),
-  'accept': (label: 'ACCEPTED', color: Color(0xFF1B9E5A), icon: Icons.check_circle),
-  'reject': (label: 'REJECTED', color: Color(0xFFD7263D), icon: Icons.cancel),
+/// What each message type looks like, using the 4 signature Neon swatches:
+/// - free (Request break) -> Blue / Lime (kSwatches[2])
+/// - late (Running late)  -> Lime / Orange (kSwatches[0])
+/// - accept (Accept)      -> Green / Cyan (kSwatches[3])
+/// - reject (Reject)      -> Pink / Yellow (kSwatches[1])
+final _kinds = <String, ({String label, NeonSwatch swatch, IconData icon})>{
+  'free': (label: 'BREAK REQUEST', swatch: kSwatches[2], icon: Icons.free_breakfast),
+  'late': (label: 'RUNNING LATE', swatch: kSwatches[0], icon: Icons.timer),
+  'accept': (label: 'ACCEPTED', swatch: kSwatches[3], icon: Icons.check_circle),
+  'reject': (label: 'REJECTED', swatch: kSwatches[1], icon: Icons.cancel),
 };
 
 /// Break coordination: committees ask for a break, hospitality answers. Messages are
@@ -100,6 +104,12 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
       final list = (jsonDecode(res.body) as List)
           .map((c) => _Committee((c['id'] as num).toInt(), '${c['name']}'))
           .toList();
+      if (!list.any((c) => c.name.toUpperCase() == 'DISEC')) {
+        final nextId = list.isEmpty
+            ? 9
+            : (list.map((c) => c.id).reduce((a, b) => a > b ? a : b) + 1);
+        list.add(_Committee(nextId, 'DISEC'));
+      }
       if (!mounted) return;
       setState(() {
         _committees = list;
@@ -262,7 +272,10 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
   }
 
   Widget _bubble(_Msg m, ColorScheme scheme) {
-    final kind = _kinds[m.type] ?? (label: m.type.toUpperCase(), color: scheme.primary, icon: Icons.chat);
+    final kind = _kinds[m.type] ??
+        (label: m.type.toUpperCase(), swatch: kSwatches[2], icon: Icons.chat);
+    final swatch = kind.swatch;
+    final fg = swatch.nameColor;
     final mine = m.sender == _myEmail;
     return Align(
       alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
@@ -271,7 +284,11 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
         margin: const EdgeInsets.symmetric(vertical: 5),
         padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
         decoration: BoxDecoration(
-          color: kind.color,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: swatch.colors,
+          ),
           borderRadius: BorderRadius.circular(18),
         ),
         child: Column(
@@ -280,18 +297,18 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(kind.icon, size: 14, color: Colors.white),
+                Icon(kind.icon, size: 14, color: fg),
                 const SizedBox(width: 6),
-                Text(kind.label, style: Neon.label(Colors.white, size: 11, spacing: 1.5)),
+                Text(kind.label, style: Neon.label(fg, size: 11, spacing: 1.5)),
               ],
             ),
             const SizedBox(height: 6),
             Text(m.body,
-                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500)),
+                style: TextStyle(color: fg, fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
             Text(
               '${mine ? 'You' : m.senderName} · ${_time(m.at)}',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 11),
+              style: TextStyle(color: fg.withValues(alpha: 0.78), fontSize: 11),
             ),
           ],
         ),
@@ -299,17 +316,18 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
     );
   }
 
-  Widget _action(String type, String label, IconData icon, Color color) {
+  Widget _action(String type, String label, IconData icon, NeonSwatch swatch) {
+    final fg = swatch.nameColor;
     return Expanded(
       child: FilledButton.icon(
         style: FilledButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
+          backgroundColor: swatch.colors.first,
+          foregroundColor: fg,
           minimumSize: const Size.fromHeight(50),
         ),
         onPressed: _sending ? null : () => _send(type),
         icon: Icon(icon, size: 20),
-        label: Text(label),
+        label: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
       ),
     );
   }
@@ -318,9 +336,11 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
       _send('late', body: 'Running $minutes minutes late');
 
   /// "Running late" (5 min by default) with a small triangle beside it that opens
-  /// a menu to choose 5, 10 or 15 minutes.
+  /// a menu to choose 5, 10 or 15 minutes. Uses the Lime / Orange signature swatch.
   Widget _lateSplitButton() {
-    const color = Color(0xFFE5700F);
+    final swatch = kSwatches[0];
+    final color = swatch.colors.first;
+    final fg = swatch.nameColor;
     const radius = Radius.circular(20);
     return Expanded(
       child: Row(
@@ -329,7 +349,7 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
             child: FilledButton.icon(
               style: FilledButton.styleFrom(
                 backgroundColor: color,
-                foregroundColor: Colors.white,
+                foregroundColor: fg,
                 minimumSize: const Size.fromHeight(50),
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.horizontal(left: radius),
@@ -337,7 +357,8 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
               ),
               onPressed: _sending ? null : () => _sendLate(5),
               icon: const Icon(Icons.timer, size: 20),
-              label: const Text('Running late'),
+              label: const Text('Running late',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
             ),
           ),
           const SizedBox(width: 2),
@@ -357,7 +378,7 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
                 color: _sending ? color.withValues(alpha: 0.4) : color,
                 borderRadius: const BorderRadius.horizontal(right: radius),
               ),
-              child: const Icon(Icons.arrow_drop_down, color: Colors.white, size: 30),
+              child: Icon(Icons.arrow_drop_down, color: fg, size: 30),
             ),
           ),
         ],
@@ -463,16 +484,16 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
                             children: [
                               if (canRequest)
                                 Row(children: [
-                                  _action('free', 'Request break', Icons.free_breakfast, const Color(0xFF2F55FF)),
+                                  _action('free', 'Request break', Icons.free_breakfast, kSwatches[2]),
                                   const SizedBox(width: 10),
                                   _lateSplitButton(),
                                 ]),
                               if (canRequest && canRespond) const SizedBox(height: 10),
                               if (canRespond)
                                 Row(children: [
-                                  _action('accept', 'Accept', Icons.check, const Color(0xFF1B9E5A)),
+                                  _action('accept', 'Accept', Icons.check, kSwatches[3]),
                                   const SizedBox(width: 10),
-                                  _action('reject', 'Reject (full)', Icons.close, const Color(0xFFD7263D)),
+                                  _action('reject', 'Reject (full)', Icons.close, kSwatches[1]),
                                 ]),
                             ],
                           ),

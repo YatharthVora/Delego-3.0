@@ -97,7 +97,7 @@ class _HomePageState extends State<HomePage> {
     final tiles = <Widget>[
       if (caps.can(Perm.guidesView))
         NeonCard(
-          colors: const [Color(0xFFD9FF1F), Color(0xFF8BC400)],
+          colors: const [Color(0xFFBFFF00), Color(0xFFBFFF00)],
           label: 'Study\nGuides',
           labelColor: Neon.orange,
           iconAsset: 'assets/icons/book.png',
@@ -109,7 +109,7 @@ class _HomePageState extends State<HomePage> {
         ),
       if (caps.can(Perm.badgeView))
         NeonCard(
-          colors: const [Color(0xFFFF2BB4), Color(0xFFB51E9A)],
+          colors: const [Color(0xFFEE1C9C), Color(0xFFEE1C9C)],
           label: 'My QR\nBadge',
           labelColor: Neon.yellow,
           iconAsset: 'assets/icons/qr.png',
@@ -120,7 +120,7 @@ class _HomePageState extends State<HomePage> {
           )),
         ),
       NeonCard(
-        colors: const [Color(0xFF2F55FF), Color(0xFF1226A8)],
+        colors: const [Color(0xFF005CFF), Color(0xFF005CFF)],
         label: 'Rooms',
         labelColor: Neon.lime,
         iconAsset: 'assets/icons/loc.png',
@@ -128,7 +128,7 @@ class _HomePageState extends State<HomePage> {
         onTap: () => goToPage(RoomPage()),
       ),
       NeonCard(
-        colors: const [Color(0xFF22D38F), Color(0xFF1B8F63)],
+        colors: const [Color(0xFF159555), Color(0xFF159555)],
         label: 'Schedule',
         labelColor: Neon.cyan,
         iconAsset: 'assets/icons/calendar.png',
@@ -155,7 +155,7 @@ class _HomePageState extends State<HomePage> {
       rows
         ..add(const SizedBox(height: 14))
         ..add(NeonCard(
-          colors: const [Neon.violet, Neon.blue],
+          colors: const [Color(0xFF7A1BFF), Color(0xFF2342FF)],
           label: 'Scan a delegate QR',
           labelColor: Neon.yellow,
           iconAsset: 'assets/icons/qr.png',
@@ -191,7 +191,7 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 8),
         // Runs edge to edge (past the page padding) so the logos slide off-screen.
         SizedBox(
-          height: 58,
+          height: 68,
           child: OverflowBox(
             minWidth: MediaQuery.of(context).size.width,
             maxWidth: MediaQuery.of(context).size.width,

@@ -31,10 +31,6 @@ class _LoginPageState extends State<LoginPage> {
     switch (raw.trim().toLowerCase()) {
       case 'veg':
         return 'Veg';
-      case 'non_veg':
-      case 'non-veg':
-      case 'nonveg':
-        return 'Non-Veg';
       case 'jain':
         return 'Jain';
       default:
