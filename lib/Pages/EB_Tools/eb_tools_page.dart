@@ -110,11 +110,14 @@ class _EBToolsPageState extends State<EBToolsPage> with WidgetsBindingObserver {
       } catch (_) {}
     }
     if (!mounted || id != _committeeId) return;
-    final isDisec = (_committeeName ?? '').toUpperCase() == 'DISEC';
+    final upper = (_committeeName ?? '').toUpperCase();
+    final fallback = upper == 'DISEC'
+        ? kDisecMatrix
+        : (upper == 'CCC' ? kCccMatrix : null);
     final parsed = json == null ? null : matrixPortfolios(json);
     setState(() {
-      if (isDisec && (parsed == null || parsed.isEmpty)) {
-        _matrix = kDisecMatrix;
+      if (fallback != null && (parsed == null || parsed.isEmpty)) {
+        _matrix = fallback;
         _matrixFailed = false;
       } else {
         _matrix = parsed;
