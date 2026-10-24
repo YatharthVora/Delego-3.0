@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:delego/models/schedule.dart';
 import 'package:delego/models/schedule_now.dart';
-import 'package:delego/Pages/Schedule_Page/schedule_details.dart';
 import 'package:delego/widgets/neon.dart';
 
 /// Picks an icon for an event from keywords in its name.
@@ -64,16 +63,6 @@ class ScheduleSummary extends StatelessWidget {
     super.key,
   });
 
-  void _openDetails(BuildContext context) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => DetailPage(schedule),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-            FadeTransition(opacity: animation, child: child),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final swatch = kSwatches[index % kSwatches.length];
@@ -97,120 +86,115 @@ class ScheduleSummary extends StatelessWidget {
       swatch: swatch,
       icon: scheduleIconFor(schedule.name),
       state: state,
-      onTap: () => _openDetails(context),
     );
 
     final card = Expanded(
-      child: GestureDetector(
-        onTap: () => _openDetails(context),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF151426) : Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: live
-                  ? Neon.pink
-                  : swatch.colors.first.withValues(alpha: 0.65),
-              width: live ? 2.2 : 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: (live ? Neon.pink : swatch.colors.last)
-                    .withValues(alpha: live ? 0.35 : 0.18),
-                blurRadius: 14,
-                offset: const Offset(0, 5),
-              ),
-            ],
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF151426) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color:
+                live ? Neon.pink : swatch.colors.first.withValues(alpha: 0.65),
+            width: live ? 2.2 : 1.5,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
+          boxShadow: [
+            BoxShadow(
+              color: (live ? Neon.pink : swatch.colors.last)
+                  .withValues(alpha: live ? 0.35 : 0.18),
+              blurRadius: 14,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(colors: swatch.colors),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    end.isNotEmpty ? '$start – $end' : start,
+                    style: TextStyle(
+                      fontFamily: Neon.font,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                      color: swatch.nameColor,
+                    ),
+                  ),
+                ),
+                if (live)
                   Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: swatch.colors),
+                      color: Neon.pink,
                       borderRadius: BorderRadius.circular(999),
                     ),
-                    child: Text(
-                      end.isNotEmpty ? '$start – $end' : start,
+                    child: const Text(
+                      'LIVE NOW',
                       style: TextStyle(
                         fontFamily: Neon.font,
                         fontWeight: FontWeight.w700,
-                        fontSize: 11,
-                        color: swatch.nameColor,
+                        fontSize: 10,
+                        letterSpacing: 1,
+                        color: Colors.white,
                       ),
                     ),
                   ),
-                  if (live)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Neon.pink,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: const Text(
-                        'LIVE NOW',
-                        style: TextStyle(
-                          fontFamily: Neon.font,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 10,
-                          letterSpacing: 1,
-                          color: Colors.white,
-                        ),
+              ],
+            ),
+            const SizedBox(height: 7),
+            Text(
+              schedule.name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: Neon.font,
+                fontWeight: FontWeight.w700,
+                fontSize: 15.5,
+                height: 1.2,
+                color: scheme.onSurface,
+              ),
+            ),
+            if (schedule.location.trim().isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.place_rounded,
+                    size: 13,
+                    color: swatch.colors.first,
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      schedule.location,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: Neon.font,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12.5,
+                        color: scheme.onSurface.withValues(alpha: 0.72),
                       ),
                     ),
+                  ),
                 ],
               ),
-              const SizedBox(height: 7),
-              Text(
-                schedule.name,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontFamily: Neon.font,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15.5,
-                  height: 1.2,
-                  color: scheme.onSurface,
-                ),
-              ),
-              if (schedule.location.trim().isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.place_rounded,
-                      size: 13,
-                      color: swatch.colors.first,
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        schedule.location,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontFamily: Neon.font,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 12.5,
-                          color: scheme.onSurface.withValues(alpha: 0.72),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
             ],
-          ),
+          ],
         ),
       ),
     );
@@ -232,162 +216,118 @@ class ScheduleSummary extends StatelessWidget {
   }
 }
 
-/// Chunky 3D game-level tile with 3 stars arched above it (matching the game roadmap style).
+/// Chunky 3D game-level tile (matching the game roadmap style).
 class _LevelTile extends StatelessWidget {
   final int index;
   final NeonSwatch swatch;
   final IconData icon;
   final ScheduleLevelState state;
-  final VoidCallback onTap;
 
   const _LevelTile({
     required this.index,
     required this.swatch,
     required this.icon,
     required this.state,
-    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final live = state == ScheduleLevelState.live;
-    final starColor = Neon.yellow;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: SizedBox(
-        width: 80,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Arched 3-star game level crown above the tile
-            SizedBox(
-              height: 22,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
+    return SizedBox(
+      width: 80,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 3D rounded-square game level button
+          Container(
+            width: 68,
+            height: 68,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: swatch.colors,
+              ),
+              border: Border.all(
+                color: live ? Neon.yellow : Colors.white,
+                width: live ? 3.5 : 2.5,
+              ),
+              boxShadow: [
+                // 3D bottom lip like a game level button
+                BoxShadow(
+                  color: swatch.colors.last.withValues(alpha: 0.9),
+                  offset: const Offset(0, 5),
+                  blurRadius: 0,
+                ),
+                BoxShadow(
+                  color: (live ? Neon.pink : swatch.colors.first)
+                      .withValues(alpha: live ? 0.65 : 0.4),
+                  blurRadius: live ? 18 : 10,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(17),
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  Transform.rotate(
-                    angle: -0.22,
-                    child: Icon(Icons.star_rounded,
-                        size: 17,
-                        color: starColor,
-                        shadows: const [
-                          Shadow(color: Colors.black54, blurRadius: 4)
-                        ]),
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: GridPainter(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        step: 10,
+                      ),
+                    ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Icon(Icons.star_rounded,
-                        size: 21,
-                        color: starColor,
-                        shadows: const [
-                          Shadow(color: Colors.black54, blurRadius: 4)
-                        ]),
+                  // Top glossy highlight
+                  Positioned(
+                    top: 3,
+                    left: 6,
+                    right: 6,
+                    height: 16,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.white.withValues(alpha: 0.38),
+                            Colors.white.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                  Transform.rotate(
-                    angle: 0.22,
-                    child: Icon(Icons.star_rounded,
-                        size: 17,
-                        color: starColor,
-                        shadows: const [
-                          Shadow(color: Colors.black54, blurRadius: 4)
-                        ]),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        icon,
+                        size: 28,
+                        color: swatch.nameColor,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${index + 1}'.padLeft(2, '0'),
+                        style: TextStyle(
+                          fontFamily: Neon.font,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                          height: 1.0,
+                          color: swatch.nameColor.withValues(alpha: 0.85),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 2),
-            // 3D rounded-square game level button
-            Container(
-              width: 68,
-              height: 68,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: swatch.colors,
-                ),
-                border: Border.all(
-                  color: live ? Neon.yellow : Colors.white,
-                  width: live ? 3.5 : 2.5,
-                ),
-                boxShadow: [
-                  // 3D bottom lip like a game level button
-                  BoxShadow(
-                    color: swatch.colors.last.withValues(alpha: 0.9),
-                    offset: const Offset(0, 5),
-                    blurRadius: 0,
-                  ),
-                  BoxShadow(
-                    color: (live ? Neon.pink : swatch.colors.first)
-                        .withValues(alpha: live ? 0.65 : 0.4),
-                    blurRadius: live ? 18 : 10,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(17),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Positioned.fill(
-                      child: CustomPaint(
-                        painter: GridPainter(
-                          color: Colors.black.withValues(alpha: 0.12),
-                          step: 10,
-                        ),
-                      ),
-                    ),
-                    // Top glossy highlight
-                    Positioned(
-                      top: 3,
-                      left: 6,
-                      right: 6,
-                      height: 16,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.white.withValues(alpha: 0.38),
-                              Colors.white.withValues(alpha: 0.0),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          icon,
-                          size: 28,
-                          color: swatch.nameColor,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${index + 1}'.padLeft(2, '0'),
-                          style: TextStyle(
-                            fontFamily: Neon.font,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 11,
-                            height: 1.0,
-                            color: swatch.nameColor.withValues(alpha: 0.85),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
