@@ -59,12 +59,14 @@ const kSponsors = <Sponsor>[
   Sponsor(
     name: 'kohfae',
     logo: 'assets/icons/kohfae.jpeg',
+    url: 'https://www.instagram.com/kohfae.in/',
     scale: 1.18,
     backgroundColorHex: 0xFFFFFFFF,
   ),
   Sponsor(
     name: 'Plum',
     logo: 'assets/icons/plum.jpeg',
+    url: 'https://plumgoodness.com',
     scale: 1.18,
     backgroundColorHex: 0xFF000000,
   ),
