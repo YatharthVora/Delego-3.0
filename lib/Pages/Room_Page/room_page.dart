@@ -342,36 +342,37 @@ class _RoomPageState extends State<RoomPage>
 
   /// Jumps from a committee room card directly to its floor and highlights the room on the map.
   void _locateRoomOnMap(Room room) {
-    if (_floorPlans.floors.isEmpty) return;
     final roomNorm = normalizeRoomCode(room.roomCode);
     final floorNorm = room.floor.trim().toLowerCase();
 
     int targetFloorIdx = -1;
     FloorBlock? matchedBlock;
 
-    // 1. Try matching by room code across floors
-    if (roomNorm.isNotEmpty && roomNorm != 'TBA') {
-      for (var i = 0; i < _floorPlans.floors.length; i++) {
-        final f = _floorPlans.floors[i];
-        for (final b in f.blocks) {
-          if (b.type == 'room' &&
-              normalizeRoomCode(b.roomCode ?? b.label) == roomNorm) {
-            targetFloorIdx = i;
-            matchedBlock = b;
-            break;
+    if (_floorPlans.floors.isNotEmpty) {
+      // 1. Try matching by room code across floors
+      if (roomNorm.isNotEmpty && roomNorm != 'TBA') {
+        for (var i = 0; i < _floorPlans.floors.length; i++) {
+          final f = _floorPlans.floors[i];
+          for (final b in f.blocks) {
+            if (b.type == 'room' &&
+                normalizeRoomCode(b.roomCode ?? b.label) == roomNorm) {
+              targetFloorIdx = i;
+              matchedBlock = b;
+              break;
+            }
           }
+          if (targetFloorIdx != -1) break;
         }
-        if (targetFloorIdx != -1) break;
       }
-    }
 
-    // 2. Fallback: match by floor name (e.g. "Floor 4")
-    if (targetFloorIdx == -1 && floorNorm.isNotEmpty && floorNorm != 'tba') {
-      targetFloorIdx = _floorPlans.floors.indexWhere(
-        (f) =>
-            f.name.toLowerCase() == floorNorm ||
-            f.shortName.toLowerCase() == floorNorm,
-      );
+      // 2. Fallback: match by floor name (e.g. "Floor 4")
+      if (targetFloorIdx == -1 && floorNorm.isNotEmpty && floorNorm != 'tba') {
+        targetFloorIdx = _floorPlans.floors.indexWhere(
+          (f) =>
+              f.name.toLowerCase() == floorNorm ||
+              f.shortName.toLowerCase() == floorNorm,
+        );
+      }
     }
 
     setState(() {
@@ -413,138 +414,193 @@ class _RoomPageState extends State<RoomPage>
     final p = _palettes[index % _palettes.length];
     final fg = p.fg;
     final floor = room.floor.trim();
-    final canLocate = _floorPlans.floors.isNotEmpty &&
-        normalizeRoomCode(room.roomCode) != 'TBA' &&
-        normalizeRoomCode(room.roomCode).isNotEmpty;
+    final isDarkFg = fg.computeLuminance() < 0.3;
+    final pillBg = isDarkFg
+        ? Colors.black.withValues(alpha: 0.12)
+        : Colors.black.withValues(alpha: 0.24);
+    final pillBorder = fg.withValues(alpha: 0.35);
 
-    return GestureDetector(
-      onTap: _floorPlans.floors.isNotEmpty ? () => _locateRoomOnMap(room) : null,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(22),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: p.colors,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: p.colors.last.withValues(alpha: 0.35),
-              blurRadius: 12,
-              offset: const Offset(0, 5),
-            ),
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: p.colors,
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(22),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: GridPainter(
-                      color: Colors.black.withValues(alpha: 0.10), step: 10),
+        border: Border.all(
+          color: fg.withValues(alpha: 0.22),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: p.colors.last.withValues(alpha: 0.35),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _locateRoomOnMap(room),
+            splashColor: fg.withValues(alpha: 0.18),
+            highlightColor: fg.withValues(alpha: 0.10),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: GridPainter(
+                        color: Colors.black.withValues(alpha: 0.10), step: 10),
+                  ),
                 ),
-              ),
-              Positioned(
-                right: 6,
-                bottom: 6,
-                width: 72,
-                height: 64,
-                child: CustomPaint(
-                  painter: RingsPainter(
-                      color: p.accent.withValues(alpha: 0.45),
-                      count: 6,
-                      seed: index + 3),
+                Positioned(
+                  right: 6,
+                  bottom: 6,
+                  width: 72,
+                  height: 64,
+                  child: CustomPaint(
+                    painter: RingsPainter(
+                        color: p.accent.withValues(alpha: 0.45),
+                        count: 6,
+                        seed: index + 3),
+                  ),
                 ),
-              ),
-              MediaQuery(
-                data: MediaQuery.of(context)
-                    .copyWith(textScaler: TextScaler.noScaling),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final contentWidth = constraints.maxWidth - 28;
-                    final contentHeight = constraints.maxHeight - 28;
-                    final scale = math.min(
-                      (contentWidth / 190).clamp(0.4, 1.0),
-                      (contentHeight / (floor.isEmpty ? 96 : 120))
-                          .clamp(0.4, 1.0),
-                    );
-                    return Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    room.committeeName,
-                                    maxLines: 1,
-                                    softWrap: false,
-                                    style: TextStyle(
-                                      fontFamily: Neon.font,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 22 * scale,
-                                      color: fg,
+                MediaQuery(
+                  data: MediaQuery.of(context)
+                      .copyWith(textScaler: TextScaler.noScaling),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final contentWidth = constraints.maxWidth - 28;
+                      final contentHeight = constraints.maxHeight - 28;
+                      final scale = math.min(
+                        (contentWidth / 190).clamp(0.4, 1.0),
+                        (contentHeight / 120).clamp(0.4, 1.0),
+                      );
+                      final badgeScale = scale.clamp(0.75, 1.0);
+                      return Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      room.committeeName,
+                                      maxLines: 1,
+                                      softWrap: false,
+                                      style: TextStyle(
+                                        fontFamily: Neon.font,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 22 * scale,
+                                        color: fg,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              if (canLocate)
-                                Icon(
-                                  Icons.map_outlined,
-                                  size: 16 * scale.clamp(0.75, 1.0),
-                                  color: fg.withValues(alpha: 0.8),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 7.5 * badgeScale,
+                                    vertical: 3.5 * badgeScale,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: pillBg,
+                                    borderRadius: BorderRadius.circular(999),
+                                    border: Border.all(
+                                      color: pillBorder,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.location_on_rounded,
+                                        size: 11.5 * badgeScale,
+                                        color: fg,
+                                      ),
+                                      SizedBox(width: 3 * badgeScale),
+                                      Text(
+                                        'MAP',
+                                        style: Neon.label(
+                                          fg,
+                                          size: 9 * badgeScale,
+                                          spacing: 0.8,
+                                        ),
+                                      ),
+                                      SizedBox(width: 1.5 * badgeScale),
+                                      Icon(
+                                        Icons.chevron_right_rounded,
+                                        size: 13 * badgeScale,
+                                        color: fg,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                            ],
-                          ),
-                          const Spacer(),
-                          Text(
-                            'ROOM',
-                            style: Neon.label(fg.withValues(alpha: 0.75),
-                                size: 10 * scale, spacing: 2 * scale),
-                          ),
-                          SizedBox(height: 2 * scale),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              room.roomCode,
-                              maxLines: 1,
-                              softWrap: false,
-                              style: TextStyle(
-                                fontFamily: Neon.font,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 34 * scale,
-                                height: 1.05,
-                                color: fg,
+                              ],
+                            ),
+                            const Spacer(),
+                            Text(
+                              'ROOM',
+                              style: Neon.label(fg.withValues(alpha: 0.75),
+                                  size: 10 * scale, spacing: 2 * scale),
+                            ),
+                            SizedBox(height: 2 * scale),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                room.roomCode,
+                                maxLines: 1,
+                                softWrap: false,
+                                style: TextStyle(
+                                  fontFamily: Neon.font,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 34 * scale,
+                                  height: 1.05,
+                                  color: fg,
+                                ),
                               ),
                             ),
-                          ),
-                          if (floor.isNotEmpty) ...[
                             SizedBox(height: 4 * scale),
-                            Text(
-                              floor,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontFamily: Neon.font,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 12.5 * scale,
-                                color: fg.withValues(alpha: 0.85),
-                              ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    floor.isNotEmpty ? floor : 'Tap to locate',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontFamily: Neon.font,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12 * scale,
+                                      color: fg.withValues(alpha: 0.88),
+                                    ),
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.touch_app_rounded,
+                                  size: 13.5 * badgeScale,
+                                  color: fg.withValues(alpha: 0.85),
+                                ),
+                              ],
                             ),
                           ],
-                        ],
-                      ),
-                    );
-                  },
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -581,25 +637,76 @@ class _RoomPageState extends State<RoomPage>
       );
     }
 
-    return LayoutBuilder(builder: (context, c) {
-      const pad = 14.0, gap = 12.0;
-      final rows = (_rooms.length / 2).ceil().clamp(1, 100);
-      final tileW = (c.maxWidth - pad * 2 - gap) / 2;
-      final fitH = (c.maxHeight - pad * 2 - gap * (rows - 1)) / rows;
-      final tileH = fitH.clamp(110.0, 220.0);
-      return GridView.builder(
-        padding: const EdgeInsets.all(pad),
-        physics: const BouncingScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: gap,
-          crossAxisSpacing: gap,
-          childAspectRatio: tileW / tileH,
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 2),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () => setState(() => _activeTab = 1),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: scheme.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: scheme.primary.withValues(alpha: 0.35),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.touch_app_rounded,
+                    size: 16,
+                    color: scheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Tap any committee card to locate its room on the Floor Plan',
+                      style: TextStyle(
+                        fontFamily: Neon.font,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: scheme.onSurface.withValues(alpha: 0.9),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 12,
+                    color: scheme.primary,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-        itemCount: _rooms.length,
-        itemBuilder: (context, index) => _buildRoomCard(_rooms[index], index),
-      );
-    });
+        Expanded(
+          child: LayoutBuilder(builder: (context, c) {
+            const pad = 14.0, gap = 12.0;
+            final rows = (_rooms.length / 2).ceil().clamp(1, 100);
+            final tileW = (c.maxWidth - pad * 2 - gap) / 2;
+            final fitH = (c.maxHeight - pad * 2 - gap * (rows - 1)) / rows;
+            final tileH = fitH.clamp(110.0, 220.0);
+            return GridView.builder(
+              padding: const EdgeInsets.all(pad),
+              physics: const BouncingScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: gap,
+                crossAxisSpacing: gap,
+                childAspectRatio: tileW / tileH,
+              ),
+              itemCount: _rooms.length,
+              itemBuilder: (context, index) =>
+                  _buildRoomCard(_rooms[index], index),
+            );
+          }),
+        ),
+      ],
+    );
   }
 
   Widget _buildFloorPlanView(ColorScheme scheme, TextTheme textTheme) {
