@@ -25,6 +25,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   static String _formatDietLabel(String? raw) {
     if (raw == null || raw.trim().isEmpty) return '';
@@ -367,10 +368,26 @@ class _LoginPageState extends State<LoginPage> {
                 // password
                 TextField(
                   controller: passwordController,
-                  obscureText: true,
+                  obscureText: _obscurePassword,
                   style: TextStyle(color: scheme.onSurface),
                   cursorColor: scheme.primary,
-                  decoration: themedInputDecoration("Password"),
+                  decoration: themedInputDecoration("Password").copyWith(
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      tooltip: _obscurePassword
+                          ? 'Show password'
+                          : 'Hide password',
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 10),
 

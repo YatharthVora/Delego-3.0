@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:delego/models/schedule.dart';
 import 'package:delego/models/schedule_now.dart';
-import 'package:delego/Pages/Schedule_Page/schedule_details.dart';
 import 'package:delego/widgets/neon.dart';
 
 /// Picks an icon for an event from keywords in its name.
@@ -64,16 +63,6 @@ class ScheduleSummary extends StatelessWidget {
     super.key,
   });
 
-  void _openDetails(BuildContext context) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => DetailPage(schedule),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-            FadeTransition(opacity: animation, child: child),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final swatch = kSwatches[index % kSwatches.length];
@@ -97,12 +86,10 @@ class ScheduleSummary extends StatelessWidget {
       swatch: swatch,
       icon: scheduleIconFor(schedule.name),
       state: state,
-      onTap: () => _openDetails(context),
     );
 
     final card = Expanded(
       child: GestureDetector(
-        onTap: () => _openDetails(context),
         child: Container(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
           decoration: BoxDecoration(
@@ -238,14 +225,12 @@ class _LevelTile extends StatelessWidget {
   final NeonSwatch swatch;
   final IconData icon;
   final ScheduleLevelState state;
-  final VoidCallback onTap;
 
   const _LevelTile({
     required this.index,
     required this.swatch,
     required this.icon,
     required this.state,
-    required this.onTap,
   });
 
   @override
@@ -254,7 +239,6 @@ class _LevelTile extends StatelessWidget {
     final starColor = Neon.yellow;
 
     return GestureDetector(
-      onTap: onTap,
       child: SizedBox(
         width: 80,
         child: Column(
