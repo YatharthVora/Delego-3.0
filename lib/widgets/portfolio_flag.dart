@@ -3,7 +3,27 @@ import 'dart:math' as math;
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 
-/// A portfolio's flag (bundled, works offline); for a person, their party badge when
+/// Maps PSC political party abbreviations (`tag`) to their bundled placard flag assets.
+const Map<String, String> _pscPartyFlagAssets = {
+  'INC': 'assets/images/flags/psc_inc.png',
+  'AITC': 'assets/images/flags/psc_aitc.png',
+  'BJP': 'assets/images/flags/psc_bjp.png',
+  'IUML': 'assets/images/flags/psc_iuml.png',
+  'SS(UBT)': 'assets/images/flags/psc_ss_ubt.png',
+  'AAP': 'assets/images/flags/psc_aap.png',
+  'RJD': 'assets/images/flags/psc_rjd.png',
+  'ASP(KR)': 'assets/images/flags/psc_asp_kr.png',
+  'DMK': 'assets/images/flags/psc_dmk.png',
+  'SHS': 'assets/images/flags/psc_shs.png',
+  'NCPI': 'assets/images/flags/psc_ncpi.png',
+  'TDP': 'assets/images/flags/psc_tdp.png',
+  'NCP(SP)': 'assets/images/flags/psc_ncp_sp.png',
+  'JKNC': 'assets/images/flags/psc_jknc.png',
+  'CPI(M)': 'assets/images/flags/psc_cpim.png',
+  'AIMIM': 'assets/images/flags/psc_aimim.png',
+};
+
+/// A portfolio's flag (bundled, works offline); for a person, their party flag/badge when
 /// they have one (PSC), else a person icon.
 class PortfolioFlag extends StatelessWidget {
   const PortfolioFlag(
@@ -26,9 +46,21 @@ class PortfolioFlag extends StatelessWidget {
       shape: const RoundedRectangle(4),
     );
     final code = this.code;
+    final pscAsset = tag != null ? _pscPartyFlagAssets[tag!.trim()] : null;
+
     final Widget flag;
-    if (code == null && tag != null) {
-      // As wide as the abbreviation needs: "SS(UBT)" stays as legible as "BJP".
+    if (pscAsset != null) {
+      flag = ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: Image.asset(
+          pscAsset,
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+        ),
+      );
+    } else if (code == null && tag != null) {
+      // As wide as the abbreviation needs: fallback badge for any unmapped tag.
       return ExcludeSemantics(
           child: _TagBadge(width: width, height: height, tag: tag!));
     } else if (code == null) {

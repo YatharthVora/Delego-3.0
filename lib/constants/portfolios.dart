@@ -14,7 +14,7 @@ class Portfolio {
   final String? code;
   final List<String> aliases;
 
-  /// A person's party abbreviation (PSC), shown as a badge instead of a flag.
+  /// A person's party abbreviation (PSC), shown as a party flag/badge.
   final String? tag;
 
   /// A person's party, in full.
@@ -26,9 +26,18 @@ final Map<String, String> _cccCodeByLowerName = {
     if (p.code != null) p.name.toLowerCase(): p.code!,
 };
 
+final Map<String, String> _pscTagByLowerName = {
+  for (final p in kPscMatrix)
+    if (p.tag != null) p.name.toLowerCase(): p.tag!,
+};
+
 /// Returns the assigned flag code for a CCC character by name, or null if not in CCC.
 String? cccCodeForName(String name) =>
     _cccCodeByLowerName[name.trim().toLowerCase()];
+
+/// Returns the assigned party tag for a PSC member by name, or null if not in PSC.
+String? pscTagForName(String name) =>
+    _pscTagByLowerName[name.trim().toLowerCase()];
 
 /// A committee's matrix (GET /public/committees/{id}/portfolios) as portfolios to search.
 /// A country also answers to the names in [kPortfolios] for its flag ("usa" finds "United
@@ -41,7 +50,7 @@ List<Portfolio> matrixPortfolios(List<dynamic> json) {
         final j = raw as Map<String, dynamic>;
         final name = j['name'] as String;
         final code = (j['code'] as String?) ?? cccCodeForName(name);
-        final tag = j['tag'] as String?;
+        final tag = (j['tag'] as String?) ?? pscTagForName(name);
         final detail = j['detail'] as String?;
         final known = code == null ? null : byCode[code];
         final aliases = <String>{
@@ -328,4 +337,54 @@ const List<Portfolio> kCccMatrix = [
   Portfolio('Marcel Baudez', 'fr'),
   Portfolio('Robert Jacquinot de Besange', 'fr'),
   Portfolio('Dr. Oskar Trautmann', 'de-imp'),
+];
+
+/// Official Mumbai MUN 2026 PSC portfolio matrix (45 members, in sheet order, with their
+/// respective political party tags and full party names).
+const List<Portfolio> kPscMatrix = [
+  Portfolio('Ajay Maken', null, ['INC', 'Indian National Congress'], 'INC', 'Indian National Congress'),
+  Portfolio("Derek O'Brien", null, ['AITC', 'All India Trinamool Congress'], 'AITC', 'All India Trinamool Congress'),
+  Portfolio('Dr. Radha Mohan Das Agrawal', null, ['BJP', 'Bharatiya Janata Party'], 'BJP', 'Bharatiya Janata Party'),
+  Portfolio('Haris Beeran', null, ['IUML', 'Indian Union Muslim League'], 'IUML', 'Indian Union Muslim League'),
+  Portfolio('Neeraj Shekhar', null, ['BJP', 'Bharatiya Janata Party'], 'BJP', 'Bharatiya Janata Party'),
+  Portfolio('Samik Bhattacharya', null, ['BJP', 'Bharatiya Janata Party'], 'BJP', 'Bharatiya Janata Party'),
+  Portfolio('Sanjay Raut', null, ['SS(UBT)', 'Shiv Sena (Uddhav Balasaheb Thackeray)'], 'SS(UBT)', 'Shiv Sena (Uddhav Balasaheb Thackeray)'),
+  Portfolio('Sanjay Singh', null, ['AAP', 'Aam Aadmi Party'], 'AAP', 'Aam Aadmi Party'),
+  Portfolio('Sanjay Yadav', null, ['RJD', 'Rashtriya Janata Dal'], 'RJD', 'Rashtriya Janata Dal'),
+  Portfolio('Tarun Chugh', null, ['BJP', 'Bharatiya Janata Party'], 'BJP', 'Bharatiya Janata Party'),
+  Portfolio('Amrinder Singh Raja Warring', null, ['INC', 'Indian National Congress'], 'INC', 'Indian National Congress'),
+  Portfolio('Anil Yeshwant Desai', null, ['SS(UBT)', 'Shiv Sena (Uddhav Balasaheb Thackeray)'], 'SS(UBT)', 'Shiv Sena (Uddhav Balasaheb Thackeray)'),
+  Portfolio('Ashish Dubey', null, ['BJP', 'Bharatiya Janata Party'], 'BJP', 'Bharatiya Janata Party'),
+  Portfolio('B Y Raghavendra', null, ['BJP', 'Bharatiya Janata Party'], 'BJP', 'Bharatiya Janata Party'),
+  Portfolio('Chandra Shekhar', null, ['ASP(KR)', 'Aazad Samaj Party (Kanshi Ram)'], 'ASP(KR)', 'Aazad Samaj Party (Kanshi Ram)'),
+  Portfolio('Dayanidhi Maran', null, ['DMK', 'Dravida Munnetra Kazhagam'], 'DMK', 'Dravida Munnetra Kazhagam'),
+  Portfolio('Delkar Kalaben Mohanbhai', null, ['BJP', 'Bharatiya Janata Party'], 'BJP', 'Bharatiya Janata Party'),
+  Portfolio('Dhairyasheel Sambhajirao Mane', null, ['SHS', 'Shiv Sena'], 'SHS', 'Shiv Sena'),
+  Portfolio('Dr. Kakoli Ghosh Dastidar', null, ['NCPI', 'Nationalist Citizens Party of India'], 'NCPI', 'Nationalist Citizens Party of India'),
+  Portfolio('Jai Parkash', null, ['INC', 'Indian National Congress'], 'INC', 'Indian National Congress'),
+  Portfolio('Jyotirmay Singh Mahato', null, ['BJP', 'Bharatiya Janata Party'], 'BJP', 'Bharatiya Janata Party'),
+  Portfolio('Kesineni Sivanath', null, ['TDP', 'Telugu Desam Party'], 'TDP', 'Telugu Desam Party'),
+  Portfolio('Krishna Prasad Tenneti', null, ['TDP', 'Telugu Desam Party'], 'TDP', 'Telugu Desam Party'),
+  Portfolio('Mala Roy', null, ['AITC', 'All India Trinamool Congress'], 'AITC', 'All India Trinamool Congress'),
+  Portfolio('Muhammed Hamdullah Sayeed', null, ['INC', 'Indian National Congress'], 'INC', 'Indian National Congress'),
+  Portfolio('Naveen Jindal', null, ['BJP', 'Bharatiya Janata Party'], 'BJP', 'Bharatiya Janata Party'),
+  Portfolio('Priyanka Gandhi Vadra', null, ['INC', 'Indian National Congress'], 'INC', 'Indian National Congress'),
+  Portfolio('Satish Kumar Gautam', null, ['BJP', 'Bharatiya Janata Party'], 'BJP', 'Bharatiya Janata Party'),
+  Portfolio('Saumitra Khan', null, ['BJP', 'Bharatiya Janata Party'], 'BJP', 'Bharatiya Janata Party'),
+  Portfolio('Supriya Sule', null, ['NCP(SP)', 'Nationalist Congress Party – Sharadchandra Pawar'], 'NCP(SP)', 'Nationalist Congress Party – Sharadchandra Pawar'),
+  Portfolio('Vishnu Dayal Ram', null, ['BJP', 'Bharatiya Janata Party'], 'BJP', 'Bharatiya Janata Party'),
+  Portfolio('Adhikarimayum Sharda Devi', null, ['BJP', 'Bharatiya Janata Party'], 'BJP', 'Bharatiya Janata Party'),
+  Portfolio('Brij Lal', null, ['BJP', 'Bharatiya Janata Party'], 'BJP', 'Bharatiya Janata Party'),
+  Portfolio('Chowdhury Mohammad Ramzan', null, ['JKNC', 'Jammu & Kashmir National Conference'], 'JKNC', 'Jammu & Kashmir National Conference'),
+  Portfolio('John Brittas', null, ['CPI(M)', 'Communist Party of India (Marxist)'], 'CPI(M)', 'Communist Party of India (Marxist)'),
+  Portfolio('Manoj Kumar Jha', null, ['RJD', 'Rashtriya Janata Dal'], 'RJD', 'Rashtriya Janata Dal'),
+  Portfolio('P. Chidambaram', null, ['INC', 'Indian National Congress'], 'INC', 'Indian National Congress'),
+  Portfolio('Renuka Chowdhury', null, ['INC', 'Indian National Congress'], 'INC', 'Indian National Congress'),
+  Portfolio('Asaduddin Owaisi', null, ['AIMIM', 'All India Majlis-e-Ittehadul Muslimeen'], 'AIMIM', 'All India Majlis-e-Ittehadul Muslimeen'),
+  Portfolio('Dr. Angomcha Bimol Akoijam', null, ['INC', 'Indian National Congress'], 'INC', 'Indian National Congress'),
+  Portfolio('Dr. Sambit Patra', null, ['BJP', 'Bharatiya Janata Party'], 'BJP', 'Bharatiya Janata Party'),
+  Portfolio('Gaurav Gogoi', null, ['INC', 'Indian National Congress'], 'INC', 'Indian National Congress'),
+  Portfolio('Mahua Moitra', null, ['AITC', 'All India Trinamool Congress'], 'AITC', 'All India Trinamool Congress'),
+  Portfolio('Praveen Khandelwal', null, ['BJP', 'Bharatiya Janata Party'], 'BJP', 'Bharatiya Janata Party'),
+  Portfolio('Rahul Gandhi', null, ['INC', 'Indian National Congress'], 'INC', 'Indian National Congress'),
 ];

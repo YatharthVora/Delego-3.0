@@ -82,13 +82,16 @@ class FloorEntry {
   factory FloorEntry.fromJson(Map<String, dynamic> j) {
     final name = j['name'] as String;
     final rawCode = j['code'] as String?;
+    final rawTag = j['tag'] as String?;
     return FloorEntry(
       id: j['id'] as String,
       name: name,
       code: (rawCode != null && rawCode.isNotEmpty)
           ? rawCode
           : cccCodeForName(name),
-      tag: j['tag'] as String?,
+      tag: (rawTag != null && rawTag.isNotEmpty)
+          ? rawTag
+          : pscTagForName(name),
     );
   }
 }

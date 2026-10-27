@@ -113,7 +113,9 @@ class _EBToolsPageState extends State<EBToolsPage> with WidgetsBindingObserver {
     final upper = (_committeeName ?? '').toUpperCase();
     final fallback = upper == 'DISEC'
         ? kDisecMatrix
-        : (upper == 'CCC' ? kCccMatrix : null);
+        : (upper == 'CCC'
+            ? kCccMatrix
+            : (upper == 'PSC' ? kPscMatrix : null));
     final parsed = json == null ? null : matrixPortfolios(json);
     setState(() {
       if (fallback != null && (parsed == null || parsed.isEmpty)) {
