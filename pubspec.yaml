@@ -87,6 +87,7 @@ flutter:
     - assets/icons/
     - assets/images/
     - assets/images/committees/
+    - assets/images/flags/
     - assets/pdfs/
     - assets/videos/
 
