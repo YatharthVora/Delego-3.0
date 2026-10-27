@@ -1,11 +1,13 @@
 import 'package:delego/widgets/mun_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:delego/Pages/Home_Page/my_list_tile.dart';
+import 'package:delego/Pages/Profile_Page/profile_page.dart';
 import 'package:delego/Pages/Sponsors_Page/sponsor_page.dart';
 import 'package:delego/Pages/Policy_Page/policy_page.dart';
 import 'package:delego/Pages/Admin_Page/admin_dashboard.dart';
 import 'package:delego/Pages/Chat_Page/committee_chat_page.dart';
 import 'package:delego/Pages/EB_Tools/eb_tools_page.dart';
+import 'package:delego/Theme/theme_controller.dart';
 import 'package:provider/provider.dart';
 import 'package:delego/auth/capabilities.dart';
 import 'package:delego/auth/permission_gate.dart';
@@ -13,8 +15,9 @@ import 'package:delego/widgets/neon.dart';
 
 class MyDrawer extends StatefulWidget {
   final void Function()? onSignoutTap;
+  final ThemeController? controller;
 
-  const MyDrawer({super.key, required this.onSignoutTap});
+  const MyDrawer({super.key, required this.onSignoutTap, this.controller});
 
   @override
   State<MyDrawer> createState() => _MyDrawerState();
@@ -82,7 +85,8 @@ class _MyDrawerState extends State<MyDrawer> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   MunLogoLink(
-                    child: Image.asset('assets/images/logo_solid.webp', height: 34),
+                    child: Image.asset('assets/images/logo_solid.webp',
+                        height: 34),
                   ),
                   const SizedBox(height: 10),
                   Text('MUMBAI MUN',
@@ -107,12 +111,26 @@ class _MyDrawerState extends State<MyDrawer> {
                     text: 'HOME',
                     onTap: () => Navigator.pop(context),
                   ),
+                  if (widget.controller != null)
+                    MyListTile(
+                      icon: Icons.settings_rounded,
+                      text: 'SETTINGS',
+                      onTap: () {
+                        final ctrl = widget.controller!;
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProfilePage(controller: ctrl),
+                          ),
+                        );
+                      },
+                    ),
                   MyListTile(
                     icon: Icons.handshake,
                     text: 'SPONSORS',
                     onTap: goToSponsorsPage,
                   ),
-
                   MyListTile(
                     icon: Icons.account_balance_rounded,
                     text: 'UN CHARTER',
@@ -178,9 +196,11 @@ class _MyDrawerState extends State<MyDrawer> {
                   // POLICIES (kept at the bottom of the list)
                   ListTile(
                     leading: Icon(Icons.policy, color: scheme.onSurface),
-                    title: Text('POLICIES', style: TextStyle(color: scheme.onSurface)),
+                    title: Text('POLICIES',
+                        style: TextStyle(color: scheme.onSurface)),
                     trailing: PopupMenuButton<String>(
-                      icon: Icon(Icons.arrow_drop_down, color: scheme.onSurface),
+                      icon:
+                          Icon(Icons.arrow_drop_down, color: scheme.onSurface),
                       color: scheme.surface,
                       onSelected: openPolicy,
                       itemBuilder: (context) => [
@@ -216,7 +236,8 @@ class _MyDrawerState extends State<MyDrawer> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('For grievances, contact',
-                          style: body.copyWith(color: ink.withValues(alpha: 0.7))),
+                          style: body.copyWith(
+                              color: ink.withValues(alpha: 0.7))),
                       const SizedBox(height: 4),
                       Text('secretariat.mumbaimun@gmail.com',
                           style: body.copyWith(
