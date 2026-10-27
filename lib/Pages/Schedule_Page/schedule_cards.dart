@@ -89,26 +89,15 @@ class ScheduleSummary extends StatelessWidget {
     );
 
     final card = Expanded(
-      child: GestureDetector(
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF151426) : Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: live
-                  ? Neon.pink
-                  : swatch.colors.first.withValues(alpha: 0.65),
-              width: live ? 2.2 : 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: (live ? Neon.pink : swatch.colors.last)
-                    .withValues(alpha: live ? 0.35 : 0.18),
-                blurRadius: 14,
-                offset: const Offset(0, 5),
-              ),
-            ],
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF151426) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color:
+                live ? Neon.pink : swatch.colors.first.withValues(alpha: 0.65),
+            width: live ? 2.2 : 1.5,
           ),
           boxShadow: [
             BoxShadow(
@@ -245,18 +234,45 @@ class _LevelTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final live = state == ScheduleLevelState.live;
 
-    return GestureDetector(
-      child: SizedBox(
-        width: 80,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Arched 3-star game level crown above the tile
-            SizedBox(
-              height: 22,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
+    return SizedBox(
+      width: 80,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 3D rounded-square game level button
+          Container(
+            width: 68,
+            height: 68,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: swatch.colors,
+              ),
+              border: Border.all(
+                color: live ? Neon.yellow : Colors.white,
+                width: live ? 3.5 : 2.5,
+              ),
+              boxShadow: [
+                // 3D bottom lip like a game level button
+                BoxShadow(
+                  color: swatch.colors.last.withValues(alpha: 0.9),
+                  offset: const Offset(0, 5),
+                  blurRadius: 0,
+                ),
+                BoxShadow(
+                  color: (live ? Neon.pink : swatch.colors.first)
+                      .withValues(alpha: live ? 0.65 : 0.4),
+                  blurRadius: live ? 18 : 10,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(17),
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
                   Positioned.fill(
                     child: CustomPaint(
