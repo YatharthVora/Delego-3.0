@@ -61,6 +61,7 @@ class CommitteeChatPage extends StatefulWidget {
 
 class _CommitteeChatPageState extends State<CommitteeChatPage> {
   late final ApiClient _api;
+  final _messageController = TextEditingController();
   List<_Committee> _committees = [];
   int? _committeeId;
   List<_Msg> _messages = []; // oldest first
@@ -91,6 +92,7 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
     _retry?.cancel();
     _sub?.cancel();
     _channel?.sink.close();
+    _messageController.dispose();
     super.dispose();
   }
 
@@ -236,7 +238,11 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
 
   // --------------------------------------------------------------- sending
 
-  Future<void> _send(String type, {String? body}) async {
+  Future<void> _send(
+    String type, {
+    String? body,
+    VoidCallback? onSent,
+  }) async {
     final id = _committeeId;
     if (id == null || _sending) return;
     setState(() => _sending = true);
@@ -249,6 +255,7 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
       if (res.statusCode == 201) {
         // The socket echoes it too; _add ignores the duplicate.
         _add(_Msg(jsonDecode(res.body) as Map<String, dynamic>));
+        onSent?.call();
       } else {
         _say('Could not send (${res.statusCode}).');
       }
@@ -344,63 +351,18 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
     );
   }
 
-  void _sendLate(int minutes) =>
-      _send('late', body: 'Running $minutes minutes late');
+  Future<void> _sendCustomRequest() async {
+    final message = _messageController.text.trim();
+    if (message.isEmpty || _sending) return;
 
-  /// "Running late" (5 min by default) with a small triangle beside it that opens
-  /// a menu to choose 5, 10 or 15 minutes. Uses the Lime / Orange signature swatch.
-  Widget _lateSplitButton() {
-    final swatch = kSwatches[0];
-    final color = swatch.colors.first;
-    final fg = swatch.nameColor;
-    const radius = Radius.circular(20);
-    return Expanded(
-      child: Row(
-        children: [
-          Expanded(
-            child: FilledButton.icon(
-              style: FilledButton.styleFrom(
-                backgroundColor: color,
-                foregroundColor: fg,
-                minimumSize: const Size.fromHeight(50),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.horizontal(left: radius),
-                ),
-              ),
-              onPressed: _sending ? null : () => _sendLate(5),
-              icon: const Icon(Icons.timer, size: 20),
-              label: const FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  'Running late',
-                  maxLines: 1,
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 2),
-          PopupMenuButton<int>(
-            tooltip: 'Choose how late',
-            enabled: !_sending,
-            onSelected: _sendLate,
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 5, child: Text('Late by 5 minutes')),
-              PopupMenuItem(value: 10, child: Text('Late by 10 minutes')),
-              PopupMenuItem(value: 15, child: Text('Late by 15 minutes')),
-            ],
-            child: Container(
-              height: 50,
-              width: 40,
-              decoration: BoxDecoration(
-                color: _sending ? color.withValues(alpha: 0.4) : color,
-                borderRadius: const BorderRadius.horizontal(right: radius),
-              ),
-              child: Icon(Icons.arrow_drop_down, color: fg, size: 30),
-            ),
-          ),
-        ],
-      ),
+    await _send(
+      'free',
+      body: message,
+      onSent: () {
+        if (mounted) {
+          setState(_messageController.clear);
+        }
+      },
     );
   }
 
@@ -509,12 +471,42 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (canRequest)
-                                Row(children: [
-                                  _action('free', 'Request break',
-                                      Icons.free_breakfast, kSwatches[2]),
-                                  const SizedBox(width: 10),
-                                  _lateSplitButton(),
-                                ]),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _messageController,
+                                        enabled: !_sending,
+                                        maxLength: 25,
+                                        textCapitalization:
+                                            TextCapitalization.sentences,
+                                        textInputAction: TextInputAction.send,
+                                        onChanged: (_) => setState(() {}),
+                                        onSubmitted: (_) =>
+                                            _sendCustomRequest(),
+                                        decoration: InputDecoration(
+                                          hintText: 'Type a message',
+                                          counterText: '',
+                                          suffixText:
+                                              '${_messageController.text.length}/25',
+                                          border: OutlineInputBorder(),
+                                          isDense: true,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    IconButton.filled(
+                                      tooltip: 'Send message',
+                                      onPressed: _sending ||
+                                              _messageController.text
+                                                  .trim()
+                                                  .isEmpty
+                                          ? null
+                                          : _sendCustomRequest,
+                                      icon: const Icon(Icons.send),
+                                    ),
+                                  ],
+                                ),
                               if (canRequest && canRespond)
                                 const SizedBox(height: 10),
                               if (canRespond)
