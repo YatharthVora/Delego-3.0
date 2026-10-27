@@ -111,21 +111,6 @@ class _MyDrawerState extends State<MyDrawer> {
                     text: 'HOME',
                     onTap: () => Navigator.pop(context),
                   ),
-                  if (widget.controller != null)
-                    MyListTile(
-                      icon: Icons.settings_rounded,
-                      text: 'SETTINGS',
-                      onTap: () {
-                        final ctrl = widget.controller!;
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProfilePage(controller: ctrl),
-                          ),
-                        );
-                      },
-                    ),
                   MyListTile(
                     icon: Icons.handshake,
                     text: 'SPONSORS',
@@ -222,6 +207,22 @@ class _MyDrawerState extends State<MyDrawer> {
                 ],
               ),
             ),
+
+            if (widget.controller != null)
+              MyListTile(
+                icon: Icons.settings_rounded,
+                text: 'SETTINGS',
+                onTap: () {
+                  final ctrl = widget.controller!;
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProfilePage(controller: ctrl),
+                    ),
+                  );
+                },
+              ),
 
             // GRIEVANCES CONTACT
             Builder(builder: (context) {

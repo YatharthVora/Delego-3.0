@@ -637,76 +637,25 @@ class _RoomPageState extends State<RoomPage>
       );
     }
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(14, 10, 14, 2),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(14),
-            onTap: () => setState(() => _activeTab = 1),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: scheme.primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: scheme.primary.withValues(alpha: 0.35),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.touch_app_rounded,
-                    size: 16,
-                    color: scheme.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Tap any committee card to locate its room on the Floor Plan',
-                      style: TextStyle(
-                        fontFamily: Neon.font,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: scheme.onSurface.withValues(alpha: 0.9),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 12,
-                    color: scheme.primary,
-                  ),
-                ],
-              ),
-            ),
-          ),
+    return LayoutBuilder(builder: (context, c) {
+      const pad = 14.0, gap = 12.0;
+      final rows = (_rooms.length / 2).ceil().clamp(1, 100);
+      final tileW = (c.maxWidth - pad * 2 - gap) / 2;
+      final fitH = (c.maxHeight - pad * 2 - gap * (rows - 1)) / rows;
+      final tileH = fitH.clamp(110.0, 220.0);
+      return GridView.builder(
+        padding: const EdgeInsets.all(pad),
+        physics: const BouncingScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: gap,
+          crossAxisSpacing: gap,
+          childAspectRatio: tileW / tileH,
         ),
-        Expanded(
-          child: LayoutBuilder(builder: (context, c) {
-            const pad = 14.0, gap = 12.0;
-            final rows = (_rooms.length / 2).ceil().clamp(1, 100);
-            final tileW = (c.maxWidth - pad * 2 - gap) / 2;
-            final fitH = (c.maxHeight - pad * 2 - gap * (rows - 1)) / rows;
-            final tileH = fitH.clamp(110.0, 220.0);
-            return GridView.builder(
-              padding: const EdgeInsets.all(pad),
-              physics: const BouncingScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: gap,
-                crossAxisSpacing: gap,
-                childAspectRatio: tileW / tileH,
-              ),
-              itemCount: _rooms.length,
-              itemBuilder: (context, index) =>
-                  _buildRoomCard(_rooms[index], index),
-            );
-          }),
-        ),
-      ],
-    );
+        itemCount: _rooms.length,
+        itemBuilder: (context, index) => _buildRoomCard(_rooms[index], index),
+      );
+    });
   }
 
   Widget _buildFloorPlanView(ColorScheme scheme, TextTheme textTheme) {
@@ -962,7 +911,7 @@ class _RoomPageState extends State<RoomPage>
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFEE1C9C),
+        backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
@@ -970,7 +919,8 @@ class _RoomPageState extends State<RoomPage>
           'Allotted Rooms',
           style: textTheme.titleLarge?.copyWith(
             color: Colors.white,
-            fontWeight: FontWeight.w700,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w600,
           ),
         ),
         elevation: 0.0,
