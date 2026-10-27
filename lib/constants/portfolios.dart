@@ -21,6 +21,15 @@ class Portfolio {
   final String? detail;
 }
 
+final Map<String, String> _cccCodeByLowerName = {
+  for (final p in kCccMatrix)
+    if (p.code != null) p.name.toLowerCase(): p.code!,
+};
+
+/// Returns the assigned flag code for a CCC character by name, or null if not in CCC.
+String? cccCodeForName(String name) =>
+    _cccCodeByLowerName[name.trim().toLowerCase()];
+
 /// A committee's matrix (GET /public/committees/{id}/portfolios) as portfolios to search.
 /// A country also answers to the names in [kPortfolios] for its flag ("usa" finds "United
 /// States of America", "ivory" finds "Côte d'Ivoire"); a PSC member to their party.
@@ -31,7 +40,7 @@ List<Portfolio> matrixPortfolios(List<dynamic> json) {
       () {
         final j = raw as Map<String, dynamic>;
         final name = j['name'] as String;
-        final code = j['code'] as String?;
+        final code = (j['code'] as String?) ?? cccCodeForName(name);
         final tag = j['tag'] as String?;
         final detail = j['detail'] as String?;
         final known = code == null ? null : byCode[code];
@@ -293,30 +302,30 @@ const List<Portfolio> kDisecMatrix = [
 ];
 
 /// Official Mumbai MUN 2026 CCC portfolio matrix (24 historical figures, in sheet
-/// order). They are people, so no flag.
+/// order, with their respective placard flags).
 const List<Portfolio> kCccMatrix = [
-  Portfolio('Cornell Franklin', null),
-  Portfolio('Clarence Edward Gauss', null),
-  Portfolio('Stirling Fessenden', null),
-  Portfolio('Addie Viola Smith', null),
-  Portfolio('Sir William Johnston Keswick', null),
-  Portfolio('Kenneth Bourne', null),
-  Portfolio('Frederick Wernham Gerrard', null),
-  Portfolio('Sir Herbert Phillips', null),
-  Portfolio('Frederick Maze', null),
-  Portfolio('Victor Sassoon', null),
-  Portfolio('Liu Xiao', null),
-  Portfolio('Pan Hannian', null),
-  Portfolio('Liu Changsheng', null),
-  Portfolio('KP Chen', null),
-  Portfolio('Du Yuesheng', null),
-  Portfolio('Yu Xiaqing', null),
-  Portfolio('Huang Jinrong', null),
-  Portfolio("Fu Xiao'an", null),
-  Portfolio('Li Shiqun', null),
-  Portfolio('Dai Li', null),
-  Portfolio('Ding Mocun', null),
-  Portfolio('Marcel Baudez', null),
-  Portfolio('Robert Jacquinot de Besange', null),
-  Portfolio('Dr. Oskar Trautmann', null),
+  Portfolio('Cornell Franklin', 'us'),
+  Portfolio('Clarence Edward Gauss', 'us'),
+  Portfolio('Stirling Fessenden', 'us'),
+  Portfolio('Addie Viola Smith', 'us'),
+  Portfolio('Sir William Johnston Keswick', 'gb'),
+  Portfolio('Kenneth Bourne', 'gb'),
+  Portfolio('Frederick Wernham Gerrard', 'gb'),
+  Portfolio('Sir Herbert Phillips', 'gb'),
+  Portfolio('Frederick Maze', 'gb'),
+  Portfolio('Victor Sassoon', 'gb'),
+  Portfolio('Liu Xiao', 'cn-ccp'),
+  Portfolio('Pan Hannian', 'tw'),
+  Portfolio('Liu Changsheng', 'cn-ccp'),
+  Portfolio('KP Chen', 'tw'),
+  Portfolio('Du Yuesheng', 'tw'),
+  Portfolio('Yu Xiaqing', 'tw'),
+  Portfolio('Huang Jinrong', 'tw'),
+  Portfolio("Fu Xiao'an", 'tw'),
+  Portfolio('Li Shiqun', 'tw'),
+  Portfolio('Dai Li', 'tw-kmt'),
+  Portfolio('Ding Mocun', 'tw'),
+  Portfolio('Marcel Baudez', 'fr'),
+  Portfolio('Robert Jacquinot de Besange', 'fr'),
+  Portfolio('Dr. Oskar Trautmann', 'de-imp'),
 ];
