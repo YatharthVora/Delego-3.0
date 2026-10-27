@@ -52,7 +52,12 @@ const kSponsors = <Sponsor>[
     backgroundColorHex: 0xFF000000,
   ),
   Sponsor(
-    name: 'Kohfae',
+    name: 'HOM',
+    logo: 'assets/icons/hom.png',
+    backgroundColorHex: 0xFF000000,
+  ),
+  Sponsor(
+    name: 'kohfae',
     logo: 'assets/icons/kohfae.jpeg',
     url: 'https://www.instagram.com/kohfae.in/',
     scale: 1.18,
