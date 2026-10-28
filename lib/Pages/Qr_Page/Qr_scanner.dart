@@ -19,6 +19,20 @@ const kMeals = <({String value, String label})>[
   (value: 'high_tea', label: 'High Tea'),
 ];
 
+/// Day 1 of the conference (30 Oct 2026) has no breakfast.
+final kNoBreakfastDay = DateTime(2026, 10, 30);
+
+/// The meals served on [day] (the phone's local date): all three, except no breakfast
+/// on day 1, so it cannot be scanned by mistake.
+List<({String value, String label})> mealsOn(DateTime day) {
+  final noBreakfast = day.year == kNoBreakfastDay.year &&
+      day.month == kNoBreakfastDay.month &&
+      day.day == kNoBreakfastDay.day;
+  return noBreakfast
+      ? kMeals.where((m) => m.value != 'breakfast').toList()
+      : kMeals;
+}
+
 /// Diets the operator can serve. The selected one is sent with every scan.
 const kDiets = <({String value, String label})>[
   (value: 'veg', label: 'Veg'),
@@ -355,6 +369,18 @@ class _QrScannerState extends State<QrScanner> {
   }
 
   Future<_ScanResult> _submit(String delegateId) async {
+    // Breakfast was picked before midnight and it is now day 1, which has none. Refuse
+    // rather than send the scan as some other meal, and move the scanner to Lunch.
+    if (!mealsOn(DateTime.now()).any((m) => m.value == _meal)) {
+      setState(() {
+        _meal = 'lunch';
+        _countsLoaded = false;
+        _counts = {};
+      });
+      _loadCounts();
+      return _ScanResult(_Outcome.error,
+          'No breakfast today. Switched to Lunch: scan again if it is lunch.');
+    }
     final o = await _queue.post(
       delegateId: delegateId,
       meal: _meal,
@@ -509,7 +535,7 @@ class _QrScannerState extends State<QrScanner> {
                             child: SegmentedButton<String>(
                               showSelectedIcon: false,
                               segments: [
-                                for (final m in kMeals)
+                                for (final m in mealsOn(DateTime.now()))
                                   ButtonSegment(
                                     value: m.value,
                                     label: FittedBox(
