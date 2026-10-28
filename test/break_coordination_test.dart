@@ -23,7 +23,7 @@ void main() {
           'Free for a break at 1:05 PM');
       expect(acceptText(null, now), 'Accepted - come down now');
       expect(acceptText(10, now), 'Accepted - come in 10 min (12:50 PM)');
-      expect(rejectText(5, now), 'Canteen full - come in 5 min (12:45 PM)');
+      expect(rejectText(5, now), 'Rejected - come in 5 min (12:45 PM)');
       expect(agreeText(DateTime(2026, 10, 30, 12, 50)),
           "Offer accepted - we'll come at 12:50 PM");
       expect(declineText(15, now),

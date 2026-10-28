@@ -59,9 +59,11 @@ class CommitteeChatPage extends StatefulWidget {
   State<CommitteeChatPage> createState() => _CommitteeChatPageState();
 }
 
-class _CommitteeChatPageState extends State<CommitteeChatPage> {
+class _CommitteeChatPageState extends State<CommitteeChatPage>
+    with WidgetsBindingObserver {
   static const _prefId = 'break_committee_id';
   static const _prefName = 'break_committee_name';
+  static const _checkEvery = Duration(seconds: 30);
 
   late final ApiClient _api;
   late final bool _isAdmin;
@@ -83,16 +85,31 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
   int _retryCount = 0;
   int _session = 0; // bumped on every (re)connect or committee switch
 
+  Timer? _checkTimer;
+  bool _checking = false;
+  bool _inFront = true;
+
   @override
   void initState() {
     super.initState();
     _api = context.read<ApiClient>();
     _isAdmin = context.read<Capabilities>().isAdmin;
+    WidgetsBinding.instance.addObserver(this);
+    _checkTimer = Timer.periodic(_checkEvery, (_) => _check());
     _start();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _inFront = state == AppLifecycleState.resumed;
+    // The socket may have died while the phone was locked or in the background.
+    if (state == AppLifecycleState.resumed) _resync();
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _checkTimer?.cancel();
     _session++;
     _retry?.cancel();
     _sub?.cancel();
@@ -203,7 +220,7 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
       );
 
   Future<void> _select(int id, String? name) async {
-    _session++;
+    final session = ++_session;
     _retry?.cancel();
     await _sub?.cancel();
     _channel?.sink.close();
@@ -216,29 +233,75 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
       _retryCount = 0;
     });
     await _loadHistory(id);
-    if (mounted && id == _committeeId) _connect(id);
+    // Only if nothing (a resync, another switch) has opened a newer socket meanwhile.
+    if (mounted && id == _committeeId && session == _session) _connect(id);
   }
 
-  Future<void> _loadHistory(int id) async {
+  /// Fetches the committee's recent messages and merges them into the screen (by id, so
+  /// nothing shown twice and nothing already shown dropped). Returns how many were new,
+  /// or 0 when the fetch failed.
+  Future<int> _loadHistory(int id) async {
     try {
       final res = await _api.get('/committees/$id/messages');
-      if (!mounted || id != _committeeId) return;
+      if (!mounted || id != _committeeId) return 0;
       if (res.statusCode == 404 && !_isAdmin) {
         await _forgetCommittee();
-        return;
+        return 0;
       }
-      if (res.statusCode != 200) return;
-      setState(() {
-        _messages = (jsonDecode(res.body) as List)
-            .map((m) => BreakMsg(m as Map<String, dynamic>))
-            .toList();
-      });
+      if (res.statusCode != 200) return 0;
+      final fetched = (jsonDecode(res.body) as List)
+          .map((m) => BreakMsg(m as Map<String, dynamic>))
+          .toList();
+      final known = {for (final m in _messages) m.id};
+      final fresh = fetched.where((m) => !known.contains(m.id)).toList();
+      if (fresh.isNotEmpty) {
+        setState(() => _messages = _merged(_messages, fresh));
+      }
+      return fresh.length;
     } on Forbidden {
       if (mounted && id == _committeeId && !_isAdmin) await _forgetCommittee();
     } on SessionExpired {
       // handled by ApiClient
     } catch (_) {
-      // The socket still delivers new messages; history can be retried by reselecting.
+      // Offline for now: the next check, or the socket, catches up.
+    }
+    return 0;
+  }
+
+  static List<BreakMsg> _merged(List<BreakMsg> a, List<BreakMsg> b) =>
+      [...a, ...b]..sort((x, y) => x.id.compareTo(y.id));
+
+  /// Catch up and open a fresh socket: after the app comes back to the front, or when
+  /// the regular check finds messages the socket never delivered (a socket can die
+  /// without either side noticing, say when the venue Wi-Fi drops or the phone sleeps).
+  Future<void> _resync() async {
+    final id = _committeeId;
+    if (id == null || _closedForGood) return;
+    await _loadHistory(id);
+    if (!mounted || id != _committeeId) return;
+    final session = ++_session;
+    _retry?.cancel();
+    await _sub?.cancel();
+    _channel?.sink.close();
+    if (!mounted || id != _committeeId || session != _session) return;
+    setState(() => _connected = false);
+    _retryCount = 0;
+    _connect(id);
+  }
+
+  /// Every [_checkEvery] while the screen is open and the app in front: anything the
+  /// socket missed shows up anyway, and a socket that missed something is replaced.
+  Future<void> _check() async {
+    final id = _committeeId;
+    if (id == null || !_inFront || _checking) return;
+    _checking = true;
+    try {
+      final missed = await _loadHistory(id);
+      if (missed > 0 && _connected && mounted && id == _committeeId) {
+        await _resync();
+      }
+    } finally {
+      _checking = false;
     }
   }
 
@@ -306,7 +369,7 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
 
   void _add(BreakMsg m) {
     if (!mounted || _messages.any((x) => x.id == m.id)) return;
-    setState(() => _messages = [..._messages, m]);
+    setState(() => _messages = _merged(_messages, [m]));
   }
 
   // --------------------------------------------------------------- sending
@@ -360,11 +423,31 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
         initialTime: initial,
         helpText: heading,
         confirmText: 'Request',
-        // 12 hour clock with the AM/PM switch, even on a phone set to 24 hour time.
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
-          child: child!,
-        ),
+        // 12 hour clock with the AM/PM switch, even on a phone set to 24 hour time. The
+        // switch is pink so the half that is on stands out.
+        builder: (context, child) {
+          final theme = Theme.of(context);
+          final pink = kSwatches[1];
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+            child: Theme(
+              data: theme.copyWith(
+                timePickerTheme: theme.timePickerTheme.copyWith(
+                  dayPeriodColor: WidgetStateColor.resolveWith((states) =>
+                      states.contains(WidgetState.selected)
+                          ? Neon.pink
+                          : Colors.transparent),
+                  dayPeriodTextColor: WidgetStateColor.resolveWith((states) =>
+                      states.contains(WidgetState.selected)
+                          ? pink.nameColor
+                          : theme.colorScheme.onSurface),
+                  dayPeriodBorderSide: const BorderSide(color: Neon.pink),
+                ),
+              ),
+              child: child!,
+            ),
+          );
+        },
       );
       if (picked == null || !mounted) return;
       final at = breakTimeFor(picked.hour, picked.minute, DateTime.now());
@@ -545,6 +628,67 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// A button that always asks first: a tap opens the menu of minutes ([breakDelays])
+  /// under it, and nothing is sent until one is chosen.
+  Widget _menuButton({
+    required String label,
+    required IconData icon,
+    required NeonSwatch swatch,
+    required void Function(int minutes) onMinutes,
+    required String Function(int minutes) itemLabel,
+  }) {
+    final fg = swatch.nameColor;
+    return Expanded(
+      child: Builder(
+        builder: (buttonContext) => FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: swatch.colors.first,
+            foregroundColor: fg,
+            minimumSize: const Size.fromHeight(50),
+          ),
+          onPressed: _sending
+              ? null
+              : () async {
+                  final box = buttonContext.findRenderObject() as RenderBox;
+                  final overlay = Overlay.of(buttonContext)
+                      .context
+                      .findRenderObject() as RenderBox;
+                  final topLeft = box.localToGlobal(Offset(0, box.size.height),
+                      ancestor: overlay);
+                  final minutes = await showMenu<int>(
+                    context: buttonContext,
+                    position: RelativeRect.fromLTRB(
+                      topLeft.dx,
+                      topLeft.dy,
+                      overlay.size.width - topLeft.dx - box.size.width,
+                      0,
+                    ),
+                    items: [
+                      for (final m in breakDelays)
+                        PopupMenuItem(value: m, child: Text(itemLabel(m))),
+                    ],
+                  );
+                  if (minutes != null && mounted) onMinutes(minutes);
+                },
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 20),
+                const SizedBox(width: 8),
+                Text(label,
+                    maxLines: 1,
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                Icon(Icons.arrow_drop_down, size: 26),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -741,14 +885,13 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
                                     tooltip: 'Accept for later',
                                   ),
                                   const SizedBox(width: 10),
-                                  _splitButton(
+                                  // Reject always asks when they can come instead.
+                                  _menuButton(
                                     label: 'Reject',
                                     icon: Icons.close,
                                     swatch: kSwatches[1],
-                                    onMain: () => _reject(5),
                                     onMinutes: _reject,
                                     itemLabel: (m) => 'Come in $m minutes',
-                                    tooltip: 'When they can come',
                                   ),
                                 ]),
                             ],

@@ -87,7 +87,7 @@ String acceptText(int? delay, DateTime now) => delay == null
     : 'Accepted - come in $delay min (${clockTime(now.add(Duration(minutes: delay)))})';
 
 String rejectText(int delay, DateTime now) =>
-    'Canteen full - come in $delay min (${clockTime(now.add(Duration(minutes: delay)))})';
+    'Rejected - come in $delay min (${clockTime(now.add(Duration(minutes: delay)))})';
 
 String agreeText(DateTime at) =>
     "Offer accepted - we'll come at ${clockTime(at)}";
