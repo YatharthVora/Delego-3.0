@@ -648,7 +648,14 @@ void main() {
         expect(find.text(name), findsOneWidget);
       }
       expect(find.text('Aam Aadmi Party'), findsOneWidget); // the party under the name
-      expect(find.text('AAP'), findsOneWidget); // the badge
+      // The party's placard flag (was a text badge before the flags were added).
+      expect(
+          find.byWidgetPredicate((w) =>
+              w is Image &&
+              w.image is AssetImage &&
+              (w.image as AssetImage).assetName ==
+                  'assets/images/flags/psc_aap.png'),
+          findsOneWidget);
       await enter(t);
       expect(c.gsl, isEmpty, reason: 'three Sanjays: pick one');
       await type(t, 'aitc');
