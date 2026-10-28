@@ -46,38 +46,54 @@ class BreakMsg {
 /// `at` as the app sends it.
 String atPayload(DateTime at) => at.toUtc().toIso8601String();
 
-/// 24 hour "HH:mm".
-String hhmm(DateTime t) {
-  String two(int n) => n.toString().padLeft(2, '0');
-  return '${two(t.hour)}:${two(t.minute)}';
+/// 12 hour clock time, like the picker: "1:30 PM", "12:05 PM", "9:00 AM".
+String clockTime(DateTime t) {
+  final hour = t.hour % 12 == 0 ? 12 : t.hour % 12;
+  final minute = t.minute.toString().padLeft(2, '0');
+  return '$hour:$minute ${t.hour < 12 ? 'AM' : 'PM'}';
 }
 
-/// Today at the picked clock time, but never before [now] (a time already gone means now).
-DateTime breakTimeFor(int hour, int minute, DateTime now) {
+/// Today at exactly the picked clock time, or null when that minute has already gone by.
+/// The picked time is never swapped for another one: a time in the past is refused, so
+/// the OC picks again instead of the app quietly sending something they did not choose.
+/// The current minute itself still counts ("free now").
+DateTime? breakTimeFor(int hour, int minute, DateTime now) {
   final at = DateTime(now.year, now.month, now.day, hour, minute);
-  return at.isBefore(now) ? now : at;
+  final thisMinute =
+      DateTime(now.year, now.month, now.day, now.hour, now.minute);
+  return at.isBefore(thisMinute) ? null : at;
 }
 
-/// [now] rounded up to the next 5 minutes, the time picker's starting point.
+/// Where the break time picker opens: always on PM, since breaks (lunch, high tea) are
+/// in the afternoon. From noon on that is [now] rounded up to the next 5 minutes; before
+/// noon it is 12:00 PM, so a quick tap never sends a time late at night.
+DateTime pickerStart(DateTime now) {
+  final next = nextFiveMinutes(now);
+  if (next.hour >= 12) return next;
+  return DateTime(now.year, now.month, now.day, 12);
+}
+
+/// [now] rounded up to the next 5 minutes.
 DateTime nextFiveMinutes(DateTime now) {
   final add = 5 - now.minute % 5;
   final t = now.add(Duration(minutes: add));
   return DateTime(t.year, t.month, t.day, t.hour, t.minute);
 }
 
-String requestText(DateTime at) => 'Free for a break at ${hhmm(at)}';
+String requestText(DateTime at) => 'Free for a break at ${clockTime(at)}';
 
 String acceptText(int? delay, DateTime now) => delay == null
     ? 'Accepted - come down now'
-    : 'Accepted - come in $delay min (${hhmm(now.add(Duration(minutes: delay)))})';
+    : 'Accepted - come in $delay min (${clockTime(now.add(Duration(minutes: delay)))})';
 
 String rejectText(int delay, DateTime now) =>
-    'Canteen full - come in $delay min (${hhmm(now.add(Duration(minutes: delay)))})';
+    'Canteen full - come in $delay min (${clockTime(now.add(Duration(minutes: delay)))})';
 
-String agreeText(DateTime at) => "Offer accepted - we'll come at ${hhmm(at)}";
+String agreeText(DateTime at) =>
+    "Offer accepted - we'll come at ${clockTime(at)}";
 
 String declineText(int delay, DateTime now) =>
-    "Declined - we'll be free in $delay min (${hhmm(now.add(Duration(minutes: delay)))})";
+    "Declined - we'll be free in $delay min (${clockTime(now.add(Duration(minutes: delay)))})";
 
 /// Hospitality's latest offer of a time, if the room has not answered it yet: the newest
 /// break message, when it is an accept or reject that names a time no more than

@@ -346,18 +346,38 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
       ..showSnackBar(SnackBar(content: Text(text)));
   }
 
-  /// "Request break": the OC picks the clock time the committee can break at.
+  /// "Request break": the OC picks the clock time the committee can break at. The time
+  /// sent is exactly the one picked. The picker opens on PM (see [pickerStart]) and AM
+  /// can still be chosen; a time already gone (say AM left on by mistake) is refused and
+  /// the picker opens again on that time, saying so, to correct.
   Future<void> _requestBreak() async {
-    final start = nextFiveMinutes(DateTime.now());
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(start),
-      helpText: 'Free for a break at',
-      confirmText: 'Request',
-    );
-    if (picked == null || !mounted) return;
-    final at = breakTimeFor(picked.hour, picked.minute, DateTime.now());
-    await _send('free', body: requestText(at), payload: {'at': atPayload(at)});
+    var initial = TimeOfDay.fromDateTime(pickerStart(DateTime.now()));
+    var heading = 'Free for a break at';
+    while (true) {
+      if (!mounted) return;
+      final picked = await showTimePicker(
+        context: context,
+        initialTime: initial,
+        helpText: heading,
+        confirmText: 'Request',
+        // 12 hour clock with the AM/PM switch, even on a phone set to 24 hour time.
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+          child: child!,
+        ),
+      );
+      if (picked == null || !mounted) return;
+      final at = breakTimeFor(picked.hour, picked.minute, DateTime.now());
+      if (at == null) {
+        final gone = DateTime(2000, 1, 1, picked.hour, picked.minute);
+        heading = '${clockTime(gone)} has passed. Pick a later time';
+        initial = picked;
+        continue;
+      }
+      await _send('free',
+          body: requestText(at), payload: {'at': atPayload(at)});
+      return;
+    }
   }
 
   void _sendLate(int minutes) =>
@@ -396,7 +416,7 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
 
   // ------------------------------------------------------------------ build
 
-  String _time(DateTime? t) => t == null ? '' : hhmm(t);
+  String _time(DateTime? t) => t == null ? '' : clockTime(t);
 
   Widget _bubble(BreakMsg m, ColorScheme scheme) {
     final kind = _kinds[m.type] ??
@@ -545,7 +565,7 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Hospitality: come at ${hhmm(offer.at!)}',
+            'Hospitality: come at ${clockTime(offer.at!)}',
             style:
                 TextStyle(color: scheme.onSurface, fontWeight: FontWeight.w700),
           ),
