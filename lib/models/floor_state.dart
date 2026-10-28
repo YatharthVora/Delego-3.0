@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:delego/constants/portfolios.dart';
+
 /// A committee's live floor, as the server sends it (mundra floor.py): the GSL and the
 /// moderated caucus list, the timer, and what the smartboard shows.
 class FloorState {
@@ -77,12 +79,21 @@ class FloorEntry {
   /// A person's party abbreviation (PSC), shown as a badge.
   final String? tag;
 
-  factory FloorEntry.fromJson(Map<String, dynamic> j) => FloorEntry(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        code: j['code'] as String?,
-        tag: j['tag'] as String?,
-      );
+  factory FloorEntry.fromJson(Map<String, dynamic> j) {
+    final name = j['name'] as String;
+    final rawCode = j['code'] as String?;
+    final rawTag = j['tag'] as String?;
+    return FloorEntry(
+      id: j['id'] as String,
+      name: name,
+      code: (rawCode != null && rawCode.isNotEmpty)
+          ? rawCode
+          : cccCodeForName(name),
+      tag: (rawTag != null && rawTag.isNotEmpty)
+          ? rawTag
+          : pscTagForName(name),
+    );
+  }
 }
 
 class FloorTimer {

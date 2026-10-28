@@ -139,12 +139,13 @@ class NeonCard extends StatelessWidget {
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final iconSize = math.min(
-                    wide ? 54.0 : 72.0,
-                    math.max(36.0, constraints.maxWidth * 0.22),
+                    wide ? 76.0 : 100.0,
+                    math.max(wide ? 52.0 : 48.0,
+                        constraints.maxWidth * (wide ? 0.22 : 0.38)),
                   );
                   final labelSize = math.min(
-                    wide ? 18.0 : 17.0,
-                    math.max(14.0, constraints.maxWidth * 0.1),
+                    20.0,
+                    math.max(14.0, constraints.maxWidth * 0.12),
                   );
                   final displayLabel = label.toUpperCase();
                   final hasManualLineBreak = displayLabel.contains('\n');
@@ -159,7 +160,10 @@ class NeonCard extends StatelessWidget {
                       if (iconAsset != null)
                         Positioned(
                           right: 14,
-                          bottom: 14,
+                          top: wide
+                              ? (constraints.maxHeight - iconSize) / 2
+                              : null,
+                          bottom: wide ? null : 14,
                           child: Image.asset(
                             iconAsset!,
                             width: iconSize,

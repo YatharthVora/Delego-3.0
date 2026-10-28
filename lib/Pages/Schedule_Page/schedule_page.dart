@@ -103,8 +103,11 @@ class _SchedulePageState extends State<SchedulePage> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('Schedule', style: textTheme.titleLarge?.copyWith(color: scheme.onPrimary)),
-          backgroundColor: scheme.primary,
+          title: Text(
+            'Schedule',
+            style: textTheme.titleLarge?.copyWith(color: Colors.white),
+          ),
+          backgroundColor: Colors.black,
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -113,8 +116,11 @@ class _SchedulePageState extends State<SchedulePage> {
     if (_error != null && _days.isEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('Schedule', style: textTheme.titleLarge?.copyWith(color: scheme.onPrimary)),
-          backgroundColor: scheme.primary,
+          title: Text(
+            'Schedule',
+            style: textTheme.titleLarge?.copyWith(color: Colors.white),
+          ),
+          backgroundColor: Colors.black,
         ),
         body: Center(
             child: Padding(
@@ -154,21 +160,21 @@ class _SchedulePageState extends State<SchedulePage> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          iconTheme: IconThemeData(color: scheme.onPrimary),
-          backgroundColor: const Color(0xFFEE1C9C),
+          iconTheme: const IconThemeData(color: Colors.white),
+          backgroundColor: Colors.black,
           centerTitle: true,
           title: Text(
             "Schedule",
             style: textTheme.titleLarge?.copyWith(
-              color: scheme.onPrimary,
+              color: Colors.white,
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
             ),
           ),
           bottom: TabBar(
-            indicatorColor: scheme.onPrimary,
-            labelColor: scheme.onPrimary,
-            unselectedLabelColor: scheme.onPrimary.withValues(alpha: 0.7),
+            indicatorColor: Colors.white,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white.withValues(alpha: 0.7),
             tabs: _days.map((day) => Tab(text: day.dayKey)).toList(),
           ),
         ),
@@ -200,18 +206,22 @@ class GradientAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Container(
       width: double.infinity,
-      color: const Color(0xFFEE1C9C),
       height: barHeight,
+      decoration: const BoxDecoration(
+        color: Color(0xFFEE1C9C),
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(6),
+        ),
+      ),
       child: Center(
         child: Text(
           title,
           style: textTheme.titleMedium?.copyWith(
-            color: scheme.onPrimary,
+            color: Colors.white,
             fontFamily: 'Inter',
             fontWeight: FontWeight.w600,
             fontSize: 17.0,

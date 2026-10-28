@@ -200,8 +200,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     );
   }
 
-  void _onLaunchComplete() => _hideLaunchScreen();
-}
+  void _onLaunchComplete() => _hideLaunchScreen();}
 
 // ---------------------------------------------------------------------------
 // LaunchScreen and _LaunchScreenState: keep your existing code unchanged here.

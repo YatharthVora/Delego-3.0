@@ -43,7 +43,10 @@ class Capabilities extends ChangeNotifier {
   bool loaded = false;
 
   /// Gate every screen with this.
-  bool can(String permission) => _perms.contains(permission);
+  bool can(String permission) {
+    if (permission == Perm.badgeView && role == 'oc') return true;
+    return _perms.contains(permission);
+  }
 
   bool get isAdmin => can(Perm.adminRoles);
 

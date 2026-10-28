@@ -2,8 +2,8 @@ import 'package:delego/widgets/mun_logo.dart';
 import 'package:delego/Pages/Login_Page/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:delego/Pages/Home_Page/my_drawer.dart';
-import 'package:delego/Pages/Profile_Page/profile_page.dart';
 import 'package:delego/Pages/Room_Page/room_page.dart';
 import 'package:delego/Pages/Schedule_Page/schedule_page.dart';
 import 'package:delego/Pages/Study Guides/study_guidespage.dart';
@@ -30,6 +30,17 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // Height of the transparent top bar; the banner starts right below it.
   static const _barHeight = 48.0;
+
+  static final Uri _mumbaiMunTvUri = Uri.parse(
+    'https://www.instagram.com/mumbaimun.tv?obrf=bTlqNmNmOXUxZDU1',
+  );
+
+  Future<void> _openMumbaiMunTv() async {
+    if (!await launchUrl(_mumbaiMunTvUri,
+        mode: LaunchMode.externalApplication)) {
+      await launchUrl(_mumbaiMunTvUri);
+    }
+  }
 
   Future<void> signOut() async {
     final caps = context.read<Capabilities>();
@@ -107,8 +118,8 @@ class _HomePageState extends State<HomePage> {
           iconAsset: 'assets/icons/book.png',
           height: cardHeight,
           seed: 3,
-          onTap: () => goToPage(PermissionGate(
-            anyOf: const [Perm.guidesView],
+          onTap: () => goToPage(const PermissionGate(
+            anyOf: [Perm.guidesView],
             child: StudyGuidespage(),
           )),
         ),
@@ -132,7 +143,7 @@ class _HomePageState extends State<HomePage> {
         iconAsset: 'assets/icons/loc.png',
         height: cardHeight,
         seed: 11,
-        onTap: () => goToPage(RoomPage()),
+        onTap: () => goToPage(const RoomPage()),
       ),
       NeonCard(
         colors: const [Color(0xFF159555), Color(0xFF159555)],
@@ -229,11 +240,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           NowStrip(onTap: () => goToPage(SchedulePage())),
-          if (isDelegate) ...[
-            const SizedBox(height: 4),
-            sponsors,
-            const SizedBox(height: 16),
-          ],
           Text('Quick Access',
               style: TextStyle(
                 fontFamily: Neon.font,
@@ -272,10 +278,8 @@ class _HomePageState extends State<HomePage> {
             cardHeight: cardHeight,
             scanCardHeight: scanCardHeight,
           ),
-          if (!isDelegate) ...[
-            const SizedBox(height: 28),
-            sponsors,
-          ],
+          const SizedBox(height: 28),
+          sponsors,
         ],
       ),
     );
@@ -305,16 +309,44 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           actions: [
-            IconButton(
-              tooltip: 'Settings',
-              icon: const Icon(Icons.settings_rounded),
-              onPressed: () =>
-                  goToPage(ProfilePage(controller: widget.controller)),
+            Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: _openMumbaiMunTv,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.live_tv_rounded,
+                        size: 20,
+                        color: onBg,
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        'MumbaiMun.TV',
+                        style: TextStyle(
+                          fontFamily: Neon.font,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                          color: onBg,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ],
         ),
         drawer: MyDrawer(
           onSignoutTap: signOut,
+          controller: widget.controller,
         ),
         body: content,
       ),
