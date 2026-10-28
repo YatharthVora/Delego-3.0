@@ -8,6 +8,8 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'package:delego/api/api_client.dart';
 import 'package:delego/auth/capabilities.dart';
+import 'package:delego/models/break_coordination.dart';
+import 'package:delego/widgets/committee_picker.dart';
 import 'package:delego/widgets/neon.dart';
 
 class _Committee {
@@ -16,28 +18,11 @@ class _Committee {
   final String name;
 }
 
-class _Msg {
-  _Msg(Map<String, dynamic> j)
-      : id = (j['id'] as num).toInt(),
-        sender = '${j['sender']}',
-        senderName = '${j['sender_name']}',
-        type = '${j['type']}',
-        body = '${j['body']}',
-        at = DateTime.tryParse('${j['created_at']}')?.toLocal();
-
-  final int id;
-  final String sender;
-  final String senderName;
-  final String type;
-  final String body;
-  final DateTime? at;
-}
-
 /// What each message type looks like, using the 4 signature Neon swatches:
-/// - free (Request break) -> Blue / Lime (kSwatches[2])
-/// - late (Running late)  -> Lime / Orange (kSwatches[0])
-/// - accept (Accept)      -> Green / Cyan (kSwatches[3])
-/// - reject (Reject)      -> Pink / Yellow (kSwatches[1])
+/// - free (Request break)       -> Blue / Lime (kSwatches[2])
+/// - late (Running late)        -> Lime / Orange (kSwatches[0])
+/// - accept, agree (Accept)     -> Green / Cyan (kSwatches[3])
+/// - reject, decline (Reject)   -> Pink / Yellow (kSwatches[1])
 final _kinds = <String, ({String label, NeonSwatch swatch, IconData icon})>{
   'free': (
     label: 'BREAK REQUEST',
@@ -47,11 +32,26 @@ final _kinds = <String, ({String label, NeonSwatch swatch, IconData icon})>{
   'late': (label: 'RUNNING LATE', swatch: kSwatches[0], icon: Icons.timer),
   'accept': (label: 'ACCEPTED', swatch: kSwatches[3], icon: Icons.check_circle),
   'reject': (label: 'REJECTED', swatch: kSwatches[1], icon: Icons.cancel),
+  'agree': (
+    label: 'OFFER ACCEPTED',
+    swatch: kSwatches[3],
+    icon: Icons.thumb_up
+  ),
+  'decline': (
+    label: 'OFFER DECLINED',
+    swatch: kSwatches[1],
+    icon: Icons.schedule
+  ),
 };
 
-/// Break coordination: committees ask for a break, hospitality answers. Messages are
+/// Break coordination: a committee's OC asks for a break at a time, Hospitality (the
+/// admin) accepts or offers a later time, and the OC answers the offer. Messages are
 /// posted over REST and pushed live over a WebSocket; what you can send depends on the
 /// permissions the server gave you.
+///
+/// The admin sees every committee. Everyone else coordinates one committee, picked on
+/// first entry and remembered on this phone (prefs `break_committee_id`/
+/// `break_committee_name`), changed from the menu.
 class CommitteeChatPage extends StatefulWidget {
   const CommitteeChatPage({super.key});
 
@@ -59,12 +59,18 @@ class CommitteeChatPage extends StatefulWidget {
   State<CommitteeChatPage> createState() => _CommitteeChatPageState();
 }
 
-class _CommitteeChatPageState extends State<CommitteeChatPage> {
+class _CommitteeChatPageState extends State<CommitteeChatPage>
+    with WidgetsBindingObserver {
+  static const _prefId = 'break_committee_id';
+  static const _prefName = 'break_committee_name';
+  static const _checkEvery = Duration(seconds: 30);
+
   late final ApiClient _api;
-  final _messageController = TextEditingController();
+  late final bool _isAdmin;
   List<_Committee> _committees = [];
   int? _committeeId;
-  List<_Msg> _messages = []; // oldest first
+  String? _committeeName;
+  List<BreakMsg> _messages = []; // oldest first
   String _myEmail = '';
 
   String? _error; // loading problem, shown with a retry
@@ -79,20 +85,35 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
   int _retryCount = 0;
   int _session = 0; // bumped on every (re)connect or committee switch
 
+  Timer? _checkTimer;
+  bool _checking = false;
+  bool _inFront = true;
+
   @override
   void initState() {
     super.initState();
     _api = context.read<ApiClient>();
+    _isAdmin = context.read<Capabilities>().isAdmin;
+    WidgetsBinding.instance.addObserver(this);
+    _checkTimer = Timer.periodic(_checkEvery, (_) => _check());
     _start();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _inFront = state == AppLifecycleState.resumed;
+    // The socket may have died while the phone was locked or in the background.
+    if (state == AppLifecycleState.resumed) _resync();
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _checkTimer?.cancel();
     _session++;
     _retry?.cancel();
     _sub?.cancel();
     _channel?.sink.close();
-    _messageController.dispose();
     super.dispose();
   }
 
@@ -103,26 +124,27 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
       _loading = true;
       _error = null;
     });
+    final prefs = await SharedPreferences.getInstance();
+    _myEmail = prefs.getString('email') ?? '';
+    if (!_isAdmin) {
+      final id = prefs.getInt(_prefId);
+      if (!mounted) return;
+      setState(() => _loading = false);
+      if (id != null) await _select(id, prefs.getString(_prefName));
+      return;
+    }
     try {
-      _myEmail =
-          (await SharedPreferences.getInstance()).getString('email') ?? '';
       final res = await _api.get('/committees');
       if (res.statusCode != 200) throw 'Server returned ${res.statusCode}';
       final list = (jsonDecode(res.body) as List)
           .map((c) => _Committee((c['id'] as num).toInt(), '${c['name']}'))
           .toList();
-      if (!list.any((c) => c.name.toUpperCase() == 'DISEC')) {
-        final nextId = list.isEmpty
-            ? 9
-            : (list.map((c) => c.id).reduce((a, b) => a > b ? a : b) + 1);
-        list.add(_Committee(nextId, 'DISEC'));
-      }
       if (!mounted) return;
       setState(() {
         _committees = list;
         _loading = false;
       });
-      if (list.isNotEmpty) await _select(list.first.id);
+      if (list.isNotEmpty) await _select(list.first.id, list.first.name);
     } on Forbidden {
       if (mounted) {
         setState(() {
@@ -142,35 +164,144 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
     }
   }
 
-  Future<void> _select(int id) async {
+  Future<void> _pick(int id, String name) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_prefId, id);
+    await prefs.setString(_prefName, name);
+    if (mounted) await _select(id, name);
+  }
+
+  /// The saved committee is gone or no longer ours: forget it and ask again.
+  Future<void> _forgetCommittee() async {
     _session++;
+    _retry?.cancel();
+    await _sub?.cancel();
+    _channel?.sink.close();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_prefId);
+    await prefs.remove(_prefName);
+    if (!mounted) return;
+    setState(() {
+      _committeeId = null;
+      _committeeName = null;
+      _messages = [];
+      _connected = false;
+    });
+    _say('That committee is no longer available. Choose again.');
+  }
+
+  Future<void> _changeCommittee() async {
+    final picked = await Navigator.push<(int, String)>(
+      context,
+      MaterialPageRoute(
+        builder: (ctx) => Scaffold(
+          appBar: AppBar(title: const Text('Change committee')),
+          body: _picker(
+            selectedId: _committeeId,
+            onPicked: (id, name) => Navigator.pop(ctx, (id, name)),
+          ),
+        ),
+      ),
+    );
+    if (picked != null && picked.$1 != _committeeId) {
+      await _pick(picked.$1, picked.$2);
+    }
+  }
+
+  Widget _picker(
+          {int? selectedId, required void Function(int, String) onPicked}) =>
+      CommitteePicker(
+        api: _api,
+        endpoint: '/committees',
+        question: 'Which committee are you coordinating?',
+        icon: Icons.free_breakfast,
+        selectedId: selectedId,
+        onPicked: onPicked,
+      );
+
+  Future<void> _select(int id, String? name) async {
+    final session = ++_session;
     _retry?.cancel();
     await _sub?.cancel();
     _channel?.sink.close();
     setState(() {
       _committeeId = id;
+      _committeeName = name;
       _messages = [];
       _connected = false;
       _closedForGood = false;
       _retryCount = 0;
     });
     await _loadHistory(id);
-    _connect(id);
+    // Only if nothing (a resync, another switch) has opened a newer socket meanwhile.
+    if (mounted && id == _committeeId && session == _session) _connect(id);
   }
 
-  Future<void> _loadHistory(int id) async {
+  /// Fetches the committee's recent messages and merges them into the screen (by id, so
+  /// nothing shown twice and nothing already shown dropped). Returns how many were new,
+  /// or 0 when the fetch failed.
+  Future<int> _loadHistory(int id) async {
     try {
       final res = await _api.get('/committees/$id/messages');
-      if (res.statusCode != 200 || !mounted || id != _committeeId) return;
-      setState(() {
-        _messages = (jsonDecode(res.body) as List)
-            .map((m) => _Msg(m as Map<String, dynamic>))
-            .toList();
-      });
+      if (!mounted || id != _committeeId) return 0;
+      if (res.statusCode == 404 && !_isAdmin) {
+        await _forgetCommittee();
+        return 0;
+      }
+      if (res.statusCode != 200) return 0;
+      final fetched = (jsonDecode(res.body) as List)
+          .map((m) => BreakMsg(m as Map<String, dynamic>))
+          .toList();
+      final known = {for (final m in _messages) m.id};
+      final fresh = fetched.where((m) => !known.contains(m.id)).toList();
+      if (fresh.isNotEmpty) {
+        setState(() => _messages = _merged(_messages, fresh));
+      }
+      return fresh.length;
+    } on Forbidden {
+      if (mounted && id == _committeeId && !_isAdmin) await _forgetCommittee();
     } on SessionExpired {
       // handled by ApiClient
     } catch (_) {
-      // The socket still delivers new messages; history can be retried by reselecting.
+      // Offline for now: the next check, or the socket, catches up.
+    }
+    return 0;
+  }
+
+  static List<BreakMsg> _merged(List<BreakMsg> a, List<BreakMsg> b) =>
+      [...a, ...b]..sort((x, y) => x.id.compareTo(y.id));
+
+  /// Catch up and open a fresh socket: after the app comes back to the front, or when
+  /// the regular check finds messages the socket never delivered (a socket can die
+  /// without either side noticing, say when the venue Wi-Fi drops or the phone sleeps).
+  Future<void> _resync() async {
+    final id = _committeeId;
+    if (id == null || _closedForGood) return;
+    await _loadHistory(id);
+    if (!mounted || id != _committeeId) return;
+    final session = ++_session;
+    _retry?.cancel();
+    await _sub?.cancel();
+    _channel?.sink.close();
+    if (!mounted || id != _committeeId || session != _session) return;
+    setState(() => _connected = false);
+    _retryCount = 0;
+    _connect(id);
+  }
+
+  /// Every [_checkEvery] while the screen is open and the app in front: anything the
+  /// socket missed shows up anyway, and a socket that missed something is replaced.
+  Future<void> _check() async {
+    final id = _committeeId;
+    if (id == null || !_inFront || _checking) return;
+    _checking = true;
+    try {
+      final missed = await _loadHistory(id);
+      if (missed > 0 && _connected && mounted && id == _committeeId) {
+        await _resync();
+      }
+    } finally {
+      _checking = false;
     }
   }
 
@@ -196,7 +327,7 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
           _retryCount = 0;
         }
         try {
-          _add(_Msg(jsonDecode(data as String) as Map<String, dynamic>));
+          _add(BreakMsg(jsonDecode(data as String) as Map<String, dynamic>));
         } catch (_) {}
       },
       onDone: () => _onClosed(session, id, channel.closeCode),
@@ -217,6 +348,11 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
     if (!mounted || session != _session) return;
     setState(() => _connected = false);
 
+    // 4403 no access, 4404 unknown committee: the saved committee is not ours any more.
+    if (!_isAdmin && (code == 4403 || code == 4404)) {
+      _forgetCommittee();
+      return;
+    }
     // 4401 bad token, 4403 no access, 4404 unknown committee: retrying will not help.
     if (code == 4401 || code == 4403 || code == 4404) {
       setState(() => _closedForGood = true);
@@ -231,18 +367,15 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
     });
   }
 
-  void _add(_Msg m) {
+  void _add(BreakMsg m) {
     if (!mounted || _messages.any((x) => x.id == m.id)) return;
-    setState(() => _messages = [..._messages, m]);
+    setState(() => _messages = _merged(_messages, [m]));
   }
 
   // --------------------------------------------------------------- sending
 
-  Future<void> _send(
-    String type, {
-    String? body,
-    VoidCallback? onSent,
-  }) async {
+  Future<void> _send(String type,
+      {String? body, Map<String, dynamic>? payload}) async {
     final id = _committeeId;
     if (id == null || _sending) return;
     setState(() => _sending = true);
@@ -250,12 +383,12 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
       final res = await _api.postJson('/committees/$id/messages', {
         'type': type,
         if (body != null) 'body': body,
+        if (payload != null) 'payload': payload,
       });
       if (!mounted) return;
       if (res.statusCode == 201) {
         // The socket echoes it too; _add ignores the duplicate.
-        _add(_Msg(jsonDecode(res.body) as Map<String, dynamic>));
-        onSent?.call();
+        _add(BreakMsg(jsonDecode(res.body) as Map<String, dynamic>));
       } else {
         _say('Could not send (${res.statusCode}).');
       }
@@ -276,15 +409,99 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
       ..showSnackBar(SnackBar(content: Text(text)));
   }
 
-  // ------------------------------------------------------------------ build
-
-  String _time(DateTime? t) {
-    if (t == null) return '';
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(t.hour)}:${two(t.minute)}';
+  /// "Request break": the OC picks the clock time the committee can break at. The time
+  /// sent is exactly the one picked. The picker opens on PM (see [pickerStart]) and AM
+  /// can still be chosen; a time already gone (say AM left on by mistake) is refused and
+  /// the picker opens again on that time, saying so, to correct.
+  Future<void> _requestBreak() async {
+    var initial = TimeOfDay.fromDateTime(pickerStart(DateTime.now()));
+    var heading = 'Free for a break at';
+    while (true) {
+      if (!mounted) return;
+      final picked = await showTimePicker(
+        context: context,
+        initialTime: initial,
+        helpText: heading,
+        confirmText: 'Request',
+        // 12 hour clock with the AM/PM switch, even on a phone set to 24 hour time. The
+        // switch is pink so the half that is on stands out.
+        builder: (context, child) {
+          final theme = Theme.of(context);
+          final pink = kSwatches[1];
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+            child: Theme(
+              data: theme.copyWith(
+                timePickerTheme: theme.timePickerTheme.copyWith(
+                  dayPeriodColor: WidgetStateColor.resolveWith((states) =>
+                      states.contains(WidgetState.selected)
+                          ? Neon.pink
+                          : Colors.transparent),
+                  dayPeriodTextColor: WidgetStateColor.resolveWith((states) =>
+                      states.contains(WidgetState.selected)
+                          ? pink.nameColor
+                          : theme.colorScheme.onSurface),
+                  dayPeriodBorderSide: const BorderSide(color: Neon.pink),
+                ),
+              ),
+              child: child!,
+            ),
+          );
+        },
+      );
+      if (picked == null || !mounted) return;
+      final at = breakTimeFor(picked.hour, picked.minute, DateTime.now());
+      if (at == null) {
+        final gone = DateTime(2000, 1, 1, picked.hour, picked.minute);
+        heading = '${clockTime(gone)} has passed. Pick a later time';
+        initial = picked;
+        continue;
+      }
+      await _send('free',
+          body: requestText(at), payload: {'at': atPayload(at)});
+      return;
+    }
   }
 
-  Widget _bubble(_Msg m, ColorScheme scheme) {
+  void _sendLate(int minutes) =>
+      _send('late', body: 'Running $minutes minutes late');
+
+  /// Hospitality accepts: now (no time), or come in [delay] minutes.
+  void _accept(int? delay) {
+    final now = DateTime.now();
+    _send('accept',
+        body: acceptText(delay, now),
+        payload: delay == null
+            ? null
+            : {'at': atPayload(now.add(Duration(minutes: delay)))});
+  }
+
+  /// Hospitality rejects and offers a time [delay] minutes from now.
+  void _reject(int delay) {
+    final now = DateTime.now();
+    _send('reject',
+        body: rejectText(delay, now),
+        payload: {'at': atPayload(now.add(Duration(minutes: delay)))});
+  }
+
+  void _agree(BreakMsg offer) =>
+      _send('agree', body: agreeText(offer.at!), payload: {
+        'at': atPayload(offer.at!),
+      });
+
+  /// The OC declines the offer with a time of its own.
+  void _decline(int delay) {
+    final now = DateTime.now();
+    _send('decline',
+        body: declineText(delay, now),
+        payload: {'at': atPayload(now.add(Duration(minutes: delay)))});
+  }
+
+  // ------------------------------------------------------------------ build
+
+  String _time(DateTime? t) => t == null ? '' : clockTime(t);
+
+  Widget _bubble(BreakMsg m, ColorScheme scheme) {
     final kind = _kinds[m.type] ??
         (label: m.type.toUpperCase(), swatch: kSwatches[2], icon: Icons.chat);
     final swatch = kind.swatch;
@@ -322,7 +539,7 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
                     color: fg, fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
             Text(
-              '${mine ? 'You' : m.senderName} · ${_time(m.at)}',
+              '${mine ? 'You' : m.senderName} · ${_time(m.createdAt)}',
               style: TextStyle(color: fg.withValues(alpha: 0.78), fontSize: 11),
             ),
           ],
@@ -331,7 +548,8 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
     );
   }
 
-  Widget _action(String type, String label, IconData icon, NeonSwatch swatch) {
+  Widget _action(
+      String label, IconData icon, NeonSwatch swatch, VoidCallback onPressed) {
     final fg = swatch.nameColor;
     return Expanded(
       child: FilledButton.icon(
@@ -340,7 +558,7 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
           foregroundColor: fg,
           minimumSize: const Size.fromHeight(50),
         ),
-        onPressed: _sending ? null : () => _send(type),
+        onPressed: _sending ? null : onPressed,
         icon: Icon(icon, size: 20),
         label: FittedBox(
           fit: BoxFit.scaleDown,
@@ -351,45 +569,216 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
     );
   }
 
-  Future<void> _sendCustomRequest() async {
-    final message = _messageController.text.trim();
-    if (message.isEmpty || _sending) return;
-
-    await _send(
-      'free',
-      body: message,
-      onSent: () {
-        if (mounted) {
-          setState(_messageController.clear);
-        }
-      },
+  /// A button with a small triangle beside it that opens a menu of minutes
+  /// ([breakDelays]). The main part does [onMain]; a menu choice calls [onMinutes].
+  Widget _splitButton({
+    required String label,
+    required IconData icon,
+    required NeonSwatch swatch,
+    required VoidCallback onMain,
+    required void Function(int minutes) onMinutes,
+    required String Function(int minutes) itemLabel,
+    required String tooltip,
+  }) {
+    final color = swatch.colors.first;
+    final fg = swatch.nameColor;
+    const radius = Radius.circular(20);
+    return Expanded(
+      child: Row(
+        children: [
+          Expanded(
+            child: FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: color,
+                foregroundColor: fg,
+                minimumSize: const Size.fromHeight(50),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.horizontal(left: radius),
+                ),
+              ),
+              onPressed: _sending ? null : onMain,
+              icon: Icon(icon, size: 20),
+              label: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 2),
+          PopupMenuButton<int>(
+            tooltip: tooltip,
+            enabled: !_sending,
+            onSelected: onMinutes,
+            itemBuilder: (_) => [
+              for (final m in breakDelays)
+                PopupMenuItem(value: m, child: Text(itemLabel(m))),
+            ],
+            child: Container(
+              height: 50,
+              width: 40,
+              decoration: BoxDecoration(
+                color: _sending ? color.withValues(alpha: 0.4) : color,
+                borderRadius: const BorderRadius.horizontal(right: radius),
+              ),
+              child: Icon(Icons.arrow_drop_down, color: fg, size: 30),
+            ),
+          ),
+        ],
+      ),
     );
   }
+
+  /// A button that always asks first: a tap opens the menu of minutes ([breakDelays])
+  /// under it, and nothing is sent until one is chosen.
+  Widget _menuButton({
+    required String label,
+    required IconData icon,
+    required NeonSwatch swatch,
+    required void Function(int minutes) onMinutes,
+    required String Function(int minutes) itemLabel,
+  }) {
+    final fg = swatch.nameColor;
+    return Expanded(
+      child: Builder(
+        builder: (buttonContext) => FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: swatch.colors.first,
+            foregroundColor: fg,
+            minimumSize: const Size.fromHeight(50),
+          ),
+          onPressed: _sending
+              ? null
+              : () async {
+                  final box = buttonContext.findRenderObject() as RenderBox;
+                  final overlay = Overlay.of(buttonContext)
+                      .context
+                      .findRenderObject() as RenderBox;
+                  final topLeft = box.localToGlobal(Offset(0, box.size.height),
+                      ancestor: overlay);
+                  final minutes = await showMenu<int>(
+                    context: buttonContext,
+                    position: RelativeRect.fromLTRB(
+                      topLeft.dx,
+                      topLeft.dy,
+                      overlay.size.width - topLeft.dx - box.size.width,
+                      0,
+                    ),
+                    items: [
+                      for (final m in breakDelays)
+                        PopupMenuItem(value: m, child: Text(itemLabel(m))),
+                    ],
+                  );
+                  if (minutes != null && mounted) onMinutes(minutes);
+                },
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 20),
+                const SizedBox(width: 8),
+                Text(label,
+                    maxLines: 1,
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                Icon(Icons.arrow_drop_down, size: 26),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// "Running late" (5 min by default) with a menu for 5, 10 or 15 minutes.
+  /// Uses the Lime / Orange signature swatch.
+  Widget _lateSplitButton() => _splitButton(
+        label: 'Running late',
+        icon: Icons.timer,
+        swatch: kSwatches[0],
+        onMain: () => _sendLate(5),
+        onMinutes: _sendLate,
+        itemLabel: (m) => 'Late by $m minutes',
+        tooltip: 'Choose how late',
+      );
+
+  Widget _offerRow(BreakMsg offer, ColorScheme scheme) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Hospitality: come at ${clockTime(offer.at!)}',
+            style:
+                TextStyle(color: scheme.onSurface, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 8),
+          Row(children: [
+            _action('Accept offer', Icons.thumb_up, kSwatches[3],
+                () => _agree(offer)),
+            const SizedBox(width: 10),
+            _splitButton(
+              label: 'Decline',
+              icon: Icons.schedule,
+              swatch: kSwatches[1],
+              onMain: () => _decline(5),
+              onMinutes: _decline,
+              itemLabel: (m) => 'Free in $m minutes',
+              tooltip: 'When you will be free',
+            ),
+          ]),
+        ],
+      );
+
+  Widget _connection(ColorScheme scheme) => Tooltip(
+        message: _connected
+            ? 'Live'
+            : (_closedForGood ? 'Disconnected' : 'Reconnecting…'),
+        child: Icon(
+          _connected ? Icons.cloud_done : Icons.cloud_off,
+          color: _connected ? const Color(0xFF1B9E5A) : scheme.error,
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final caps = context.watch<Capabilities>();
-    final canRequest = caps.can(Perm.chatSendRequest);
+    // The admin is Hospitality's side: they answer, they never ask for a break.
+    final canRequest = caps.can(Perm.chatSendRequest) && !_isAdmin;
     final canRespond = caps.can(Perm.chatRespond);
+
+    if (!_isAdmin && !_loading && _committeeId == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Break Coordination')),
+        body: _picker(onPicked: _pick),
+      );
+    }
+
+    final offer = canRequest ? pendingOffer(_messages, DateTime.now()) : null;
 
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        title: const Text('BREAK COORDINATION'),
+        title: Text(_isAdmin
+            ? 'BREAK COORDINATION'
+            : (_committeeName ?? 'Break Coordination')),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Tooltip(
-              message: _connected
-                  ? 'Live'
-                  : (_closedForGood ? 'Disconnected' : 'Reconnecting…'),
-              child: Icon(
-                _connected ? Icons.cloud_done : Icons.cloud_off,
-                color: _connected ? const Color(0xFF1B9E5A) : scheme.error,
-              ),
-            ),
+            padding: EdgeInsets.only(right: _isAdmin ? 16 : 0),
+            child: _connection(scheme),
           ),
+          if (!_isAdmin)
+            PopupMenuButton<String>(
+              tooltip: 'Menu',
+              onSelected: (v) {
+                if (v == 'change') _changeCommittee();
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 'change', child: Text('Change committee')),
+              ],
+            ),
         ],
       ),
       body: _loading
@@ -411,24 +800,25 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
                 )
               : Column(
                   children: [
-                    SizedBox(
-                      height: 52,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        itemCount: _committees.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
-                        itemBuilder: (_, i) {
-                          final c = _committees[i];
-                          return ChoiceChip(
-                            label: Text(c.name),
-                            selected: c.id == _committeeId,
-                            onSelected: (_) => _select(c.id),
-                          );
-                        },
+                    if (_isAdmin)
+                      SizedBox(
+                        height: 52,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          itemCount: _committees.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemBuilder: (_, i) {
+                            final c = _committees[i];
+                            return ChoiceChip(
+                              label: Text(c.name),
+                              selected: c.id == _committeeId,
+                              onSelected: (_) => _select(c.id, c.name),
+                            );
+                          },
+                        ),
                       ),
-                    ),
                     if (_closedForGood)
                       Container(
                         width: double.infinity,
@@ -470,52 +860,39 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              if (offer != null) ...[
+                                _offerRow(offer, scheme),
+                                const SizedBox(height: 10),
+                              ],
                               if (canRequest)
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: TextField(
-                                        controller: _messageController,
-                                        enabled: !_sending,
-                                        maxLength: 25,
-                                        textCapitalization:
-                                            TextCapitalization.sentences,
-                                        textInputAction: TextInputAction.send,
-                                        onChanged: (_) => setState(() {}),
-                                        onSubmitted: (_) =>
-                                            _sendCustomRequest(),
-                                        decoration: InputDecoration(
-                                          hintText: 'Type a message',
-                                          counterText: '',
-                                          suffixText:
-                                              '${_messageController.text.length}/25',
-                                          border: OutlineInputBorder(),
-                                          isDense: true,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    IconButton.filled(
-                                      tooltip: 'Send message',
-                                      onPressed: _sending ||
-                                              _messageController.text
-                                                  .trim()
-                                                  .isEmpty
-                                          ? null
-                                          : _sendCustomRequest,
-                                      icon: const Icon(Icons.send),
-                                    ),
-                                  ],
-                                ),
+                                Row(children: [
+                                  _action('Request break', Icons.free_breakfast,
+                                      kSwatches[2], _requestBreak),
+                                  const SizedBox(width: 10),
+                                  _lateSplitButton(),
+                                ]),
                               if (canRequest && canRespond)
                                 const SizedBox(height: 10),
                               if (canRespond)
                                 Row(children: [
-                                  _action('accept', 'Accept', Icons.check,
-                                      kSwatches[3]),
+                                  _splitButton(
+                                    label: 'Accept',
+                                    icon: Icons.check,
+                                    swatch: kSwatches[3],
+                                    onMain: () => _accept(null),
+                                    onMinutes: _accept,
+                                    itemLabel: (m) => 'Come in $m minutes',
+                                    tooltip: 'Accept for later',
+                                  ),
                                   const SizedBox(width: 10),
-                                  _action('reject', 'Reject (full)',
-                                      Icons.close, kSwatches[1]),
+                                  // Reject always asks when they can come instead.
+                                  _menuButton(
+                                    label: 'Reject',
+                                    icon: Icons.close,
+                                    swatch: kSwatches[1],
+                                    onMinutes: _reject,
+                                    itemLabel: (m) => 'Come in $m minutes',
+                                  ),
                                 ]),
                             ],
                           ),

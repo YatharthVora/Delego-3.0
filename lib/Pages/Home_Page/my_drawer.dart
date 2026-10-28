@@ -5,6 +5,7 @@ import 'package:delego/Pages/Profile_Page/profile_page.dart';
 import 'package:delego/Pages/Sponsors_Page/sponsor_page.dart';
 import 'package:delego/Pages/Policy_Page/policy_page.dart';
 import 'package:delego/Pages/Admin_Page/admin_dashboard.dart';
+import 'package:delego/Pages/Admin_Page/food_page.dart';
 import 'package:delego/Pages/Chat_Page/committee_chat_page.dart';
 import 'package:delego/Pages/EB_Tools/eb_tools_page.dart';
 import 'package:delego/Theme/theme_controller.dart';
@@ -147,6 +148,20 @@ class _MyDrawerState extends State<MyDrawer> {
                         );
                       },
                     ),
+                  if (caps.can(Perm.adminRoles))
+                    MyListTile(
+                      icon: Icons.restaurant,
+                      text: 'FOOD',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const PermissionGate(
+                                  anyOf: [Perm.adminRoles], child: FoodPage())),
+                        );
+                      },
+                    ),
                   if (caps.can(Perm.chatView))
                     MyListTile(
                       icon: Icons.chat_bubble_outline,
@@ -172,8 +187,7 @@ class _MyDrawerState extends State<MyDrawer> {
                           context,
                           MaterialPageRoute(
                               builder: (context) => const PermissionGate(
-                                  anyOf: [Perm.ebTools],
-                                  child: EBToolsPage())),
+                                  anyOf: [Perm.ebTools], child: EBToolsPage())),
                         );
                       },
                     ),
@@ -237,8 +251,8 @@ class _MyDrawerState extends State<MyDrawer> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('For grievances, contact',
-                          style: body.copyWith(
-                              color: ink.withValues(alpha: 0.7))),
+                          style:
+                              body.copyWith(color: ink.withValues(alpha: 0.7))),
                       const SizedBox(height: 4),
                       Text('secretariat.mumbaimun@gmail.com',
                           style: body.copyWith(

@@ -89,17 +89,19 @@ void main() {
     }
   });
 
-  test('oc: scanning, chat and EB tools, but no delegate content', () async {
+  test('oc: scanning, chat, EB tools and their own QR badge, but no guides',
+      () async {
     final caps = await loadAs('oc');
     for (final p in [
       Perm.ebTools,
       Perm.foodScan,
       Perm.chatView,
       Perm.chatSendRequest,
+      Perm.badgeView,
     ]) {
       expect(caps.can(p), isTrue, reason: p);
     }
-    for (final p in [Perm.guidesView, Perm.badgeView, Perm.adminRoles]) {
+    for (final p in [Perm.guidesView, Perm.adminRoles]) {
       expect(caps.can(p), isFalse, reason: p);
     }
     expect(caps.isAdmin, isFalse);
