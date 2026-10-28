@@ -8,6 +8,8 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'package:delego/api/api_client.dart';
 import 'package:delego/auth/capabilities.dart';
+import 'package:delego/models/break_coordination.dart';
+import 'package:delego/widgets/committee_picker.dart';
 import 'package:delego/widgets/neon.dart';
 
 class _Committee {
@@ -16,28 +18,11 @@ class _Committee {
   final String name;
 }
 
-class _Msg {
-  _Msg(Map<String, dynamic> j)
-      : id = (j['id'] as num).toInt(),
-        sender = '${j['sender']}',
-        senderName = '${j['sender_name']}',
-        type = '${j['type']}',
-        body = '${j['body']}',
-        at = DateTime.tryParse('${j['created_at']}')?.toLocal();
-
-  final int id;
-  final String sender;
-  final String senderName;
-  final String type;
-  final String body;
-  final DateTime? at;
-}
-
 /// What each message type looks like, using the 4 signature Neon swatches:
-/// - free (Request break) -> Blue / Lime (kSwatches[2])
-/// - late (Running late)  -> Lime / Orange (kSwatches[0])
-/// - accept (Accept)      -> Green / Cyan (kSwatches[3])
-/// - reject (Reject)      -> Pink / Yellow (kSwatches[1])
+/// - free (Request break)       -> Blue / Lime (kSwatches[2])
+/// - late (Running late)        -> Lime / Orange (kSwatches[0])
+/// - accept, agree (Accept)     -> Green / Cyan (kSwatches[3])
+/// - reject, decline (Reject)   -> Pink / Yellow (kSwatches[1])
 final _kinds = <String, ({String label, NeonSwatch swatch, IconData icon})>{
   'free': (
     label: 'BREAK REQUEST',
@@ -47,11 +32,26 @@ final _kinds = <String, ({String label, NeonSwatch swatch, IconData icon})>{
   'late': (label: 'RUNNING LATE', swatch: kSwatches[0], icon: Icons.timer),
   'accept': (label: 'ACCEPTED', swatch: kSwatches[3], icon: Icons.check_circle),
   'reject': (label: 'REJECTED', swatch: kSwatches[1], icon: Icons.cancel),
+  'agree': (
+    label: 'OFFER ACCEPTED',
+    swatch: kSwatches[3],
+    icon: Icons.thumb_up
+  ),
+  'decline': (
+    label: 'OFFER DECLINED',
+    swatch: kSwatches[1],
+    icon: Icons.schedule
+  ),
 };
 
-/// Break coordination: committees ask for a break, hospitality answers. Messages are
+/// Break coordination: a committee's OC asks for a break at a time, Hospitality (the
+/// admin) accepts or offers a later time, and the OC answers the offer. Messages are
 /// posted over REST and pushed live over a WebSocket; what you can send depends on the
 /// permissions the server gave you.
+///
+/// The admin sees every committee. Everyone else coordinates one committee, picked on
+/// first entry and remembered on this phone (prefs `break_committee_id`/
+/// `break_committee_name`), changed from the menu.
 class CommitteeChatPage extends StatefulWidget {
   const CommitteeChatPage({super.key});
 
@@ -60,10 +60,15 @@ class CommitteeChatPage extends StatefulWidget {
 }
 
 class _CommitteeChatPageState extends State<CommitteeChatPage> {
+  static const _prefId = 'break_committee_id';
+  static const _prefName = 'break_committee_name';
+
   late final ApiClient _api;
+  late final bool _isAdmin;
   List<_Committee> _committees = [];
   int? _committeeId;
-  List<_Msg> _messages = []; // oldest first
+  String? _committeeName;
+  List<BreakMsg> _messages = []; // oldest first
   String _myEmail = '';
 
   String? _error; // loading problem, shown with a retry
@@ -82,6 +87,7 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
   void initState() {
     super.initState();
     _api = context.read<ApiClient>();
+    _isAdmin = context.read<Capabilities>().isAdmin;
     _start();
   }
 
@@ -101,26 +107,27 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
       _loading = true;
       _error = null;
     });
+    final prefs = await SharedPreferences.getInstance();
+    _myEmail = prefs.getString('email') ?? '';
+    if (!_isAdmin) {
+      final id = prefs.getInt(_prefId);
+      if (!mounted) return;
+      setState(() => _loading = false);
+      if (id != null) await _select(id, prefs.getString(_prefName));
+      return;
+    }
     try {
-      _myEmail =
-          (await SharedPreferences.getInstance()).getString('email') ?? '';
       final res = await _api.get('/committees');
       if (res.statusCode != 200) throw 'Server returned ${res.statusCode}';
       final list = (jsonDecode(res.body) as List)
           .map((c) => _Committee((c['id'] as num).toInt(), '${c['name']}'))
           .toList();
-      if (!list.any((c) => c.name.toUpperCase() == 'DISEC')) {
-        final nextId = list.isEmpty
-            ? 9
-            : (list.map((c) => c.id).reduce((a, b) => a > b ? a : b) + 1);
-        list.add(_Committee(nextId, 'DISEC'));
-      }
       if (!mounted) return;
       setState(() {
         _committees = list;
         _loading = false;
       });
-      if (list.isNotEmpty) await _select(list.first.id);
+      if (list.isNotEmpty) await _select(list.first.id, list.first.name);
     } on Forbidden {
       if (mounted) {
         setState(() {
@@ -140,31 +147,94 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
     }
   }
 
-  Future<void> _select(int id) async {
+  Future<void> _pick(int id, String name) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_prefId, id);
+    await prefs.setString(_prefName, name);
+    if (mounted) await _select(id, name);
+  }
+
+  /// The saved committee is gone or no longer ours: forget it and ask again.
+  Future<void> _forgetCommittee() async {
+    _session++;
+    _retry?.cancel();
+    await _sub?.cancel();
+    _channel?.sink.close();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_prefId);
+    await prefs.remove(_prefName);
+    if (!mounted) return;
+    setState(() {
+      _committeeId = null;
+      _committeeName = null;
+      _messages = [];
+      _connected = false;
+    });
+    _say('That committee is no longer available. Choose again.');
+  }
+
+  Future<void> _changeCommittee() async {
+    final picked = await Navigator.push<(int, String)>(
+      context,
+      MaterialPageRoute(
+        builder: (ctx) => Scaffold(
+          appBar: AppBar(title: const Text('Change committee')),
+          body: _picker(
+            selectedId: _committeeId,
+            onPicked: (id, name) => Navigator.pop(ctx, (id, name)),
+          ),
+        ),
+      ),
+    );
+    if (picked != null && picked.$1 != _committeeId) {
+      await _pick(picked.$1, picked.$2);
+    }
+  }
+
+  Widget _picker(
+          {int? selectedId, required void Function(int, String) onPicked}) =>
+      CommitteePicker(
+        api: _api,
+        endpoint: '/committees',
+        question: 'Which committee are you coordinating?',
+        icon: Icons.free_breakfast,
+        selectedId: selectedId,
+        onPicked: onPicked,
+      );
+
+  Future<void> _select(int id, String? name) async {
     _session++;
     _retry?.cancel();
     await _sub?.cancel();
     _channel?.sink.close();
     setState(() {
       _committeeId = id;
+      _committeeName = name;
       _messages = [];
       _connected = false;
       _closedForGood = false;
       _retryCount = 0;
     });
     await _loadHistory(id);
-    _connect(id);
+    if (mounted && id == _committeeId) _connect(id);
   }
 
   Future<void> _loadHistory(int id) async {
     try {
       final res = await _api.get('/committees/$id/messages');
-      if (res.statusCode != 200 || !mounted || id != _committeeId) return;
+      if (!mounted || id != _committeeId) return;
+      if (res.statusCode == 404 && !_isAdmin) {
+        await _forgetCommittee();
+        return;
+      }
+      if (res.statusCode != 200) return;
       setState(() {
         _messages = (jsonDecode(res.body) as List)
-            .map((m) => _Msg(m as Map<String, dynamic>))
+            .map((m) => BreakMsg(m as Map<String, dynamic>))
             .toList();
       });
+    } on Forbidden {
+      if (mounted && id == _committeeId && !_isAdmin) await _forgetCommittee();
     } on SessionExpired {
       // handled by ApiClient
     } catch (_) {
@@ -194,7 +264,7 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
           _retryCount = 0;
         }
         try {
-          _add(_Msg(jsonDecode(data as String) as Map<String, dynamic>));
+          _add(BreakMsg(jsonDecode(data as String) as Map<String, dynamic>));
         } catch (_) {}
       },
       onDone: () => _onClosed(session, id, channel.closeCode),
@@ -215,6 +285,11 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
     if (!mounted || session != _session) return;
     setState(() => _connected = false);
 
+    // 4403 no access, 4404 unknown committee: the saved committee is not ours any more.
+    if (!_isAdmin && (code == 4403 || code == 4404)) {
+      _forgetCommittee();
+      return;
+    }
     // 4401 bad token, 4403 no access, 4404 unknown committee: retrying will not help.
     if (code == 4401 || code == 4403 || code == 4404) {
       setState(() => _closedForGood = true);
@@ -229,14 +304,15 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
     });
   }
 
-  void _add(_Msg m) {
+  void _add(BreakMsg m) {
     if (!mounted || _messages.any((x) => x.id == m.id)) return;
     setState(() => _messages = [..._messages, m]);
   }
 
   // --------------------------------------------------------------- sending
 
-  Future<void> _send(String type, {String? body}) async {
+  Future<void> _send(String type,
+      {String? body, Map<String, dynamic>? payload}) async {
     final id = _committeeId;
     if (id == null || _sending) return;
     setState(() => _sending = true);
@@ -244,11 +320,12 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
       final res = await _api.postJson('/committees/$id/messages', {
         'type': type,
         if (body != null) 'body': body,
+        if (payload != null) 'payload': payload,
       });
       if (!mounted) return;
       if (res.statusCode == 201) {
         // The socket echoes it too; _add ignores the duplicate.
-        _add(_Msg(jsonDecode(res.body) as Map<String, dynamic>));
+        _add(BreakMsg(jsonDecode(res.body) as Map<String, dynamic>));
       } else {
         _say('Could not send (${res.statusCode}).');
       }
@@ -269,15 +346,59 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
       ..showSnackBar(SnackBar(content: Text(text)));
   }
 
-  // ------------------------------------------------------------------ build
-
-  String _time(DateTime? t) {
-    if (t == null) return '';
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(t.hour)}:${two(t.minute)}';
+  /// "Request break": the OC picks the clock time the committee can break at.
+  Future<void> _requestBreak() async {
+    final start = nextFiveMinutes(DateTime.now());
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(start),
+      helpText: 'Free for a break at',
+      confirmText: 'Request',
+    );
+    if (picked == null || !mounted) return;
+    final at = breakTimeFor(picked.hour, picked.minute, DateTime.now());
+    await _send('free', body: requestText(at), payload: {'at': atPayload(at)});
   }
 
-  Widget _bubble(_Msg m, ColorScheme scheme) {
+  void _sendLate(int minutes) =>
+      _send('late', body: 'Running $minutes minutes late');
+
+  /// Hospitality accepts: now (no time), or come in [delay] minutes.
+  void _accept(int? delay) {
+    final now = DateTime.now();
+    _send('accept',
+        body: acceptText(delay, now),
+        payload: delay == null
+            ? null
+            : {'at': atPayload(now.add(Duration(minutes: delay)))});
+  }
+
+  /// Hospitality rejects and offers a time [delay] minutes from now.
+  void _reject(int delay) {
+    final now = DateTime.now();
+    _send('reject',
+        body: rejectText(delay, now),
+        payload: {'at': atPayload(now.add(Duration(minutes: delay)))});
+  }
+
+  void _agree(BreakMsg offer) =>
+      _send('agree', body: agreeText(offer.at!), payload: {
+        'at': atPayload(offer.at!),
+      });
+
+  /// The OC declines the offer with a time of its own.
+  void _decline(int delay) {
+    final now = DateTime.now();
+    _send('decline',
+        body: declineText(delay, now),
+        payload: {'at': atPayload(now.add(Duration(minutes: delay)))});
+  }
+
+  // ------------------------------------------------------------------ build
+
+  String _time(DateTime? t) => t == null ? '' : hhmm(t);
+
+  Widget _bubble(BreakMsg m, ColorScheme scheme) {
     final kind = _kinds[m.type] ??
         (label: m.type.toUpperCase(), swatch: kSwatches[2], icon: Icons.chat);
     final swatch = kind.swatch;
@@ -315,7 +436,7 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
                     color: fg, fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
             Text(
-              '${mine ? 'You' : m.senderName} · ${_time(m.at)}',
+              '${mine ? 'You' : m.senderName} · ${_time(m.createdAt)}',
               style: TextStyle(color: fg.withValues(alpha: 0.78), fontSize: 11),
             ),
           ],
@@ -324,7 +445,8 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
     );
   }
 
-  Widget _action(String type, String label, IconData icon, NeonSwatch swatch) {
+  Widget _action(
+      String label, IconData icon, NeonSwatch swatch, VoidCallback onPressed) {
     final fg = swatch.nameColor;
     return Expanded(
       child: FilledButton.icon(
@@ -333,7 +455,7 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
           foregroundColor: fg,
           minimumSize: const Size.fromHeight(50),
         ),
-        onPressed: _sending ? null : () => _send(type),
+        onPressed: _sending ? null : onPressed,
         icon: Icon(icon, size: 20),
         label: FittedBox(
           fit: BoxFit.scaleDown,
@@ -344,13 +466,17 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
     );
   }
 
-  void _sendLate(int minutes) =>
-      _send('late', body: 'Running $minutes minutes late');
-
-  /// "Running late" (5 min by default) with a small triangle beside it that opens
-  /// a menu to choose 5, 10 or 15 minutes. Uses the Lime / Orange signature swatch.
-  Widget _lateSplitButton() {
-    final swatch = kSwatches[0];
+  /// A button with a small triangle beside it that opens a menu of minutes
+  /// ([breakDelays]). The main part does [onMain]; a menu choice calls [onMinutes].
+  Widget _splitButton({
+    required String label,
+    required IconData icon,
+    required NeonSwatch swatch,
+    required VoidCallback onMain,
+    required void Function(int minutes) onMinutes,
+    required String Function(int minutes) itemLabel,
+    required String tooltip,
+  }) {
     final color = swatch.colors.first;
     final fg = swatch.nameColor;
     const radius = Radius.circular(20);
@@ -367,27 +493,26 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
                   borderRadius: BorderRadius.horizontal(left: radius),
                 ),
               ),
-              onPressed: _sending ? null : () => _sendLate(5),
-              icon: const Icon(Icons.timer, size: 20),
-              label: const FittedBox(
+              onPressed: _sending ? null : onMain,
+              icon: Icon(icon, size: 20),
+              label: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  'Running late',
+                  label,
                   maxLines: 1,
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ),
           ),
           const SizedBox(width: 2),
           PopupMenuButton<int>(
-            tooltip: 'Choose how late',
+            tooltip: tooltip,
             enabled: !_sending,
-            onSelected: _sendLate,
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 5, child: Text('Late by 5 minutes')),
-              PopupMenuItem(value: 10, child: Text('Late by 10 minutes')),
-              PopupMenuItem(value: 15, child: Text('Late by 15 minutes')),
+            onSelected: onMinutes,
+            itemBuilder: (_) => [
+              for (final m in breakDelays)
+                PopupMenuItem(value: m, child: Text(itemLabel(m))),
             ],
             child: Container(
               height: 50,
@@ -404,30 +529,92 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
     );
   }
 
+  /// "Running late" (5 min by default) with a menu for 5, 10 or 15 minutes.
+  /// Uses the Lime / Orange signature swatch.
+  Widget _lateSplitButton() => _splitButton(
+        label: 'Running late',
+        icon: Icons.timer,
+        swatch: kSwatches[0],
+        onMain: () => _sendLate(5),
+        onMinutes: _sendLate,
+        itemLabel: (m) => 'Late by $m minutes',
+        tooltip: 'Choose how late',
+      );
+
+  Widget _offerRow(BreakMsg offer, ColorScheme scheme) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Hospitality: come at ${hhmm(offer.at!)}',
+            style:
+                TextStyle(color: scheme.onSurface, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 8),
+          Row(children: [
+            _action('Accept offer', Icons.thumb_up, kSwatches[3],
+                () => _agree(offer)),
+            const SizedBox(width: 10),
+            _splitButton(
+              label: 'Decline',
+              icon: Icons.schedule,
+              swatch: kSwatches[1],
+              onMain: () => _decline(5),
+              onMinutes: _decline,
+              itemLabel: (m) => 'Free in $m minutes',
+              tooltip: 'When you will be free',
+            ),
+          ]),
+        ],
+      );
+
+  Widget _connection(ColorScheme scheme) => Tooltip(
+        message: _connected
+            ? 'Live'
+            : (_closedForGood ? 'Disconnected' : 'Reconnecting…'),
+        child: Icon(
+          _connected ? Icons.cloud_done : Icons.cloud_off,
+          color: _connected ? const Color(0xFF1B9E5A) : scheme.error,
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final caps = context.watch<Capabilities>();
-    final canRequest = caps.can(Perm.chatSendRequest);
+    // The admin is Hospitality's side: they answer, they never ask for a break.
+    final canRequest = caps.can(Perm.chatSendRequest) && !_isAdmin;
     final canRespond = caps.can(Perm.chatRespond);
+
+    if (!_isAdmin && !_loading && _committeeId == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Break Coordination')),
+        body: _picker(onPicked: _pick),
+      );
+    }
+
+    final offer = canRequest ? pendingOffer(_messages, DateTime.now()) : null;
 
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        title: const Text('BREAK COORDINATION'),
+        title: Text(_isAdmin
+            ? 'BREAK COORDINATION'
+            : (_committeeName ?? 'Break Coordination')),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Tooltip(
-              message: _connected
-                  ? 'Live'
-                  : (_closedForGood ? 'Disconnected' : 'Reconnecting…'),
-              child: Icon(
-                _connected ? Icons.cloud_done : Icons.cloud_off,
-                color: _connected ? const Color(0xFF1B9E5A) : scheme.error,
-              ),
-            ),
+            padding: EdgeInsets.only(right: _isAdmin ? 16 : 0),
+            child: _connection(scheme),
           ),
+          if (!_isAdmin)
+            PopupMenuButton<String>(
+              tooltip: 'Menu',
+              onSelected: (v) {
+                if (v == 'change') _changeCommittee();
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 'change', child: Text('Change committee')),
+              ],
+            ),
         ],
       ),
       body: _loading
@@ -449,24 +636,25 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
                 )
               : Column(
                   children: [
-                    SizedBox(
-                      height: 52,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        itemCount: _committees.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
-                        itemBuilder: (_, i) {
-                          final c = _committees[i];
-                          return ChoiceChip(
-                            label: Text(c.name),
-                            selected: c.id == _committeeId,
-                            onSelected: (_) => _select(c.id),
-                          );
-                        },
+                    if (_isAdmin)
+                      SizedBox(
+                        height: 52,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          itemCount: _committees.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemBuilder: (_, i) {
+                            final c = _committees[i];
+                            return ChoiceChip(
+                              label: Text(c.name),
+                              selected: c.id == _committeeId,
+                              onSelected: (_) => _select(c.id, c.name),
+                            );
+                          },
+                        ),
                       ),
-                    ),
                     if (_closedForGood)
                       Container(
                         width: double.infinity,
@@ -508,10 +696,14 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              if (offer != null) ...[
+                                _offerRow(offer, scheme),
+                                const SizedBox(height: 10),
+                              ],
                               if (canRequest)
                                 Row(children: [
-                                  _action('free', 'Request break',
-                                      Icons.free_breakfast, kSwatches[2]),
+                                  _action('Request break', Icons.free_breakfast,
+                                      kSwatches[2], _requestBreak),
                                   const SizedBox(width: 10),
                                   _lateSplitButton(),
                                 ]),
@@ -519,11 +711,25 @@ class _CommitteeChatPageState extends State<CommitteeChatPage> {
                                 const SizedBox(height: 10),
                               if (canRespond)
                                 Row(children: [
-                                  _action('accept', 'Accept', Icons.check,
-                                      kSwatches[3]),
+                                  _splitButton(
+                                    label: 'Accept',
+                                    icon: Icons.check,
+                                    swatch: kSwatches[3],
+                                    onMain: () => _accept(null),
+                                    onMinutes: _accept,
+                                    itemLabel: (m) => 'Come in $m minutes',
+                                    tooltip: 'Accept for later',
+                                  ),
                                   const SizedBox(width: 10),
-                                  _action('reject', 'Reject (full)',
-                                      Icons.close, kSwatches[1]),
+                                  _splitButton(
+                                    label: 'Reject',
+                                    icon: Icons.close,
+                                    swatch: kSwatches[1],
+                                    onMain: () => _reject(5),
+                                    onMinutes: _reject,
+                                    itemLabel: (m) => 'Come in $m minutes',
+                                    tooltip: 'When they can come',
+                                  ),
                                 ]),
                             ],
                           ),

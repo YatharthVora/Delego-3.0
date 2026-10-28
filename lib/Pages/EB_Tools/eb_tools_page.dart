@@ -11,6 +11,7 @@ import 'package:delego/constants/portfolios.dart';
 import 'package:delego/Pages/EB_Tools/floor_widgets.dart';
 import 'package:delego/Pages/EB_Tools/session_timer_tab.dart';
 import 'package:delego/Pages/EB_Tools/speaker_list_tab.dart';
+import 'package:delego/widgets/committee_picker.dart';
 
 /// EB Tools: the chair and vice chair run their committee's floor from here (the GSL, the
 /// moderated caucus list and the timers), and the room's smartboard follows it live.
@@ -111,9 +112,8 @@ class _EBToolsPageState extends State<EBToolsPage> with WidgetsBindingObserver {
     }
     if (!mounted || id != _committeeId) return;
     final upper = (_committeeName ?? '').toUpperCase();
-    final fallback = upper == 'DISEC'
-        ? kDisecMatrix
-        : (upper == 'CCC' ? kCccMatrix : null);
+    final fallback =
+        upper == 'DISEC' ? kDisecMatrix : (upper == 'CCC' ? kCccMatrix : null);
     final parsed = json == null ? null : matrixPortfolios(json);
     setState(() {
       if (fallback != null && (parsed == null || parsed.isEmpty)) {
@@ -139,8 +139,9 @@ class _EBToolsPageState extends State<EBToolsPage> with WidgetsBindingObserver {
       MaterialPageRoute(
         builder: (_) => Scaffold(
           appBar: AppBar(title: const Text('Change committee')),
-          body: _CommitteePicker(
+          body: CommitteePicker(
             api: _api,
+            ensureDisec: true,
             selectedId: _committeeId,
             onPicked: (id, name) => Navigator.pop(context, (id, name)),
           ),
@@ -205,7 +206,7 @@ class _EBToolsPageState extends State<EBToolsPage> with WidgetsBindingObserver {
     if (client == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('EB Tools')),
-        body: _CommitteePicker(api: _api, onPicked: _pick),
+        body: CommitteePicker(api: _api, ensureDisec: true, onPicked: _pick),
       );
     }
 
@@ -396,103 +397,6 @@ class _Banner extends StatelessWidget {
           if (action != null) action!,
         ],
       ),
-    );
-  }
-}
-
-/// The conference's committees (public list, so an EB without chat access sees them too).
-class _CommitteePicker extends StatefulWidget {
-  const _CommitteePicker(
-      {required this.api, required this.onPicked, this.selectedId});
-
-  final ApiClient api;
-  final int? selectedId;
-  final void Function(int id, String name) onPicked;
-
-  @override
-  State<_CommitteePicker> createState() => _CommitteePickerState();
-}
-
-class _CommitteePickerState extends State<_CommitteePicker> {
-  List<(int, String)>? _committees;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    setState(() => _error = null);
-    try {
-      final res = await widget.api.get('/public/committees');
-      if (res.statusCode != 200) throw Exception(res.statusCode);
-      final list = [
-        for (final c in jsonDecode(res.body) as List)
-          ((c as Map<String, dynamic>)['id'] as int, c['name'] as String),
-      ];
-      if (!list.any((c) => c.$2.toUpperCase() == 'DISEC')) {
-        final nextId = list.isEmpty
-            ? 9
-            : (list.map((c) => c.$1).reduce((a, b) => a > b ? a : b) + 1);
-        list.add((nextId, 'DISEC'));
-        list.sort((a, b) => a.$2.compareTo(b.$2));
-      }
-      if (mounted) setState(() => _committees = list);
-    } catch (_) {
-      if (mounted) {
-        setState(() =>
-            _error = 'Could not load the committees. Check your connection.');
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final committees = _committees;
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(_error!, textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            FilledButton(onPressed: _load, child: const Text('Try again')),
-          ],
-        ),
-      );
-    }
-    if (committees == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Text('Which committee are you chairing?',
-            style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 16),
-        for (final (id, name) in committees)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: ListTile(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              tileColor: id == widget.selectedId
-                  ? scheme.secondaryContainer
-                  : scheme.surfaceContainerHigh,
-              leading: const Icon(Icons.gavel),
-              title: Text(name,
-                  style: const TextStyle(fontWeight: FontWeight.w700)),
-              trailing: id == widget.selectedId
-                  ? const Icon(Icons.check)
-                  : const Icon(Icons.chevron_right),
-              onTap: () => widget.onPicked(id, name),
-            ),
-          ),
-      ],
     );
   }
 }
