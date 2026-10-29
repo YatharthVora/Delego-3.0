@@ -45,6 +45,12 @@ const kSponsors = <Sponsor>[
     backgroundColorHex: 0xFFFFFFFF,
   ),
   Sponsor(
+    name: 'Tarkus',
+    logo: 'assets/icons/tarkus.jpeg',
+    scale: 1.18,
+    backgroundColorHex: 0xFF2B2458,
+  ),
+  Sponsor(
     name: 'Unrush',
     logo: 'assets/icons/unrush.png',
     url: 'https://shopunrush.com',
